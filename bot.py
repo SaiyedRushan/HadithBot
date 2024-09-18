@@ -88,5 +88,5 @@ async def randomName(interaction: discord.Interaction):
 async def specificName(interaction: discord.Interaction, number: int):
     await interaction.response.send_message(getNameFormattedMessage(names, number))
 
-# keep_alive()
+keep_alive()
 bot.run(os.getenv('TOKEN'))
