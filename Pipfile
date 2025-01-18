@@ -7,6 +7,9 @@ name = "pypi"
 discord = "*"
 python-dotenv = "*"
 flask = "*"
+gunicorn = "*"
+aiofiles = "*"
+tzdata = "*"
 
 [dev-packages]
 

@@ -1,0 +1,4 @@
+- in memory db storing hadiths and names, as well as the discord channel id and the last chapter and name sent
+- discord bot that sends the hadiths and names to the discord channel
+- server that runs the discord bot and the in memory db
+- cron job that runs the server every day at 6:00 AM looping through the channels and sending the hadiths and names to the channel

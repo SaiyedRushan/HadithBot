@@ -1,92 +1,275 @@
-from datetime import datetime, timedelta
+from datetime import datetime, time
 import discord
 from discord import app_commands
-from discord.ext import commands
-import asyncio
+from discord.ext import commands, tasks
 from dotenv import load_dotenv
 import os
 import random
-from server import keep_alive
-from utils import getNameFormattedMessage, load_messages, getHadithFormattedMessage, loadNames
-load_dotenv()
+import logging
+from typing import List, Dict, Optional
+from dataclasses import dataclass
+import aiofiles
+import json
+from zoneinfo import ZoneInfo
 
-intents = discord.Intents.default()
-bot = commands.Bot(command_prefix='!', intents=intents)
+from utils import getHadithFormattedMessage, getNameFormattedMessage
 
-# an array of hadiths
-messages = load_messages()
-names = loadNames() 
+# Data models
+@dataclass
+class HadithChapter:
+    chapter: str
+    hadiths: List[str]
 
-# Send daily message
-async def send_daily_message(channel_id, startChapter, startName):
-    channel = bot.get_channel(channel_id)
-    current_chapter = startChapter if startChapter > 0 and startChapter <= len(messages) else 1
-    current_name_index = startName if startName > 0 and startName <= len(names) else 1
+@dataclass
+class Name:
+    number: int
+    name: str
+    transliteration: str
+    found: str
+    en: Dict[str, str]
+    fr: Dict[str, str]
 
-    while True:
-        # Wait until 6:00 AM
-        now = datetime.now()
-        target_time = now.replace(hour=6, minute=0, second=0, microsecond=0)
-        if now >= target_time:
-            target_time += timedelta(days=1)
-        wait_seconds = (target_time - now).total_seconds()
-        print(f'Waiting for {wait_seconds} seconds')
-        await asyncio.sleep(wait_seconds)
+class ActiveChannel:
+    chapterNumber: int
+    nameNumber: int
 
-        # send hadith
-        formatted_messages = getHadithFormattedMessage(messages, current_chapter)
+class HadithBot(commands.Bot):
+    def __init__(self):
+        intents = discord.Intents.default()
+        super().__init__(command_prefix='!', intents=intents)
+        
+        # Initialize storage
+        self.active_channels: Dict[str, ActiveChannel] = {} # channel_id -> ActiveChannel
+        self.messages: List[HadithChapter] = []
+        self.names: List[Name] = []
+        
+        # Setup logging
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            handlers=[
+                logging.StreamHandler()
+            ]
+        )
+        self.logger = logging.getLogger('HadithBot')
+        
+        # Setup error handling
+        self.setup_error_handlers()
+    
+    async def setup_hook(self):
+        """Initialize bot data and sync commands"""
+        await self.load_data()
+        await self.tree.sync()
+        self.send_daily_message.start()
+    
+    async def load_data(self):
+        """Load messages and names from local storage"""
+        try:
+            # Read and parse hadiths.json
+            async with aiofiles.open('data/hadiths.json', mode='r') as file:
+                messages_data = json.loads(await file.read())
+                self.messages = [HadithChapter(**msg) for msg in messages_data]
+ 
+            # Read and parse 99names.json
+            async with aiofiles.open('data/99names.json', mode='r') as file:
+                names_data = json.loads(await file.read())
+                self.names = [Name(**name) for name in names_data]
+
+
+            # Load state
+            async with aiofiles.open('state.json', mode='r') as file:
+                state = json.loads(await file.read() or '{}')
+                self.active_channels = state.get('active_channels', {})
+                self.logger.info(f"Loaded state: {self.active_channels}")
+                # start the loop for each channel
+
+                    
+        except Exception as e:
+            self.logger.error(f"Failed to load data: {e}")
+            raise
+
+    def setup_error_handlers(self):
+        @self.event
+        async def on_error(event, *args, **kwargs):
+            self.logger.error(f"Error in {event}", exc_info=True)
+
+        @self.tree.error
+        async def on_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+            if isinstance(error, app_commands.CommandOnCooldown):
+                await interaction.response.send_message(
+                    f"Please wait {error.retry_after:.2f} seconds before using this command again.",
+                    ephemeral=True
+                )
+            else:
+                self.logger.error(f"Command error: {error}", exc_info=True)
+                await interaction.response.send_message(
+                    "An error occurred while processing your command. Please try again later.",
+                    ephemeral=True
+                )
+
+    @tasks.loop(time=time(hour=18, tzinfo=ZoneInfo("America/Toronto")))
+    async def send_daily_message(self):
+        """Loops through the active channels and sends daily messages"""
+        try:
+            for channel_id, data in self.active_channels.items():
+                channel = self.get_channel(int(channel_id))
+                if not channel:
+                    self.logger.error(f"Channel {channel_id} not found")
+                    continue
+
+                current_chapter = data['chapterNumber']
+                hadith = self.get_hadith(current_chapter)
+                self.active_channels[channel_id]['chapterNumber'] = self.get_next_index(current_chapter, len(self.messages))
+                current_name_index = data['nameNumber']
+                name = self.get_name(current_name_index)
+                self.active_channels[channel_id]['nameNumber'] = self.get_next_index(current_name_index, len(self.names))
+
+                await channel.send("> # Assalamu Alaikum Warahmatullahi Wabarakatuh, here is today's hadith and one of Allah's beautiful name\n")
+                await self.send_formatted_hadith(channel, hadith)
+                await self.send_formatted_name(channel, name)
+
+                await self.save_state()
+        except Exception as e:
+            self.logger.error(f"Failed to send daily message: {e}")
+        
+    @send_daily_message.before_loop
+    async def before_daily_message(self):
+        """Wait for the bot to be ready before starting the task"""
+        await self.wait_until_ready()
+        self.logger.info("Daily message task is ready to start")
+
+    async def save_state(self):
+        """Save bot state to persistent storage"""
+        try:
+            state = {
+                'active_channels': self.active_channels,
+                'timestamp': datetime.now().isoformat()
+            }
+            with open('state.json', 'w') as f:
+                json.dump(state, f)
+        except Exception as e:
+            self.logger.error(f"Failed to save state: {e}")
+
+    def get_hadith(self, chapter: int) -> Optional[HadithChapter]:
+        """Get hadith by chapter number with validation"""
+        if 1 <= chapter <= len(self.messages):
+            return self.messages[chapter - 1]
+        return None
+
+    def get_name(self, number: int) -> Optional[Name]:
+        """Get name by number with validation"""
+        if 1 <= number <= len(self.names):
+            return self.names[number - 1]
+        return None
+
+    @staticmethod
+    def get_next_index(current: int, max_value: int) -> int:
+        """Get next index with wraparound"""
+        return (current + 1) if (current < max_value) else 1
+
+    async def send_formatted_hadith(self, channel: discord.TextChannel, hadith: HadithChapter):
+        """Send formatted hadith message"""
+        if not hadith:
+            return
+        formatted_messages = getHadithFormattedMessage(hadith)
         for message in formatted_messages:
             await channel.send(message)
-        current_chapter = (current_chapter + 1) if (current_chapter < len(messages) and current_chapter > 0) else 1
-    
-        # send name
-        formatted_name_message = f"> **Today's Name**\n"
-        formatted_name_message += getNameFormattedMessage(names, current_name_index)
-        await channel.send(formatted_name_message)
-        current_name_index = (current_name_index + 1) if (current_name_index < len(names) and current_name_index > 0) else 1
 
-@bot.event
-async def on_ready():
-    print(f'We have logged in as {bot.user}')
-    try:  
-        synced = await bot.tree.sync()
-        print(f'Synced {len(synced)} commands')
+    async def send_formatted_name(self, channel: discord.TextChannel, name: Name):
+        """Send formatted name message"""
+        if not name:
+            return
+        formatted_message = getNameFormattedMessage(name)   
+        await channel.send(formatted_message)
+
+
+# Command group for better organization
+@app_commands.guild_only()
+class HadithCommands(app_commands.Group):
+    def __init__(self, bot: HadithBot):
+        super().__init__(name="bismillah")
+        self.bot = bot
+
+    @app_commands.command(name="random")
+    async def random(self, interaction: discord.Interaction):
+        hadith = self.bot.get_hadith(random.randint(1, len(self.bot.messages)))
+        await interaction.response.defer()
+        await self.bot.send_formatted_hadith(interaction.channel, hadith)
+        await interaction.followup.send("Here is a random hadith", ephemeral=True)
+
+    @app_commands.command(name="specific")
+    @app_commands.describe(chapter="The chapter number of the hadith")
+    async def specific(self, interaction: discord.Interaction, chapter: int):
+        hadith = self.bot.get_hadith(chapter)
+        if not hadith:
+            await interaction.response.send_message(
+                f"Invalid chapter number. Please choose between 1 and {len(self.bot.messages)}",
+                ephemeral=True
+            )
+            return
+        await interaction.response.defer()
+        await self.bot.send_formatted_hadith(interaction.channel, hadith)
+        await interaction.followup.send("Here is the hadith you requested", ephemeral=True)
+
+
+
+    @app_commands.command(name="random_name")
+    async def random_name(self, interaction: discord.Interaction):
+        name = self.bot.get_name(random.randint(1, len(self.bot.names)))
+        await interaction.response.defer()
+        await self.bot.send_formatted_name(interaction.channel, name)
+        await interaction.followup.send("Here is one of Allah's beautiful names", ephemeral=True)
+
+
+    @app_commands.command(name="specific_name")
+    @app_commands.describe(number="The number of the name")
+    async def specific_name(self, interaction: discord.Interaction, number: int):
+        name = self.bot.get_name(number)
+        if not name:
+            await interaction.response.send_message(
+                f"Invalid name number. Please choose between 1 and {len(self.bot.names)}",
+                ephemeral=True
+            )
+            return
+        await interaction.response.defer()
+        await self.bot.send_formatted_name(interaction.channel, name)
+        await interaction.followup.send("Here is the name you requested", ephemeral=True)
+
+    @app_commands.command(name="setup")
+    @app_commands.describe(channel_id="The ID of the channel where you want to send messages")
+    @app_commands.describe(start_chapter="The chapter number of the hadith you want to start with")
+    @app_commands.describe(start_name="The number of the name you want to start with")
+    async def setup(self, interaction: discord.Interaction, channel_id: str, start_chapter: int, start_name: int):
+        await interaction.response.defer()
+        self.bot.active_channels[channel_id] = {
+            'chapterNumber': start_chapter,
+            'nameNumber': start_name
+        }
+        await self.bot.save_state()
+        await interaction.followup.send(f"Messages will now be sent to the channel with ID {channel_id}.")
+        
+
+    @app_commands.command(name="stop")
+    @app_commands.describe(channel_id="The ID of the channel where you want to stop sending messages")
+    async def stop(self, interaction: discord.Interaction, channel_id: str):
+        await interaction.response.defer()
+        if channel_id in self.bot.active_channels:
+            del self.bot.active_channels[channel_id]
+            await self.bot.save_state()
+            await interaction.followup.send("Messages will no longer be sent to this channel.")
+        else:
+            await interaction.followup.send("This channel is not currently sending messages.")
+
+def main():
+    load_dotenv()
+    bot = HadithBot()
+    bot.tree.add_command(HadithCommands(bot))
+    
+    try:
+        bot.run(os.getenv('DISCORD_TOKEN'), log_handler=None)
     except Exception as e:
-        print('There was an error syncing the commands: ', e)
+        logging.error(f"Failed to start bot: {e}")
+        raise
 
-
-@bot.tree.command(name='setup')
-@app_commands.describe(channel_id='The ID of the channel where you want to send messages')
-@app_commands.describe(start_chapter='The chapter number of the hadith you want to start with')
-@app_commands.describe(start_name='The number of the name you want to start with')
-async def setup(interaction: discord.Interaction, channel_id:str, start_chapter:int, start_name:int):
-    await interaction.response.send_message(f'Messages will now be sent to the channel with ID {channel_id}.')
-    bot.loop.create_task(send_daily_message(int(channel_id), start_chapter, start_name))
-
-
-@bot.tree.command(name='randomhadith')
-async def randomHadith(interaction: discord.Interaction):
-    formatted_messages = getHadithFormattedMessage(messages, random.randint(1, len(messages)))
-    await interaction.response.send_message(formatted_messages[0])
-    for message in formatted_messages[1:]:
-        await interaction.followup.send(message)
-
-@bot.tree.command(name='specifichadith')
-@app_commands.describe(chapter='The chapter number of the hadith you want to hear')
-async def specificHadith(interaction: discord.Interaction, chapter: int):
-    formatted_messages = getHadithFormattedMessage(messages, chapter)
-    await interaction.response.send_message(formatted_messages[0])
-    for message in formatted_messages[1:]:
-        await interaction.followup.send(message)
-
-@bot.tree.command(name='randomname')
-async def randomName(interaction: discord.Interaction):
-    await interaction.response.send_message(getNameFormattedMessage(names, random.randint(1, len(names))))       
-    
-@bot.tree.command(name='specificname')
-@app_commands.describe(number='The number of the name you want to hear')
-async def specificName(interaction: discord.Interaction, number: int):
-    await interaction.response.send_message(getNameFormattedMessage(names, number))
-
-keep_alive()
-bot.run(os.getenv('TOKEN'))
+if __name__ == "__main__":
+    main()
