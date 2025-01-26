@@ -11,6 +11,7 @@ from dataclasses import dataclass
 import aiofiles
 import json
 from zoneinfo import ZoneInfo
+from db import save_channel_state, get_channels, remove_channel_state
 
 from utils import getHadithFormattedMessage, getNameFormattedMessage
 
@@ -29,17 +30,12 @@ class Name:
     en: Dict[str, str]
     fr: Dict[str, str]
 
-class ActiveChannel:
-    chapterNumber: int
-    nameNumber: int
-
 class HadithBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.default()
         super().__init__(command_prefix='!', intents=intents)
         
         # Initialize storage
-        self.active_channels: Dict[str, ActiveChannel] = {} # channel_id -> ActiveChannel
         self.messages: List[HadithChapter] = []
         self.names: List[Name] = []
         
@@ -74,15 +70,6 @@ class HadithBot(commands.Bot):
             async with aiofiles.open('data/99names.json', mode='r') as file:
                 names_data = json.loads(await file.read())
                 self.names = [Name(**name) for name in names_data]
-
-
-            # Load state
-            async with aiofiles.open('state.json', mode='r') as file:
-                state = json.loads(await file.read() or '{}')
-                self.active_channels = state.get('active_channels', {})
-                self.logger.info(f"Loaded state: {self.active_channels}")
-                # start the loop for each channel
-
                     
         except Exception as e:
             self.logger.error(f"Failed to load data: {e}")
@@ -111,24 +98,29 @@ class HadithBot(commands.Bot):
     async def send_daily_message(self):
         """Loops through the active channels and sends daily messages"""
         try:
-            for channel_id, data in self.active_channels.items():
+            channels = get_channels()
+
+            for channel in channels.data:
+                channel_id = channel['channel_id']
+                last_hadith_no = channel['last_hadith_no']
+                last_name_no = channel['last_name_no']
+
                 channel = self.get_channel(int(channel_id))
                 if not channel:
                     self.logger.error(f"Channel {channel_id} not found")
                     continue
 
-                current_chapter = data['chapterNumber']
-                hadith = self.get_hadith(current_chapter)
-                self.active_channels[channel_id]['chapterNumber'] = self.get_next_index(current_chapter, len(self.messages))
-                current_name_index = data['nameNumber']
-                name = self.get_name(current_name_index)
-                self.active_channels[channel_id]['nameNumber'] = self.get_next_index(current_name_index, len(self.names))
+                hadith = self.get_hadith(last_hadith_no)
+                current_chapter = self.get_next_index(last_hadith_no, len(self.messages))
+                name = self.get_name(last_name_no)
+                current_name_index = self.get_next_index(last_name_no, len(self.names))
 
                 await channel.send("> # Assalamu Alaikum Warahmatullahi Wabarakatuh, here is today's hadith and one of Allah's beautiful name\n")
                 await self.send_formatted_hadith(channel, hadith)
                 await self.send_formatted_name(channel, name)
 
-                await self.save_state()
+                save_channel_state(channel_id, current_chapter, current_name_index)
+
         except Exception as e:
             self.logger.error(f"Failed to send daily message: {e}")
         
@@ -137,18 +129,6 @@ class HadithBot(commands.Bot):
         """Wait for the bot to be ready before starting the task"""
         await self.wait_until_ready()
         self.logger.info("Daily message task is ready to start")
-
-    async def save_state(self):
-        """Save bot state to persistent storage"""
-        try:
-            state = {
-                'active_channels': self.active_channels,
-                'timestamp': datetime.now().isoformat()
-            }
-            with open('state.json', 'w') as f:
-                json.dump(state, f)
-        except Exception as e:
-            self.logger.error(f"Failed to save state: {e}")
 
     def get_hadith(self, chapter: int) -> Optional[HadithChapter]:
         """Get hadith by chapter number with validation"""
@@ -241,11 +221,7 @@ class HadithCommands(app_commands.Group):
     @app_commands.describe(start_name="The number of the name you want to start with")
     async def setup(self, interaction: discord.Interaction, channel_id: str, start_chapter: int, start_name: int):
         await interaction.response.defer()
-        self.bot.active_channels[channel_id] = {
-            'chapterNumber': start_chapter,
-            'nameNumber': start_name
-        }
-        await self.bot.save_state()
+        save_channel_state(channel_id, start_chapter, start_name)
         await interaction.followup.send(f"Messages will now be sent to the channel with ID {channel_id}.")
         
 
@@ -253,13 +229,18 @@ class HadithCommands(app_commands.Group):
     @app_commands.describe(channel_id="The ID of the channel where you want to stop sending messages")
     async def stop(self, interaction: discord.Interaction, channel_id: str):
         await interaction.response.defer()
-        if channel_id in self.bot.active_channels:
-            del self.bot.active_channels[channel_id]
-            await self.bot.save_state()
-            await interaction.followup.send("Messages will no longer be sent to this channel.")
-        else:
-            await interaction.followup.send("This channel is not currently sending messages.")
+        remove_channel_state(channel_id)
+        await interaction.followup.send("Messages will no longer be sent to this channel.")
 
+
+    @app_commands.command(name="list")
+    async def list(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        channels = get_channels()
+        await interaction.followup.send(f"Channels: {channels}")
+        for channel in channels.data:
+            c = self.bot.get_channel(int(channel['channel_id']))
+            await interaction.followup.send(f"Channel ID: {c.name}, Last Hadith No: {channel['last_hadith_no']}, Last Name No: {channel['last_name_no']}")
 def main():
     load_dotenv()
     bot = HadithBot()
