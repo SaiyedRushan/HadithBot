@@ -233,14 +233,14 @@ class HadithCommands(app_commands.Group):
         await interaction.followup.send("Messages will no longer be sent to this channel.")
 
 
-    @app_commands.command(name="list")
-    async def list(self, interaction: discord.Interaction):
-        await interaction.response.defer()
-        channels = get_channels()
-        await interaction.followup.send(f"Channels: {channels}")
-        for channel in channels.data:
-            c = self.bot.get_channel(int(channel['channel_id']))
-            await interaction.followup.send(f"Channel ID: {c.name}, Last Hadith No: {channel['last_hadith_no']}, Last Name No: {channel['last_name_no']}")
+    # @app_commands.command(name="list")
+    # async def list(self, interaction: discord.Interaction):
+    #     await interaction.response.defer()
+    #     channels = get_channels()
+    #     await interaction.followup.send(f"Channels: {channels}")
+    #     for channel in channels.data:
+    #         c = self.bot.get_channel(int(channel['channel_id']))
+    #         await interaction.followup.send(f"Channel ID: {c.name}, Last Hadith No: {channel['last_hadith_no']}, Last Name No: {channel['last_name_no']}")
 def main():
     load_dotenv()
     bot = HadithBot()
