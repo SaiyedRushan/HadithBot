@@ -12,7 +12,7 @@ def save_channel_state(channel_id: str, last_hadith_no: int, last_name_no: int):
         "channel_id": channel_id,
         "last_hadith_no": last_hadith_no,
         "last_name_no": last_name_no
-    }).execute()
+    }, on_conflict="channel_id" ).execute()
 
 
 def get_channels():
