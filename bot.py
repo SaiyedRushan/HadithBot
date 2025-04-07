@@ -69,8 +69,8 @@ class HadithBot(commands.Bot):
                     ephemeral=True
                 )
 
-    # @tasks.loop(time=time(hour=18, tzinfo=ZoneInfo("America/Toronto")))
-    @tasks.loop(seconds=10)
+    # @tasks.loop(seconds=10)
+    @tasks.loop(time=time(hour=18, tzinfo=ZoneInfo("America/Toronto")))
     async def send_daily_message(self):
         """Loops through the active channels and sends daily messages"""
         try:
