@@ -100,9 +100,9 @@ class HadithBot(commands.Bot):
                     last_hadith_no += 1
 
                 # get name and send message
-                name = self.get_name(last_name_no)
-                current_name_index = self.get_next_index(last_name_no, len(self.names), 1)
-                await self.send_formatted_name(channel, name)
+                names = self.get_names(last_name_no, 3)
+                current_name_index = self.get_next_index(last_name_no, len(self.names), 3)
+                await self.send_formatted_name(channel, names)
 
                 # get hadith for the given hadith number, book number, chapter number and send message
                 hadith = get_hadith_by_hadith_no(last_hadith_no, last_book_no, last_chapter_no, 3)
@@ -123,10 +123,10 @@ class HadithBot(commands.Bot):
         await self.wait_until_ready()
         self.logger.info("Daily message task is ready to start")
 
-    def get_name(self, number: int) -> Optional[Name]:
+    def get_names(self, number: int, count: int = 1) -> Optional[List[Name]]:
         """Get name by number with validation"""
         if 1 <= number <= len(self.names):
-            return self.names[number - 1]
+            return self.names[number - 1:number + count - 1]
         return None
 
     @staticmethod
@@ -142,12 +142,13 @@ class HadithBot(commands.Bot):
         for message in formatted_messages:
             await channel.send(message)
 
-    async def send_formatted_name(self, channel: discord.TextChannel, name: Name):
-        """Send formatted name message"""
-        if not name:
+    async def send_formatted_name(self, channel: discord.TextChannel, names: List[Name]):
+        """Send formatted name messages for multiple names"""
+        if not names:
             return
-        formatted_message = getNameFormattedMessage(name)   
-        await channel.send(formatted_message)
+        for name in names:
+            formatted_message = getNameFormattedMessage(name)
+            await channel.send(formatted_message)
 
 
 # Command group for better organization
@@ -184,24 +185,43 @@ class HadithCommands(app_commands.Group):
 
     @app_commands.command(name="random_name")
     async def random_name(self, interaction: discord.Interaction):
-        name = self.bot.get_name(random.randint(1, len(self.bot.names)))
-        await interaction.response.defer()
-        await self.bot.send_formatted_name(interaction.channel, name)
-        await interaction.followup.send("Here is one of Allah's beautiful names", ephemeral=True)
-
-
-    @app_commands.command(name="specific_name")
-    @app_commands.describe(number="The number of the name")
-    async def specific_name(self, interaction: discord.Interaction, number: int):
-        name = self.bot.get_name(number)
-        if not name:
+        names = self.bot.get_names(random.randint(1, len(self.bot.names)), 1)
+        if not names:
             await interaction.response.send_message(
                 f"Invalid name number. Please choose between 1 and {len(self.bot.names)}",
                 ephemeral=True
             )
             return
         await interaction.response.defer()
-        await self.bot.send_formatted_name(interaction.channel, name)
+        await self.bot.send_formatted_name(interaction.channel, names)
+        await interaction.followup.send("Here is one of Allah's beautiful names", ephemeral=True)
+
+    @app_commands.command(name="specific_names")
+    @app_commands.describe(number="The starting number of the names")
+    async def specific_names(self, interaction: discord.Interaction, number: int):
+        names = self.bot.get_names(number, 3)
+        if not names:
+            await interaction.response.send_message(
+                f"Invalid name number. Please choose between 1 and {len(self.bot.names)}",
+                ephemeral=True
+            )
+            return
+        await interaction.response.defer()
+        await self.bot.send_formatted_name(interaction.channel, names)
+        await interaction.followup.send("Here are three of Allah's beautiful names", ephemeral=True)
+
+    @app_commands.command(name="specific_name")
+    @app_commands.describe(number="The number of the name")
+    async def specific_name(self, interaction: discord.Interaction, number: int):
+        names = self.bot.get_names(number, 1)
+        if not names:
+            await interaction.response.send_message(
+                f"Invalid name number. Please choose between 1 and {len(self.bot.names)}",
+                ephemeral=True
+            )
+            return
+        await interaction.response.defer()
+        await self.bot.send_formatted_name(interaction.channel, names)
         await interaction.followup.send("Here is the name you requested", ephemeral=True)
 
     @app_commands.command(name="setup")
