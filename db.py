@@ -52,7 +52,8 @@ def get_random_hadith():
     res = (
         supabase.table("hadiths")
         .select("*, chapters(*), books_metadata(*)")
-        .not_.is_("english_narrator", None)
+        .neq("english_narrator", "")
+        .neq("english_text", "")
         .gt("id", random_id)
         .order("id")
         .limit(1)

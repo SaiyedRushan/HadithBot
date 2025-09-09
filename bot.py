@@ -16,6 +16,7 @@ from utils import *
 class HadithBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.default()
+        intents.message_content = True
         super().__init__(command_prefix="!", intents=intents)
 
         self.names: List[Name] = []
@@ -327,12 +328,21 @@ def main():
 
     bot = HadithBot()
     bot.tree.add_command(HadithCommands(bot))
+    discord_token = os.getenv("DISCORD_TOKEN")
 
-    if os.getenv("DISCORD_TOKEN") is None:
+    if discord_token is None:
         raise Exception("DISCORD_TOKEN is not set")
 
+    @bot.event
+    async def on_ready():
+        print(f"Logged in as {bot.user}")
+
+    @bot.command()
+    async def ping(ctx):
+        await ctx.send("Pong!")
+
     try:
-        bot.run(os.getenv("DISCORD_TOKEN") or "", log_handler=None)
+        bot.run(discord_token or "", log_handler=None)
     except Exception as e:
         logging.error(f"Failed to start bot: {e}")
         raise
