@@ -141,7 +141,7 @@ class HadithBot(commands.Bot):
     async def before_daily_message(self):
         """Wait for the bot to be ready before starting the task"""
         await self.wait_until_ready()
-        self.logger.info("Daily message task is ready to start")
+        self.logger.info("\nDaily message task is ready to start\n")
 
     def get_names(self, number: int, count: int = 1) -> Optional[List[Name]]:
         """Get name by number with validation"""
@@ -332,14 +332,6 @@ def main():
 
     if discord_token is None:
         raise Exception("DISCORD_TOKEN is not set")
-
-    @bot.event
-    async def on_ready():
-        print(f"Logged in as {bot.user}")
-
-    @bot.command()
-    async def ping(ctx):
-        await ctx.send("Pong!")
 
     try:
         bot.run(discord_token or "", log_handler=None)
