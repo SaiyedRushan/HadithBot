@@ -90,20 +90,11 @@ class HadithBot(commands.Bot):
                     self.logger.error(f"Channel {channel_id} not found")
                     continue
 
-                retryCount = 0
-                while not check_hadith_exists(
-                    last_hadith_no, last_book_no, last_chapter_no
-                ):
-                    retryCount += 1
-                    if retryCount > 3:
-                        self.logger.error(
-                            f"Hadith {last_hadith_no} not found, moving to next chapter {last_chapter_no}"
-                        )
-                        last_chapter_no += 1
-                        last_hadith_no = 1
-                        break
-                    self.logger.error(f"Hadith {last_hadith_no} not found, retrying...")
-                    last_hadith_no += 1
+                last_hadith_no, last_book_no, last_chapter_no = (
+                    find_valid_hadith_position(
+                        last_hadith_no, last_book_no, last_chapter_no
+                    )
+                )
 
                 # send greeting
                 await channel.send(
@@ -117,22 +108,33 @@ class HadithBot(commands.Bot):
                 await self.send_formatted_name(channel, names)
 
                 # get hadith for the given hadith number, book number, chapter number and send message
-                hadith = get_hadith_by_hadith_no(
+                hadith = get_hadith_in_same_chapter_and_book(
                     last_hadith_no, last_book_no, last_chapter_no, 3
                 )
-                for h in hadith:
-                    await self.send_formatted_hadith(channel, h)
-                    last_hadith_no = h["id_in_book"]
 
-                current_chapter = self.get_next_index(last_hadith_no, 7459, 1)
+                if hadith:
+                    for h in hadith:
+                        await self.send_formatted_hadith(channel, h)
+                        last_hadith_no = h["id_in_book"]
 
-                save_channel_state(
-                    channel_id,
-                    current_chapter,
-                    current_name_index,
-                    last_book_no,
-                    last_chapter_no,
-                )
+                    # Calculate next hadith position for tomorrow
+                    next_hadith_no = last_hadith_no + 1
+
+                    save_channel_state(
+                        channel_id,
+                        next_hadith_no,
+                        current_name_index,
+                        last_book_no,
+                        last_chapter_no,
+                    )
+
+                    self.logger.info(
+                        f"Successfully sent hadith from book {last_book_no}, chapter {last_chapter_no}, hadith {last_hadith_no}"
+                    )
+                else:
+                    self.logger.error(
+                        f"No hadith data returned for book {last_book_no}, chapter {last_chapter_no}, hadith {last_hadith_no}"
+                    )
 
         except Exception as e:
             self.logger.error(f"Failed to send daily message: {e}")
@@ -198,7 +200,7 @@ class HadithCommands(app_commands.Group):
         chapter_no: int,
         hadith_no: int,
     ):
-        hadith = get_hadith_by_hadith_no(hadith_no, book_no, chapter_no)
+        hadith = get_hadith_in_same_chapter_and_book(hadith_no, book_no, chapter_no)
         hadith = hadith[0]
         if not hadith:
             await interaction.response.send_message(

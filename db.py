@@ -62,7 +62,7 @@ def get_random_hadith():
     return res.data[0]
 
 
-def get_hadith_by_hadith_no(
+def get_hadith_in_same_chapter_and_book(
     hadith_no: int, book_no: int, chapter_no: int, count: int = 1
 ):
     res = (
@@ -71,7 +71,9 @@ def get_hadith_by_hadith_no(
         .gte("id_in_book", hadith_no)
         .eq("book_id", book_no)
         .eq("chapter_id", chapter_no)
-        .order("id")
+        .order("book_id")
+        .order("chapter_id")
+        .order("id_in_book")
         .limit(count)
         .execute()
     )
@@ -88,3 +90,98 @@ def check_hadith_exists(hadith_no: int, book_no: int, chapter_no: int):
         .execute()
     )
     return len(res.data) > 0
+
+
+def get_next_available_chapter(book_id: int, current_chapter_id: int):
+    res = (
+        supabase.table("chapters")
+        .select("id")
+        .eq("book_id", book_id)
+        .gt("id", current_chapter_id)
+        .order("id")
+        .limit(1)
+        .execute()
+    )
+    return res.data[0]["id"] if res.data else None
+
+
+def get_next_available_book(current_book_id: int):
+    res = (
+        supabase.table("books_metadata")
+        .select("id")
+        .gt("id", current_book_id)
+        .order("id")
+        .limit(1)
+        .execute()
+    )
+    return res.data[0]["id"] if res.data else None
+
+
+def find_valid_hadith_position(hadith_no: int, book_no: int, chapter_no: int):
+    print(
+        f"Checking if hadith {hadith_no} in book {book_no} chapter {chapter_no} is valid"
+    )
+    # Check if current position has a valid hadith
+    if check_hadith_exists(hadith_no, book_no, chapter_no):
+        print(
+            f"Current hadith valid: book {book_no}, chapter {chapter_no}, hadith {hadith_no}"
+        )
+        return hadith_no, book_no, chapter_no
+
+    print(f"Current hadith invalid: trying next hadith in current chapter")
+
+    next_valid_hadith = get_hadith_in_same_chapter_and_book(
+        hadith_no, book_no, chapter_no
+    )
+    if next_valid_hadith:
+        print(
+            f"Found next valid hadith: book {book_no} chapter {chapter_no} hadith {next_valid_hadith[0]['id_in_book']}"
+        )
+        book_no, chapter_no, hadith_no = (
+            next_valid_hadith[0]["book_id"],
+            next_valid_hadith[0]["chapter_id"],
+            next_valid_hadith[0]["id_in_book"],
+        )
+        return hadith_no, book_no, chapter_no
+
+    print(f"No next valid hadith found: trying next valid chapter")
+    next_valid_chapter = get_next_available_chapter(book_no, chapter_no)
+    if next_valid_chapter:
+        next_valid_hadith = get_hadith_in_same_chapter_and_book(  # first hadith in next valid chapter, same book
+            1, book_no, next_valid_chapter
+        )
+        if next_valid_hadith:
+            print(
+                f"Found next valid hadith in book {book_no} chapter {next_valid_chapter} hadith {next_valid_hadith[0]['id_in_book']}"
+            )
+            book_no, chapter_no, hadith_no = (
+                next_valid_hadith[0]["book_id"],
+                next_valid_hadith[0]["chapter_id"],
+                next_valid_hadith[0]["id_in_book"],
+            )
+            return hadith_no, book_no, chapter_no
+
+    print(f"No next valid chapter found: trying next valid book")
+    next_valid_book = get_next_available_book(book_no)
+    if next_valid_book:
+        next_valid_chapter = get_next_available_chapter(next_valid_book, 0) or 0
+        next_valid_hadith = get_hadith_in_same_chapter_and_book(
+            1, next_valid_book, next_valid_chapter
+        )  # first hadith in first chapter of next valid book
+        if next_valid_hadith:
+            print(
+                f"Found next valid hadith in book {next_valid_book} chapter {next_valid_hadith[0]['chapter_id']} hadith {next_valid_hadith[0]['id_in_book']}"
+            )
+            book_no, chapter_no, hadith_no = (
+                next_valid_hadith[0]["book_id"],
+                next_valid_hadith[0]["chapter_id"],
+                next_valid_hadith[0]["id_in_book"],
+            )
+            return hadith_no, book_no, chapter_no
+
+    print(f"No next valid book found: wrapping around to beginning")
+    book_no = 1
+    chapter_no = 0
+    hadith_no = 1
+
+    return hadith_no, book_no, chapter_no
