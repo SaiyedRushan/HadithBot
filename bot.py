@@ -307,7 +307,12 @@ class HadithCommands(app_commands.Group):
     ):
         await interaction.response.defer()
         save_channel_state(
-            channel_id, start_hadith_id, start_name, start_book_id, start_chapter_id
+            channel_id,
+            start_hadith_id,
+            start_name,
+            start_book_id,
+            start_chapter_id,
+            active=True,
         )
         await interaction.followup.send(
             f"Messages will now be sent to the channel with ID {channel_id}."

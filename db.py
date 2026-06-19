@@ -23,15 +23,21 @@ def save_channel_state(
     last_name_no: int,
     last_book_no: int,
     last_chapter_no: int,
+    active: Optional[bool] = None,
 ):
+    record = {
+        "channel_id": channel_id,
+        "last_hadith_no": last_hadith_no,
+        "last_name_no": last_name_no,
+        "last_book_id": last_book_no,
+        "last_chapter_id": last_chapter_no,
+    }
+    # Only touch `active` when explicitly given. The daily progress-save omits it
+    # so the upsert preserves the existing value; setup passes active=True.
+    if active is not None:
+        record["active"] = active
     supabase.table("discord_channel_state").upsert(
-        {
-            "channel_id": channel_id,
-            "last_hadith_no": last_hadith_no,
-            "last_name_no": last_name_no,
-            "last_book_id": last_book_no,
-            "last_chapter_id": last_chapter_no,
-        },
+        record,
         on_conflict="channel_id",
     ).execute()
 
