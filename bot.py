@@ -336,27 +336,6 @@ class HadithCommands(app_commands.Group):
             "Messages will no longer be sent to this channel."
         )
 
-    # @app_commands.command(name="list")
-    # async def list(self, interaction: discord.Interaction):
-    #     await interaction.response.defer()
-    #     channels = get_channels()
-    #     await interaction.followup.send(f"Channels: {channels}")
-    #     for channel in channels.data:
-    #         c = self.bot.get_channel(int(channel["channel_id"]))
-    #         await interaction.followup.send(
-    #             f"Channel ID: {c.name}, Last Hadith No: {channel['last_hadith_no']}, Last Name No: {channel['last_name_no']}"
-    #         )
-    #         next_hadith_no = self.bot.get_next_index(
-    #             channel["last_hadith_no"], len(self.bot.messages)
-    #         )
-    #         next_name_no = self.bot.get_next_index(
-    #             channel["last_name_no"], len(self.bot.names)
-    #         )
-    #         await interaction.followup.send(
-    #             f"Channel ID: {c.name}, Next hadith no: {next_hadith_no}, Next name no: {next_name_no}"
-    #         )
-    #         save_channel_state(channel["channel_id"], next_hadith_no, next_name_no)
-
 
 def main():
     load_dotenv()
