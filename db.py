@@ -1,6 +1,7 @@
 import os
 import random
 import re
+from typing import Optional
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
@@ -47,19 +48,49 @@ def remove_channel_state(channel_id: str):
     ).execute()
 
 
-def get_random_hadith():
-    random_id = random.randint(1, 50884)
-    res = (
+# Largest hadith id, cached on first use. The dataset is static, so it never
+# changes at runtime -- this avoids a hardcoded magic number and a second query
+# on every call.
+_max_hadith_id: Optional[int] = None
+
+
+def _get_max_hadith_id() -> int:
+    global _max_hadith_id
+    cached = _max_hadith_id
+    if cached is None:
+        res = (
+            supabase.table("hadiths")
+            .select("id")
+            .order("id", desc=True)
+            .limit(1)
+            .execute()
+        )
+        cached = int(res.data[0]["id"]) if res.data else 0
+        _max_hadith_id = cached
+    return cached
+
+
+def _random_hadith_query():
+    return (
         supabase.table("hadiths")
         .select("*, chapters(*), books_metadata(*)")
         .neq("english_narrator", "")
         .neq("english_text", "")
-        .gt("id", random_id)
         .order("id")
         .limit(1)
-        .execute()
     )
-    return res.data[0]
+
+
+def get_random_hadith():
+    max_id = _get_max_hadith_id()
+    if not max_id:
+        return None
+    random_id = random.randint(1, max_id)
+    res = _random_hadith_query().gte("id", random_id).execute()
+    if not res.data:
+        # random_id landed past the last hadith with non-empty text; wrap to the first.
+        res = _random_hadith_query().execute()
+    return res.data[0] if res.data else None
 
 
 def get_hadith_in_same_chapter_and_book(
