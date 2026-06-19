@@ -73,11 +73,6 @@ def run_bot_async():
         bot_instance = HadithBot()
         bot_instance.tree.add_command(HadithCommands(bot_instance))
 
-        # Add the ping command
-        @bot_instance.command()
-        async def ping(ctx):
-            await ctx.send("Pong!")
-
         @bot_instance.event
         async def on_ready():
             if bot_instance is not None:
