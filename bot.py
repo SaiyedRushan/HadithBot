@@ -90,13 +90,19 @@ class HadithBot(commands.Bot):
         """Loops through the active channels and sends daily messages"""
         try:
             channels = get_channels()
+        except Exception as e:
+            self.logger.error(f"Failed to fetch active channels: {e}")
+            return
 
-            for channel in channels.data:
-                channel_id = channel["channel_id"]
-                last_hadith_no = channel["last_hadith_no"]
-                last_name_no = channel["last_name_no"]
-                last_book_no = channel["last_book_id"]
-                last_chapter_no = channel["last_chapter_id"]
+        for channel_row in channels.data:
+            channel_id = channel_row["channel_id"]
+            # Isolate each channel so one failure (e.g. missing permissions)
+            # doesn't stop the broadcast to the remaining channels.
+            try:
+                last_hadith_no = channel_row["last_hadith_no"]
+                last_name_no = channel_row["last_name_no"]
+                last_book_no = channel_row["last_book_id"]
+                last_chapter_no = channel_row["last_chapter_id"]
 
                 channel = self.get_channel(int(channel_id))
                 if not channel:
@@ -148,9 +154,11 @@ class HadithBot(commands.Bot):
                     self.logger.error(
                         f"No hadith data returned for book {last_book_no}, chapter {last_chapter_no}, hadith {last_hadith_no}"
                     )
-
-        except Exception as e:
-            self.logger.error(f"Failed to send daily message: {e}")
+            except Exception as e:
+                self.logger.error(
+                    f"Failed to send daily message to channel {channel_id}: {e}",
+                    exc_info=True,
+                )
 
     @send_daily_message.before_loop
     async def before_daily_message(self):
