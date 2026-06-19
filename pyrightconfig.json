@@ -1,0 +1,9 @@
+{
+  "reportIndexIssue": "none",
+  "reportOptionalSubscript": "none",
+  "reportArgumentType": "none",
+  "reportCallIssue": "none",
+  "reportAssignmentType": "none",
+  "reportAttributeAccessIssue": "none",
+  "reportOperatorIssue": "none"
+}
