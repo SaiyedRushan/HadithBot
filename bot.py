@@ -242,9 +242,13 @@ class HadithCommands(app_commands.Group):
             "Here is the hadith you requested", ephemeral=True
         )
 
-    @app_commands.command(name="random_name")
-    async def random_name(self, interaction: discord.Interaction):
-        names = self.bot.get_names(random.randint(1, len(self.bot.names)), 1)
+    async def _send_names(
+        self,
+        interaction: discord.Interaction,
+        names: Optional[List[Name]],
+        success_message: str,
+    ):
+        """Validate the requested names, then send them to the channel."""
         if not names:
             await interaction.response.send_message(
                 f"Invalid name number. Please choose between 1 and {len(self.bot.names)}",
@@ -253,40 +257,29 @@ class HadithCommands(app_commands.Group):
             return
         await interaction.response.defer()
         await self.bot.send_formatted_name(interaction.channel, names)
-        await interaction.followup.send(
-            "Here is one of Allah's beautiful names", ephemeral=True
+        await interaction.followup.send(success_message, ephemeral=True)
+
+    @app_commands.command(name="random_name")
+    async def random_name(self, interaction: discord.Interaction):
+        names = self.bot.get_names(random.randint(1, len(self.bot.names)), 1)
+        await self._send_names(
+            interaction, names, "Here is one of Allah's beautiful names"
         )
 
     @app_commands.command(name="specific_names")
     @app_commands.describe(number="The starting number of the names")
     async def specific_names(self, interaction: discord.Interaction, number: int):
         names = self.bot.get_names(number, 3)
-        if not names:
-            await interaction.response.send_message(
-                f"Invalid name number. Please choose between 1 and {len(self.bot.names)}",
-                ephemeral=True,
-            )
-            return
-        await interaction.response.defer()
-        await self.bot.send_formatted_name(interaction.channel, names)
-        await interaction.followup.send(
-            "Here are three of Allah's beautiful names", ephemeral=True
+        await self._send_names(
+            interaction, names, "Here are three of Allah's beautiful names"
         )
 
     @app_commands.command(name="specific_name")
     @app_commands.describe(number="The number of the name")
     async def specific_name(self, interaction: discord.Interaction, number: int):
         names = self.bot.get_names(number, 1)
-        if not names:
-            await interaction.response.send_message(
-                f"Invalid name number. Please choose between 1 and {len(self.bot.names)}",
-                ephemeral=True,
-            )
-            return
-        await interaction.response.defer()
-        await self.bot.send_formatted_name(interaction.channel, names)
-        await interaction.followup.send(
-            "Here is the name you requested", ephemeral=True
+        await self._send_names(
+            interaction, names, "Here is the name you requested"
         )
 
     @app_commands.command(name="setup")
