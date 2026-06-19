@@ -28,13 +28,6 @@ class HadithBot(commands.Bot):
         super().__init__(command_prefix="!", intents=intents)
 
         self.names: List[Name] = []
-
-        # Setup logging
-        logging.basicConfig(
-            level=logging.INFO,
-            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            handlers=[logging.StreamHandler()],
-        )
         self.logger = logging.getLogger("HadithBot")
 
         # Setup error handling
@@ -332,6 +325,11 @@ class HadithCommands(app_commands.Group):
 
 def main():
     load_dotenv()
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[logging.StreamHandler()],
+    )
 
     bot = HadithBot()
     bot.tree.add_command(HadithCommands(bot))
