@@ -214,13 +214,13 @@ class HadithCommands(app_commands.Group):
         hadith_no: int,
     ):
         hadith = get_hadith_in_same_chapter_and_book(hadith_no, book_no, chapter_no)
-        hadith = hadith[0]
         if not hadith:
             await interaction.response.send_message(
-                f"Invalid hadith number. Please choose between 1 and 7459",
+                "No hadith found for that book, chapter, and hadith combination.",
                 ephemeral=True,
             )
             return
+        hadith = hadith[0]
         await interaction.response.defer()
         await self.bot.send_formatted_hadith(interaction.channel, hadith)
         await interaction.followup.send(
