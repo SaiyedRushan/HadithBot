@@ -15,7 +15,7 @@ services:
       - ./data:/app/data:ro
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8080/',timeout=5).getcode()==200 else 1)"]
       interval: 30s
       timeout: 10s
       retries: 3

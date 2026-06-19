@@ -27,9 +27,9 @@ USER app
 # Expose port
 EXPOSE 8080
 
-# Health check
+# Health check (python:3.11-slim has no curl, so use stdlib urllib)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/ || exit 1
+    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8080/',timeout=5).getcode()==200 else 1)" || exit 1
 
 # Run the application
 CMD ["gunicorn", "-w", "1", "-b", "0.0.0.0:8080", "server:app"]
