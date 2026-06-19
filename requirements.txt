@@ -4,4 +4,4 @@ flask>=2.0.0
 gunicorn>=20.0.0
 aiofiles>=0.8.0
 tzdata>=2022.0
-supabase>=1.0.0
+supabase>=2.31.0
