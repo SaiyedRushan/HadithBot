@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HadithBot — Daily hadith & the 99 names of Allah for Discord</title>
+    <meta
+      name="description"
+      content="HadithBot delivers a daily hadith and the 99 beautiful names of Allah to your Discord server, and answers on-demand slash commands. Free and open source."
+    />
+    <style>
+      :root {
+        --emerald: #0e5c3f;
+        --emerald-deep: #0a3f2c;
+        --emerald-soft: #137a52;
+        --gold: #c19a3e;
+        --gold-soft: #d8b75f;
+        --cream: #fbf8f1;
+        --cream-card: #ffffff;
+        --ink: #1b241f;
+        --ink-soft: #4d5a52;
+        --line: #e7e2d6;
+        --radius: 16px;
+        --shadow: 0 1px 2px rgba(14, 92, 63, 0.04),
+          0 12px 32px -12px rgba(14, 92, 63, 0.18);
+        --maxw: 1080px;
+        --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+          "Times New Roman", serif;
+        --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        font-family: var(--sans);
+        color: var(--ink);
+        background: var(--cream);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: var(--emerald);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: var(--serif);
+        line-height: 1.15;
+        color: var(--ink);
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .wrap {
+        max-width: var(--maxw);
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+      .arabic {
+        font-family: var(--serif);
+        direction: rtl;
+      }
+
+      /* ---------- buttons ---------- */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 13px 24px;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 1rem;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease,
+          background 0.15s ease;
+        white-space: nowrap;
+      }
+      .btn:hover {
+        text-decoration: none;
+        transform: translateY(-1px);
+      }
+      .btn-primary {
+        background: var(--emerald);
+        color: #fff;
+        box-shadow: 0 8px 20px -8px rgba(14, 92, 63, 0.6);
+      }
+      .btn-primary:hover {
+        background: var(--emerald-soft);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--emerald);
+        border-color: var(--line);
+      }
+      .btn-ghost:hover {
+        border-color: var(--emerald);
+        background: rgba(14, 92, 63, 0.04);
+      }
+
+      /* ---------- header ---------- */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(251, 248, 241, 0.85);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--line);
+      }
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 68px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        font-family: var(--serif);
+        font-size: 1.28rem;
+        font-weight: 600;
+        color: var(--ink);
+      }
+      .brand:hover {
+        text-decoration: none;
+      }
+      .mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        background: linear-gradient(140deg, var(--emerald), var(--emerald-deep));
+        color: var(--gold-soft);
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        box-shadow: inset 0 0 0 1px rgba(216, 183, 95, 0.35);
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+      }
+      .nav-links a.lnk {
+        color: var(--ink-soft);
+        font-weight: 500;
+        font-size: 0.95rem;
+      }
+      .nav-links a.lnk:hover {
+        color: var(--emerald);
+        text-decoration: none;
+      }
+      @media (max-width: 760px) {
+        .nav-links .lnk {
+          display: none;
+        }
+      }
+
+      /* ---------- hero ---------- */
+      .hero {
+        position: relative;
+        overflow: hidden;
+        background: radial-gradient(
+            1200px 500px at 80% -10%,
+            rgba(193, 154, 62, 0.1),
+            transparent 60%
+          ),
+          radial-gradient(
+            900px 500px at 0% 0%,
+            rgba(14, 92, 63, 0.07),
+            transparent 55%
+          );
+      }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 48px;
+        align-items: center;
+        padding: 72px 0 84px;
+      }
+      @media (max-width: 880px) {
+        .hero-grid {
+          grid-template-columns: 1fr;
+          padding: 48px 0 56px;
+          gap: 36px;
+        }
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--emerald);
+        background: rgba(14, 92, 63, 0.08);
+        padding: 6px 14px;
+        border-radius: 999px;
+      }
+      .hero h1 {
+        font-size: clamp(2.1rem, 5vw, 3.3rem);
+        margin: 20px 0 16px;
+      }
+      .hero p.lead {
+        font-size: 1.18rem;
+        color: var(--ink-soft);
+        max-width: 32ch;
+        margin: 0 0 30px;
+      }
+      .hero-cta {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .hero-note {
+        margin-top: 18px;
+        font-size: 0.9rem;
+        color: var(--ink-soft);
+      }
+      .bismillah {
+        font-size: 1.5rem;
+        color: var(--emerald);
+        margin-bottom: 6px;
+      }
+
+      /* message preview card */
+      .preview {
+        background: #36393f;
+        border-radius: var(--radius);
+        padding: 20px 20px 22px;
+        box-shadow: 0 30px 60px -25px rgba(10, 63, 44, 0.5);
+        color: #dcddde;
+        font-size: 0.92rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .preview .msg {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      .preview .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(140deg, var(--emerald), var(--emerald-deep));
+        color: var(--gold-soft);
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        flex: none;
+      }
+      .preview .uname {
+        color: #fff;
+        font-weight: 600;
+      }
+      .preview .tag {
+        background: var(--emerald-soft);
+        color: #fff;
+        font-size: 0.62rem;
+        font-weight: 700;
+        padding: 1px 5px;
+        border-radius: 4px;
+        margin-left: 6px;
+        vertical-align: middle;
+        letter-spacing: 0.03em;
+      }
+      .preview .time {
+        color: #a3a6aa;
+        font-size: 0.72rem;
+        margin-left: 8px;
+      }
+      .preview .greeting {
+        color: #fff;
+        font-weight: 600;
+        margin: 10px 0 6px;
+      }
+      .preview .block {
+        border-left: 3px solid var(--gold);
+        padding: 6px 0 6px 12px;
+        margin: 10px 0;
+        color: #e6e7e8;
+      }
+      .preview .block b {
+        color: #fff;
+      }
+      .preview .label {
+        color: var(--gold-soft);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+      }
+
+      /* ---------- sections ---------- */
+      section {
+        padding: 76px 0;
+      }
+      .section-head {
+        text-align: center;
+        max-width: 640px;
+        margin: 0 auto 48px;
+      }
+      .section-head h2 {
+        font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+        margin: 0 0 12px;
+      }
+      .section-head p {
+        color: var(--ink-soft);
+        font-size: 1.08rem;
+        margin: 0;
+      }
+      .kicker {
+        color: var(--gold);
+        font-weight: 700;
+        font-size: 0.82rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 10px;
+      }
+      .alt {
+        background: linear-gradient(180deg, #fff, #fcfaf4);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+
+      /* features */
+      .features {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 22px;
+      }
+      @media (max-width: 880px) {
+        .features {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media (max-width: 560px) {
+        .features {
+          grid-template-columns: 1fr;
+        }
+      }
+      .card {
+        background: var(--cream-card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 26px;
+        box-shadow: var(--shadow);
+      }
+      .card .ico {
+        width: 44px;
+        height: 44px;
+        border-radius: 11px;
+        background: rgba(14, 92, 63, 0.09);
+        display: grid;
+        place-items: center;
+        font-size: 22px;
+        margin-bottom: 16px;
+      }
+      .card h3 {
+        font-size: 1.18rem;
+        margin: 0 0 8px;
+      }
+      .card p {
+        margin: 0;
+        color: var(--ink-soft);
+        font-size: 0.97rem;
+      }
+
+      /* steps */
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 22px;
+        counter-reset: step;
+      }
+      @media (max-width: 760px) {
+        .steps {
+          grid-template-columns: 1fr;
+        }
+      }
+      .step {
+        position: relative;
+        background: var(--cream-card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 30px 26px 26px;
+        box-shadow: var(--shadow);
+      }
+      .step .num {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--emerald);
+        color: #fff;
+        font-family: var(--serif);
+        font-size: 1.2rem;
+        font-weight: 600;
+        display: grid;
+        place-items: center;
+        margin-bottom: 16px;
+        box-shadow: 0 6px 16px -6px rgba(14, 92, 63, 0.6);
+      }
+      .step h3 {
+        font-size: 1.16rem;
+        margin: 0 0 8px;
+      }
+      .step p {
+        margin: 0;
+        color: var(--ink-soft);
+        font-size: 0.97rem;
+      }
+      .step code,
+      .inline-code {
+        font-family: "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+        background: rgba(14, 92, 63, 0.08);
+        color: var(--emerald-deep);
+        padding: 1px 7px;
+        border-radius: 6px;
+        font-size: 0.86em;
+      }
+      .steps-cta {
+        text-align: center;
+        margin-top: 40px;
+      }
+
+      /* code/command snippet */
+      .snippet {
+        position: relative;
+        background: var(--emerald-deep);
+        color: #eafff5;
+        border-radius: 12px;
+        padding: 16px 18px;
+        font-family: "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+        font-size: 0.9rem;
+        overflow-x: auto;
+        margin: 16px 0;
+      }
+      .snippet .copy {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        border: none;
+        border-radius: 7px;
+        padding: 5px 10px;
+        font-size: 0.78rem;
+        cursor: pointer;
+        font-family: var(--sans);
+      }
+      .snippet .copy:hover {
+        background: rgba(255, 255, 255, 0.22);
+      }
+
+      /* config layout */
+      .config-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 36px;
+        align-items: start;
+      }
+      @media (max-width: 820px) {
+        .config-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .config-block h3 {
+        font-size: 1.25rem;
+        margin: 0 0 6px;
+      }
+      .config-block > p {
+        color: var(--ink-soft);
+        margin: 0 0 4px;
+      }
+      .opt-list {
+        list-style: none;
+        padding: 0;
+        margin: 10px 0 0;
+      }
+      .opt-list li {
+        padding: 12px 0;
+        border-top: 1px solid var(--line);
+        font-size: 0.96rem;
+      }
+      .opt-list li b {
+        color: var(--emerald-deep);
+      }
+      .callout {
+        background: rgba(193, 154, 62, 0.1);
+        border: 1px solid rgba(193, 154, 62, 0.3);
+        border-radius: 12px;
+        padding: 14px 16px;
+        font-size: 0.92rem;
+        color: var(--ink);
+        margin-top: 18px;
+      }
+
+      /* commands table */
+      .table-scroll {
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        background: #fff;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 560px;
+        font-size: 0.95rem;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      thead th {
+        background: var(--emerald);
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+      td code {
+        font-family: "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+        background: rgba(14, 92, 63, 0.08);
+        color: var(--emerald-deep);
+        padding: 2px 7px;
+        border-radius: 6px;
+        font-size: 0.85em;
+        white-space: nowrap;
+      }
+      .pill {
+        font-size: 0.74rem;
+        font-weight: 700;
+        padding: 2px 9px;
+        border-radius: 999px;
+        white-space: nowrap;
+      }
+      .pill-all {
+        background: rgba(14, 92, 63, 0.1);
+        color: var(--emerald-deep);
+      }
+      .pill-mod {
+        background: rgba(193, 154, 62, 0.16);
+        color: #8a6a1c;
+      }
+
+      /* faq */
+      .faq {
+        max-width: 760px;
+        margin: 0 auto;
+      }
+      details {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 4px 20px;
+        margin-bottom: 12px;
+        box-shadow: var(--shadow);
+      }
+      summary {
+        cursor: pointer;
+        font-weight: 600;
+        padding: 14px 0;
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1.04rem;
+      }
+      summary::-webkit-details-marker {
+        display: none;
+      }
+      summary::after {
+        content: "+";
+        color: var(--emerald);
+        font-size: 1.4rem;
+        font-weight: 400;
+        transition: transform 0.2s;
+      }
+      details[open] summary::after {
+        transform: rotate(45deg);
+      }
+      details p {
+        margin: 0 0 16px;
+        color: var(--ink-soft);
+      }
+
+      /* final cta */
+      .final {
+        background: linear-gradient(150deg, var(--emerald), var(--emerald-deep));
+        color: #fff;
+        text-align: center;
+        border-radius: 24px;
+        padding: 60px 28px;
+        margin: 0 auto;
+        position: relative;
+        overflow: hidden;
+      }
+      .final::before {
+        content: "﷽";
+        position: absolute;
+        font-size: 12rem;
+        opacity: 0.06;
+        right: -10px;
+        top: -40px;
+        color: var(--gold-soft);
+      }
+      .final h2 {
+        color: #fff;
+        font-size: clamp(1.8rem, 4vw, 2.6rem);
+        margin: 0 0 14px;
+      }
+      .final p {
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 1.1rem;
+        max-width: 46ch;
+        margin: 0 auto 28px;
+        position: relative;
+      }
+      .final .btn-primary {
+        background: var(--gold);
+        color: var(--emerald-deep);
+      }
+      .final .btn-primary:hover {
+        background: var(--gold-soft);
+      }
+
+      /* footer */
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 36px 0;
+        color: var(--ink-soft);
+        font-size: 0.92rem;
+      }
+      .foot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+      .foot-links {
+        display: flex;
+        gap: 22px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap nav">
+        <a href="#top" class="brand">
+          <span class="mark">☾</span>
+          HadithBot
+        </a>
+        <nav class="nav-links">
+          <a class="lnk" href="#features">Features</a>
+          <a class="lnk" href="#add">Add it</a>
+          <a class="lnk" href="#configure">Configure</a>
+          <a class="lnk" href="#commands">Commands</a>
+          <a
+            class="lnk"
+            href="https://github.com/SaiyedRushan/HadithBot"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >
+          <a class="btn btn-primary invite-btn" href="#">Add to Discord</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- HERO -->
+      <section class="hero" style="padding: 0">
+        <div class="wrap hero-grid">
+          <div>
+            <span class="eyebrow">☾ Free &amp; open source Discord bot</span>
+            <h1>A daily hadith &amp; the 99 names of Allah, in your server.</h1>
+            <p class="lead">
+              HadithBot posts a hadith and Allah's beautiful names to your
+              channel every day — and answers on-demand whenever you ask.
+            </p>
+            <div class="hero-cta">
+              <a class="btn btn-primary invite-btn" href="#"
+                >☾ Add to Discord</a
+              >
+              <a class="btn btn-ghost" href="#add">See how it works</a>
+            </div>
+            <p class="hero-note">
+              Sent automatically at <b>6:00&nbsp;PM Toronto time</b> · No setup
+              fees · Takes 1 minute
+            </p>
+          </div>
+
+          <!-- Discord message preview -->
+          <div class="preview" aria-hidden="true">
+            <div class="bismillah arabic" style="color: var(--gold-soft); text-align: center; margin-bottom: 14px;">
+              بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+            </div>
+            <div class="msg">
+              <div class="avatar">☾</div>
+              <div>
+                <div>
+                  <span class="uname">HadithBot</span><span class="tag">APP</span
+                  ><span class="time">Today at 6:00 PM</span>
+                </div>
+                <div class="greeting">
+                  Assalamu Alaikum — here is today's hadith and one of Allah's
+                  beautiful names 🌙
+                </div>
+                <div class="block">
+                  <div class="label">Name of Allah</div>
+                  <b>Ar-Rahman</b> — The Most Compassionate
+                </div>
+                <div class="block">
+                  <div class="label">Hadith of the day</div>
+                  "The best among you are those who have the best manners and
+                  character." <b>— Sahih al-Bukhari</b>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FEATURES -->
+      <section id="features">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="kicker">What it does</span>
+            <h2>Quiet, consistent reminders — your way</h2>
+            <p>
+              Set it once and it runs itself. Every option is tunable per
+              channel.
+            </p>
+          </div>
+          <div class="features">
+            <div class="card">
+              <div class="ico">🕌</div>
+              <h3>Daily automatically</h3>
+              <p>
+                A fresh hadith and Allah's names land in your channel every day
+                at 6:00 PM Toronto time — no reminders needed.
+              </p>
+            </div>
+            <div class="card">
+              <div class="ico">⚙️</div>
+              <h3>You set the amount</h3>
+              <p>
+                Choose how many hadiths and how many of the 99 names go out each
+                day, from 1 to 10 — different for every channel.
+              </p>
+            </div>
+            <div class="card">
+              <div class="ico">📿</div>
+              <h3>The 99 names</h3>
+              <p>
+                Works steadily through the beautiful names of Allah, each with
+                its meaning, so the whole list is covered over time.
+              </p>
+            </div>
+            <div class="card">
+              <div class="ico">💬</div>
+              <h3>On-demand commands</h3>
+              <p>
+                Ask for a random hadith, a specific one by book and chapter, or
+                any of Allah's names — instantly, any time.
+              </p>
+            </div>
+            <div class="card">
+              <div class="ico"># </div>
+              <h3>Multiple channels</h3>
+              <p>
+                Run it in as many channels as you like, each picking up right
+                where it left off with its own settings.
+              </p>
+            </div>
+            <div class="card">
+              <div class="ico">📖</div>
+              <h3>Start anywhere</h3>
+              <p>
+                Begin from any book, chapter, or hadith — and re-running setup
+                never loses a channel's place.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ADD IT -->
+      <section id="add" class="alt">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="kicker">Get started</span>
+            <h2>Add it to your server in 3 steps</h2>
+            <p>About a minute, start to finish.</p>
+          </div>
+          <div class="steps">
+            <div class="step">
+              <div class="num">1</div>
+              <h3>Click “Add to Discord”</h3>
+              <p>
+                Hit the button below. You'll be taken to Discord's official
+                authorization screen — no password is ever shared with the bot.
+              </p>
+            </div>
+            <div class="step">
+              <div class="num">2</div>
+              <h3>Pick your server</h3>
+              <p>
+                Choose the server from the dropdown and press
+                <span class="inline-code">Authorize</span>. You'll need the
+                <b>Manage Server</b> permission on that server.
+              </p>
+            </div>
+            <div class="step">
+              <div class="num">3</div>
+              <h3>Run setup in a channel</h3>
+              <p>
+                Go to the channel you want, type
+                <span class="inline-code">/bismillah setup</span>, and you're
+                live. Daily messages start the same evening.
+              </p>
+            </div>
+          </div>
+          <div class="steps-cta">
+            <a class="btn btn-primary invite-btn" href="#">☾ Add to Discord</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONFIGURE -->
+      <section id="configure">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="kicker">Make it yours</span>
+            <h2>Configure it</h2>
+            <p>
+              All configuration happens with one command:
+              <span class="inline-code">/bismillah setup</span>. You need the
+              <b>Manage Channels</b> permission to use it.
+            </p>
+          </div>
+
+          <div class="config-grid">
+            <div class="config-block">
+              <h3>Turn it on in a channel</h3>
+              <p>
+                Run this inside the channel where you want the daily messages:
+              </p>
+              <div class="snippet">
+                <button class="copy">Copy</button
+                ><span class="code-text">/bismillah setup</span>
+              </div>
+              <p>
+                That's it — it starts from the very beginning with 3 hadiths and
+                3 names each day. Want to customize? Add any of these options:
+              </p>
+              <ul class="opt-list">
+                <li>
+                  <b>hadiths_per_day</b> — how many hadiths to send daily (1–10,
+                  default 3)
+                </li>
+                <li>
+                  <b>names_per_day</b> — how many of Allah's names to send daily
+                  (1–10, default 3)
+                </li>
+                <li>
+                  <b>channel</b> — target a different channel (defaults to the
+                  one you're in)
+                </li>
+                <li>
+                  <b>start_book_id / start_chapter_id / start_hadith_id</b> —
+                  begin from a specific place
+                </li>
+                <li>
+                  <b>start_name</b> — begin the names from a specific number
+                </li>
+              </ul>
+            </div>
+
+            <div class="config-block">
+              <h3>Examples</h3>
+              <p>Send 5 hadiths and 2 names every day:</p>
+              <div class="snippet">
+                <button class="copy">Copy</button
+                ><span class="code-text"
+                  >/bismillah setup hadiths_per_day:5 names_per_day:2</span
+                >
+              </div>
+
+              <p>Change just the count — keeps the channel's place:</p>
+              <div class="snippet">
+                <button class="copy">Copy</button
+                ><span class="code-text">/bismillah setup hadiths_per_day:1</span
+                >
+              </div>
+
+              <p>See what's set up across your server:</p>
+              <div class="snippet">
+                <button class="copy">Copy</button
+                ><span class="code-text">/bismillah status</span>
+              </div>
+
+              <p>Stop daily messages in a channel:</p>
+              <div class="snippet">
+                <button class="copy">Copy</button
+                ><span class="code-text">/bismillah stop</span>
+              </div>
+
+              <div class="callout">
+                💡 Re-running <b>setup</b> edits the existing config. Anything
+                you leave blank keeps its current value — so changing the daily
+                count never resets a channel's reading progress.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- COMMANDS -->
+      <section id="commands" class="alt">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="kicker">Reference</span>
+            <h2>Every command</h2>
+            <p>
+              All commands are grouped under
+              <span class="inline-code">/bismillah</span>.
+            </p>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Command</th>
+                  <th>What it does</th>
+                  <th>Who</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>/bismillah setup</code></td>
+                  <td>
+                    Turn on daily messages in a channel and set the per-day
+                    counts and starting point.
+                  </td>
+                  <td><span class="pill pill-mod">Manage Channels</span></td>
+                </tr>
+                <tr>
+                  <td><code>/bismillah status</code></td>
+                  <td>
+                    Show which channels are set up, their daily counts, and
+                    where each one is up to.
+                  </td>
+                  <td><span class="pill pill-mod">Manage Channels</span></td>
+                </tr>
+                <tr>
+                  <td><code>/bismillah stop</code></td>
+                  <td>Stop daily messages in a channel.</td>
+                  <td><span class="pill pill-mod">Manage Channels</span></td>
+                </tr>
+                <tr>
+                  <td><code>/bismillah random</code></td>
+                  <td>Post a random hadith right now.</td>
+                  <td><span class="pill pill-all">Everyone</span></td>
+                </tr>
+                <tr>
+                  <td><code>/bismillah specific</code></td>
+                  <td>
+                    Post a specific hadith by book, chapter, and hadith number.
+                  </td>
+                  <td><span class="pill pill-all">Everyone</span></td>
+                </tr>
+                <tr>
+                  <td><code>/bismillah random_name</code></td>
+                  <td>Post a random name of Allah.</td>
+                  <td><span class="pill pill-all">Everyone</span></td>
+                </tr>
+                <tr>
+                  <td><code>/bismillah specific_name</code></td>
+                  <td>Post one of Allah's names by number.</td>
+                  <td><span class="pill pill-all">Everyone</span></td>
+                </tr>
+                <tr>
+                  <td><code>/bismillah specific_names</code></td>
+                  <td>Post three of Allah's names starting from a number.</td>
+                  <td><span class="pill pill-all">Everyone</span></td>
+                </tr>
+                <tr>
+                  <td><code>/bismillah books</code></td>
+                  <td>List all books and their ids (for use with setup).</td>
+                  <td><span class="pill pill-all">Everyone</span></td>
+                </tr>
+                <tr>
+                  <td><code>/bismillah chapters</code></td>
+                  <td>List the chapters and ids inside a book.</td>
+                  <td><span class="pill pill-all">Everyone</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section id="faq">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="kicker">Good to know</span>
+            <h2>Frequently asked</h2>
+          </div>
+          <div class="faq">
+            <details>
+              <summary>Is it free?</summary>
+              <p>
+                Yes — completely free and open source. You can read the code,
+                self-host it, or contribute on
+                <a
+                  href="https://github.com/SaiyedRushan/HadithBot"
+                  target="_blank"
+                  rel="noopener"
+                  >GitHub</a
+                >.
+              </p>
+            </details>
+            <details>
+              <summary>When are the daily messages sent?</summary>
+              <p>
+                Every day at 6:00 PM Toronto time (America/Toronto), in each
+                channel you've set up.
+              </p>
+            </details>
+            <details>
+              <summary>Can different channels have different settings?</summary>
+              <p>
+                Yes. Each channel keeps its own per-day counts and its own place
+                in the hadiths and names, so you can run it differently in as
+                many channels as you like.
+              </p>
+            </details>
+            <details>
+              <summary>Will changing the daily count reset my progress?</summary>
+              <p>
+                No. Re-running <span class="inline-code">/bismillah setup</span>
+                only changes the options you provide — anything left blank,
+                including the reading position, is preserved.
+              </p>
+            </details>
+            <details>
+              <summary>What permissions does the bot need?</summary>
+              <p>
+                Just enough to do its job: <b>View Channel</b> and
+                <b>Send Messages</b> in the channels you use it in. To run setup,
+                stop, or status, a member needs the
+                <b>Manage Channels</b> permission.
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- FINAL CTA -->
+      <section style="padding-top: 0">
+        <div class="wrap">
+          <div class="final">
+            <h2>Bring daily reminders to your server</h2>
+            <p>
+              Add HadithBot in under a minute and let the good deeds flow,
+              insha'Allah.
+            </p>
+            <a class="btn btn-primary invite-btn" href="#">☾ Add to Discord</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap foot">
+        <div>
+          <span class="arabic" style="color: var(--emerald)">﷽</span>
+          &nbsp; HadithBot — built with care.
+        </div>
+        <div class="foot-links">
+          <a href="#features">Features</a>
+          <a href="#commands">Commands</a>
+          <a
+            href="https://github.com/SaiyedRushan/HadithBot"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // ───────────────────────────────────────────────────────────
+      // 1. Set your Discord Application (Client) ID here.
+      //    Find it at https://discord.com/developers/applications
+      //    → your app → "General Information" → Application ID.
+      // ───────────────────────────────────────────────────────────
+      const CLIENT_ID = "1285370394282295359";
+
+      // Permissions: View Channel (1024) + Send Messages (2048) = 3072
+      const INVITE_URL =
+        "https://discord.com/oauth2/authorize?client_id=" +
+        CLIENT_ID +
+        "&permissions=3072&scope=bot%20applications.commands";
+
+      document.querySelectorAll(".invite-btn").forEach(function (a) {
+        a.href = INVITE_URL;
+        a.target = "_blank";
+        a.rel = "noopener";
+        if (CLIENT_ID === "YOUR_CLIENT_ID") {
+          a.addEventListener("click", function (e) {
+            e.preventDefault();
+            alert(
+              "Set your Discord Application ID in docs/index.html (the CLIENT_ID variable) to enable this button."
+            );
+          });
+        }
+      });
+
+      // Copy buttons on command snippets
+      document.querySelectorAll(".snippet .copy").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const text = btn.parentElement
+            .querySelector(".code-text")
+            .textContent.trim();
+          navigator.clipboard.writeText(text).then(function () {
+            const old = btn.textContent;
+            btn.textContent = "Copied!";
+            setTimeout(function () {
+              btn.textContent = old;
+            }, 1400);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
