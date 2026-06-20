@@ -16,6 +16,7 @@ from db import (
     get_books,
     get_chapters,
     get_channels,
+    get_channel_state,
     get_hadith_in_same_chapter_and_book,
     get_random_hadith,
     remove_channel_state,
@@ -109,6 +110,9 @@ class HadithBot(commands.Bot):
                 last_name_no = channel_row["last_name_no"]
                 last_book_no = channel_row["last_book_id"]
                 last_chapter_no = channel_row["last_chapter_id"]
+                # Per-channel daily counts (default 3 for rows set before this was configurable)
+                hadiths_per_day = channel_row.get("hadiths_per_day", 3)
+                names_per_day = channel_row.get("names_per_day", 3)
 
                 channel = self.get_channel(int(channel_id))
                 if not channel:
@@ -126,15 +130,15 @@ class HadithBot(commands.Bot):
                     "> # Assalamu Alaikum Warahmatullahi Wabarakatuh, here is today's hadith and one of Allah's beautiful name\n"
                 )
                 # get name and send message
-                names = self.get_names(last_name_no, 3)
+                names = self.get_names(last_name_no, names_per_day)
                 current_name_index = self.get_next_index(
-                    last_name_no, len(self.names), 3
+                    last_name_no, len(self.names), names_per_day
                 )
                 await self.send_formatted_name(channel, names)
 
                 # get hadith for the given hadith number, book number, chapter number and send message
                 hadith = get_hadith_in_same_chapter_and_book(
-                    last_hadith_no, last_book_no, last_chapter_no, 3
+                    last_hadith_no, last_book_no, last_chapter_no, hadiths_per_day
                 )
 
                 if hadith:
@@ -283,19 +287,23 @@ class HadithCommands(app_commands.Group):
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(
         channel="Channel to send daily messages to (defaults to this channel)",
-        start_book_id="Book id to start from — see /bismillah books (optional; defaults to the beginning)",
-        start_chapter_id="Chapter id to start from — see /bismillah chapters (optional; defaults to the beginning)",
-        start_hadith_id="Hadith id to start from (optional; defaults to the beginning)",
-        start_name="Name number to start from (optional; defaults to 1)",
+        hadiths_per_day="How many hadiths to send each day, 1-10 (default 3; kept if blank)",
+        names_per_day="How many of Allah's names to send each day, 1-10 (default 3; kept if blank)",
+        start_book_id="Book id to start from — see /bismillah books (blank keeps current, or starts at the beginning)",
+        start_chapter_id="Chapter id to start from — see /bismillah chapters (blank keeps current)",
+        start_hadith_id="Hadith id to start from (blank keeps current)",
+        start_name="Name number to start from (blank keeps current)",
     )
     async def setup(
         self,
         interaction: discord.Interaction,
         channel: Optional[discord.TextChannel] = None,
-        start_book_id: int = 1,
-        start_chapter_id: int = 1,
-        start_hadith_id: int = 1,
-        start_name: int = 1,
+        hadiths_per_day: Optional[int] = None,
+        names_per_day: Optional[int] = None,
+        start_book_id: Optional[int] = None,
+        start_chapter_id: Optional[int] = None,
+        start_hadith_id: Optional[int] = None,
+        start_name: Optional[int] = None,
     ):
         await interaction.response.defer(ephemeral=True)
         target = channel or interaction.channel
@@ -305,16 +313,42 @@ class HadithCommands(app_commands.Group):
                 ephemeral=True,
             )
             return
+
+        # Re-running setup edits the existing config. Any field left blank keeps
+        # its current value (or falls back to a default for a brand-new channel),
+        # so changing the daily counts no longer resets a channel's progress.
+        existing = get_channel_state(str(target.id))
+
+        def pick(value, key, default):
+            if value is not None:
+                return value
+            if existing is not None:
+                return existing.get(key, default)
+            return default
+
+        hpd = pick(hadiths_per_day, "hadiths_per_day", 3)
+        npd = pick(names_per_day, "names_per_day", 3)
+        if not (1 <= hpd <= 10) or not (1 <= npd <= 10):
+            await interaction.followup.send(
+                "Please choose between 1 and 10 for the per-day counts.",
+                ephemeral=True,
+            )
+            return
+
         save_channel_state(
             str(target.id),
-            start_hadith_id,
-            start_name,
-            start_book_id,
-            start_chapter_id,
+            pick(start_hadith_id, "last_hadith_no", 1),
+            pick(start_name, "last_name_no", 1),
+            pick(start_book_id, "last_book_id", 1),
+            pick(start_chapter_id, "last_chapter_id", 1),
             active=True,
+            hadiths_per_day=hpd,
+            names_per_day=npd,
         )
+        verb = "updated for" if existing else "set up for"
         await interaction.followup.send(
-            f"Daily hadith and names will now be sent to {target.mention}.",
+            f"Daily messages {verb} {target.mention} — "
+            f"{hpd} hadith and {npd} name(s) per day.",
             ephemeral=True,
         )
 
@@ -367,7 +401,8 @@ class HadithCommands(app_commands.Group):
                 continue
             state = "🟢 active" if row.get("active", True) else "⏸️ paused"
             lines.append(
-                f"{channel.mention} — {state} "
+                f"{channel.mention} — {state} — "
+                f"{row.get('hadiths_per_day', 3)} hadith/{row.get('names_per_day', 3)} name(s) per day "
                 f"(next: book {row['last_book_id']}, chapter {row['last_chapter_id']}, "
                 f"hadith {row['last_hadith_no']}, name #{row['last_name_no']})"
             )

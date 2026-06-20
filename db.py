@@ -27,6 +27,8 @@ def save_channel_state(
     last_book_no: int,
     last_chapter_no: int,
     active: Optional[bool] = None,
+    hadiths_per_day: Optional[int] = None,
+    names_per_day: Optional[int] = None,
 ):
     record = {
         "channel_id": channel_id,
@@ -35,10 +37,14 @@ def save_channel_state(
         "last_book_id": last_book_no,
         "last_chapter_id": last_chapter_no,
     }
-    # Only touch `active` when explicitly given. The daily progress-save omits it
-    # so the upsert preserves the existing value; setup passes active=True.
+    # Only touch these when explicitly given. The daily progress-save omits them
+    # so the upsert preserves the existing values; setup passes them in.
     if active is not None:
         record["active"] = active
+    if hadiths_per_day is not None:
+        record["hadiths_per_day"] = hadiths_per_day
+    if names_per_day is not None:
+        record["names_per_day"] = names_per_day
     supabase.table("discord_channel_state").upsert(
         record,
         on_conflict="channel_id",
@@ -54,6 +60,18 @@ def get_channels():
 def get_all_channels():
     """Every channel state (active or paused), for the /bismillah status command."""
     return supabase.table("discord_channel_state").select("*").execute().data
+
+
+def get_channel_state(channel_id: str):
+    """The stored state for one channel, or None if it isn't set up yet."""
+    res = (
+        supabase.table("discord_channel_state")
+        .select("*")
+        .eq("channel_id", channel_id)
+        .limit(1)
+        .execute()
+    )
+    return res.data[0] if res.data else None
 
 
 def remove_channel_state(channel_id: str):
