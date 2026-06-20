@@ -51,6 +51,11 @@ def get_channels():
     )
 
 
+def get_all_channels():
+    """Every channel state (active or paused), for the /bismillah status command."""
+    return supabase.table("discord_channel_state").select("*").execute().data
+
+
 def remove_channel_state(channel_id: str):
     supabase.table("discord_channel_state").delete().eq(
         "channel_id", channel_id

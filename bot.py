@@ -12,6 +12,7 @@ from typing import List, Optional
 from zoneinfo import ZoneInfo
 from db import (
     find_valid_hadith_position,
+    get_all_channels,
     get_books,
     get_chapters,
     get_channels,
@@ -339,6 +340,51 @@ class HadithCommands(app_commands.Group):
         await interaction.followup.send(
             f"Daily messages will no longer be sent to {target.mention}.",
             ephemeral=True,
+        )
+
+    @app_commands.command(name="status")
+    @app_commands.checks.has_permissions(manage_channels=True)
+    async def status(self, interaction: discord.Interaction):
+        """Show which channels in this server have daily messages set up."""
+        await interaction.response.defer(ephemeral=True)
+        try:
+            rows = get_all_channels()
+        except Exception:
+            self.bot.logger.error("Failed to fetch channel states", exc_info=True)
+            await interaction.followup.send(
+                "Couldn't fetch the channel status right now. Please try again later.",
+                ephemeral=True,
+            )
+            return
+
+        guild = interaction.guild
+        lines: List[str] = []
+        for row in rows:
+            # Resolve against this guild so only channels in *this* server show.
+            # A channel from another server (or a deleted one) won't resolve here.
+            channel = guild.get_channel(int(row["channel_id"])) if guild else None
+            if channel is None:
+                continue
+            state = "🟢 active" if row.get("active", True) else "⏸️ paused"
+            lines.append(
+                f"{channel.mention} — {state} "
+                f"(next: book {row['last_book_id']}, chapter {row['last_chapter_id']}, "
+                f"hadith {row['last_hadith_no']}, name #{row['last_name_no']})"
+            )
+
+        if not lines:
+            await interaction.followup.send(
+                "No channels are set up in this server yet. "
+                "Use `/bismillah setup` to start daily messages in a channel.",
+                ephemeral=True,
+            )
+            return
+
+        await self._send_reference(
+            interaction,
+            f"**Daily message channels here** ({len(lines)} configured) — "
+            "sent daily at 6:00 PM Toronto time:",
+            lines,
         )
 
     async def _send_reference(
