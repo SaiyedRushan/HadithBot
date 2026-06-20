@@ -63,6 +63,8 @@ class HadithBot(commands.Bot):
                 message = (
                     f"Please wait {error.retry_after:.2f} seconds before using this command again."
                 )
+            elif isinstance(error, app_commands.MissingPermissions):
+                message = "You need the **Manage Channels** permission to use this command."
             elif isinstance(getattr(error, "original", None), discord.Forbidden):
                 message = (
                     "I don't have permission to post in this channel. "
@@ -275,31 +277,33 @@ class HadithCommands(app_commands.Group):
         )
 
     @app_commands.command(name="setup")
+    @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(
-        channel_id="The ID of the channel where you want to send messages"
+        channel="Channel to send daily messages to (defaults to this channel)",
+        start_book_id="Book id to start from (optional; defaults to the beginning)",
+        start_chapter_id="Chapter id to start from (optional; defaults to the beginning)",
+        start_hadith_id="Hadith id to start from (optional; defaults to the beginning)",
+        start_name="Name number to start from (optional; defaults to 1)",
     )
-    @app_commands.describe(
-        start_book_id="The book id of the hadith you want to start with"
-    )
-    @app_commands.describe(
-        start_chapter_id="The chapter id of the hadith you want to start with"
-    )
-    @app_commands.describe(
-        start_hadith_id="The hadith_id of the hadith you want to start with"
-    )
-    @app_commands.describe(start_name="The number of the name you want to start with")
     async def setup(
         self,
         interaction: discord.Interaction,
-        channel_id: str,
-        start_book_id: int,
-        start_chapter_id: int,
-        start_hadith_id: int,
-        start_name: int,
+        channel: Optional[discord.TextChannel] = None,
+        start_book_id: int = 1,
+        start_chapter_id: int = 1,
+        start_hadith_id: int = 1,
+        start_name: int = 1,
     ):
-        await interaction.response.defer()
+        await interaction.response.defer(ephemeral=True)
+        target = channel or interaction.channel
+        if not isinstance(target, discord.TextChannel):
+            await interaction.followup.send(
+                "Please pick a text channel (or run this inside one).",
+                ephemeral=True,
+            )
+            return
         save_channel_state(
-            channel_id,
+            str(target.id),
             start_hadith_id,
             start_name,
             start_book_id,
@@ -307,18 +311,32 @@ class HadithCommands(app_commands.Group):
             active=True,
         )
         await interaction.followup.send(
-            f"Messages will now be sent to the channel with ID {channel_id}."
+            f"Daily hadith and names will now be sent to {target.mention}.",
+            ephemeral=True,
         )
 
     @app_commands.command(name="stop")
+    @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(
-        channel_id="The ID of the channel where you want to stop sending messages"
+        channel="Channel to stop sending messages to (defaults to this channel)"
     )
-    async def stop(self, interaction: discord.Interaction, channel_id: str):
-        await interaction.response.defer()
-        remove_channel_state(channel_id)
+    async def stop(
+        self,
+        interaction: discord.Interaction,
+        channel: Optional[discord.TextChannel] = None,
+    ):
+        await interaction.response.defer(ephemeral=True)
+        target = channel or interaction.channel
+        if not isinstance(target, discord.TextChannel):
+            await interaction.followup.send(
+                "Please pick a text channel (or run this inside one).",
+                ephemeral=True,
+            )
+            return
+        remove_channel_state(str(target.id))
         await interaction.followup.send(
-            "Messages will no longer be sent to this channel."
+            f"Daily messages will no longer be sent to {target.mention}.",
+            ephemeral=True,
         )
 
 
