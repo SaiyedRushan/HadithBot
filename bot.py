@@ -176,23 +176,23 @@ class HadithBot(commands.Bot):
         """Get next index with wraparound"""
         return (current + increment) if (current + increment < max_value) else 1
 
-    async def send_formatted_hadith(self, destination, hadith: dict):
-        """Send a formatted hadith. `destination` is anything with an async
-        send() -- a channel (daily task) or an interaction followup (commands)."""
+    async def send_formatted_hadith(self, channel: discord.TextChannel, hadith: dict):
+        """Send formatted hadith message"""
         if not hadith:
             return
         formatted_messages = getHadithFormattedMessage(hadith)
         for message in formatted_messages:
-            await destination.send(message)
+            await channel.send(message)
 
-    async def send_formatted_name(self, destination, names: List[Name]):
-        """Send formatted name messages. `destination` is anything with an async
-        send() -- a channel (daily task) or an interaction followup (commands)."""
+    async def send_formatted_name(
+        self, channel: discord.TextChannel, names: List[Name]
+    ):
+        """Send formatted name messages for multiple names"""
         if not names:
             return
         for name in names:
             formatted_message = getNameFormattedMessage(name)
-            await destination.send(formatted_message)
+            await channel.send(formatted_message)
 
 
 # Command group for better organization
@@ -206,7 +206,7 @@ class HadithCommands(app_commands.Group):
     async def random(self, interaction: discord.Interaction):
         await interaction.response.defer()
         hadith = get_random_hadith()
-        await self.bot.send_formatted_hadith(interaction.followup, hadith)
+        await self.bot.send_formatted_hadith(interaction.channel, hadith)
         await interaction.followup.send("Here is a random hadith", ephemeral=True)
 
     @app_commands.command(name="specific")
@@ -229,7 +229,7 @@ class HadithCommands(app_commands.Group):
             return
         hadith = hadith[0]
         await interaction.response.defer()
-        await self.bot.send_formatted_hadith(interaction.followup, hadith)
+        await self.bot.send_formatted_hadith(interaction.channel, hadith)
         await interaction.followup.send(
             "Here is the hadith you requested", ephemeral=True
         )
@@ -248,7 +248,7 @@ class HadithCommands(app_commands.Group):
             )
             return
         await interaction.response.defer()
-        await self.bot.send_formatted_name(interaction.followup, names)
+        await self.bot.send_formatted_name(interaction.channel, names)
         await interaction.followup.send(success_message, ephemeral=True)
 
     @app_commands.command(name="random_name")
