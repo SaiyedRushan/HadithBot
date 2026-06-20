@@ -12,6 +12,8 @@ from typing import List, Optional
 from zoneinfo import ZoneInfo
 from db import (
     find_valid_hadith_position,
+    get_books,
+    get_chapters,
     get_channels,
     get_hadith_in_same_chapter_and_book,
     get_random_hadith,
@@ -280,8 +282,8 @@ class HadithCommands(app_commands.Group):
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(
         channel="Channel to send daily messages to (defaults to this channel)",
-        start_book_id="Book id to start from (optional; defaults to the beginning)",
-        start_chapter_id="Chapter id to start from (optional; defaults to the beginning)",
+        start_book_id="Book id to start from — see /bismillah books (optional; defaults to the beginning)",
+        start_chapter_id="Chapter id to start from — see /bismillah chapters (optional; defaults to the beginning)",
         start_hadith_id="Hadith id to start from (optional; defaults to the beginning)",
         start_name="Name number to start from (optional; defaults to 1)",
     )
@@ -337,6 +339,50 @@ class HadithCommands(app_commands.Group):
         await interaction.followup.send(
             f"Daily messages will no longer be sent to {target.mention}.",
             ephemeral=True,
+        )
+
+    async def _send_reference(
+        self, interaction: discord.Interaction, header: str, lines: List[str]
+    ):
+        """Send a header + list as one or more ephemeral followups, each within
+        Discord's 2000-character message limit."""
+        chunk = header
+        for line in lines:
+            if len(chunk) + len(line) + 1 > 1900:
+                await interaction.followup.send(chunk, ephemeral=True)
+                chunk = ""
+            chunk = f"{chunk}\n{line}" if chunk else line
+        if chunk:
+            await interaction.followup.send(chunk, ephemeral=True)
+
+    @app_commands.command(name="books")
+    async def books(self, interaction: discord.Interaction):
+        """List all books and their ids (for use with /bismillah setup)."""
+        await interaction.response.defer(ephemeral=True)
+        lines = [f"`{b['id']}` — {b['english_title']}" for b in get_books()]
+        await self._send_reference(
+            interaction,
+            "**Books** — use the number as `start_book_id` in `/bismillah setup`:",
+            lines,
+        )
+
+    @app_commands.command(name="chapters")
+    @app_commands.describe(book="Book id (see /bismillah books)")
+    async def chapters(self, interaction: discord.Interaction, book: int):
+        """List the chapters and their ids in a book."""
+        await interaction.response.defer(ephemeral=True)
+        chapters = get_chapters(book)
+        if not chapters:
+            await interaction.followup.send(
+                f"No chapters found for book `{book}`. See `/bismillah books` for valid ids.",
+                ephemeral=True,
+            )
+            return
+        lines = [f"`{c['id']}` — {c['english']}" for c in chapters]
+        await self._send_reference(
+            interaction,
+            f"**Chapters in book {book}** — use the number as `start_chapter_id` in `/bismillah setup`:",
+            lines,
         )
 
 

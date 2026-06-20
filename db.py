@@ -57,6 +57,27 @@ def remove_channel_state(channel_id: str):
     ).execute()
 
 
+def get_books():
+    """All books with their ids, for the /bismillah books reference command."""
+    return (
+        supabase.table("books_metadata")
+        .select("id, english_title")
+        .order("id")
+        .execute()
+    ).data
+
+
+def get_chapters(book_id: int):
+    """All chapters in a book with their ids, for /bismillah chapters."""
+    return (
+        supabase.table("chapters")
+        .select("id, english")
+        .eq("book_id", book_id)
+        .order("id")
+        .execute()
+    ).data
+
+
 # Largest hadith id, cached on first use. The dataset is static, so it never
 # changes at runtime -- this avoids a hardcoded magic number and a second query
 # on every call.
