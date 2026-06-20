@@ -26,6 +26,8 @@ jobs:
     needs: test # only deploy if tests pass
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    environment: production # secrets live in this environment
+
     steps:
       - name: Redeploy over SSH
         uses: appleboy/ssh-action@v1.2.0
