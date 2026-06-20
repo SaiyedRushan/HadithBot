@@ -62,11 +62,11 @@ class HadithBot(commands.Bot):
             interaction: discord.Interaction, error: app_commands.AppCommandError
         ):
             if isinstance(error, app_commands.CommandOnCooldown):
-                message = (
-                    f"Please wait {error.retry_after:.2f} seconds before using this command again."
-                )
+                message = f"Please wait {error.retry_after:.2f} seconds before using this command again."
             elif isinstance(error, app_commands.MissingPermissions):
-                message = "You need the **Manage Channels** permission to use this command."
+                message = (
+                    "You need the **Manage Channels** permission to use this command."
+                )
             elif isinstance(getattr(error, "original", None), discord.Forbidden):
                 message = (
                     "I don't have permission to post in this channel. "
@@ -85,7 +85,9 @@ class HadithBot(commands.Bot):
                 else:
                     await interaction.response.send_message(message, ephemeral=True)
             except discord.HTTPException:
-                self.logger.error("Failed to deliver error message to user", exc_info=True)
+                self.logger.error(
+                    "Failed to deliver error message to user", exc_info=True
+                )
 
     # @tasks.loop(seconds=10)
     @tasks.loop(time=time(hour=18, tzinfo=ZoneInfo("America/Toronto")))
@@ -274,9 +276,7 @@ class HadithCommands(app_commands.Group):
     @app_commands.describe(number="The number of the name")
     async def specific_name(self, interaction: discord.Interaction, number: int):
         names = self.bot.get_names(number, 1)
-        await self._send_names(
-            interaction, names, "Here is the name you requested"
-        )
+        await self._send_names(interaction, names, "Here is the name you requested")
 
     @app_commands.command(name="setup")
     @app_commands.checks.has_permissions(manage_channels=True)
