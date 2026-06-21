@@ -8,6 +8,24 @@
       name="description"
       content="HadithBot delivers a daily hadith and the 99 beautiful names of Allah to your Discord server, and answers on-demand slash commands. Free and open source."
     />
+    <meta name="theme-color" content="#0e5c3f" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230e5c3f'/><circle cx='44' cy='52' r='27' fill='%23d8b75f'/><circle cx='57' cy='43' r='23' fill='%230e5c3f'/><circle cx='70' cy='60' r='5' fill='%23d8b75f'/></svg>"
+    />
+    <script>
+      // Apply theme before paint (no flash): stored choice, else system preference.
+      (function () {
+        try {
+          var t =
+            localStorage.getItem("hb-theme") ||
+            (matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light");
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+      })();
+    </script>
     <style>
       :root {
         --emerald: #0e5c3f;
@@ -660,6 +678,78 @@
         display: flex;
         gap: 22px;
       }
+
+      /* ---------- theme toggle ---------- */
+      .theme-toggle {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--ink);
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1rem;
+        line-height: 1;
+        display: grid;
+        place-items: center;
+        transition: border-color 0.15s ease, background 0.15s ease;
+        flex: none;
+      }
+      .theme-toggle:hover {
+        border-color: var(--emerald);
+        background: rgba(14, 92, 63, 0.06);
+      }
+
+      /* ---------- dark mode ---------- */
+      :root[data-theme="dark"] {
+        --emerald: #1f9a61;
+        --emerald-deep: #0a3f2c;
+        --emerald-soft: #28b673;
+        --gold: #d8b75f;
+        --gold-soft: #ecd695;
+        --cream: #0e1411;
+        --cream-card: #161e1a;
+        --ink: #eaf1ec;
+        --ink-soft: #9db0a6;
+        --line: #273229;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.4),
+          0 16px 40px -16px rgba(0, 0, 0, 0.7);
+      }
+      :root[data-theme="dark"] header {
+        background: rgba(14, 20, 17, 0.85);
+      }
+      :root[data-theme="dark"] .alt {
+        background: linear-gradient(180deg, #131b17, #0e1411);
+      }
+      :root[data-theme="dark"] details,
+      :root[data-theme="dark"] .table-scroll {
+        background: var(--cream-card);
+      }
+      :root[data-theme="dark"] .eyebrow {
+        background: rgba(40, 182, 115, 0.15);
+      }
+      :root[data-theme="dark"] td code,
+      :root[data-theme="dark"] .inline-code,
+      :root[data-theme="dark"] .step code,
+      :root[data-theme="dark"] .opt-list li b {
+        color: var(--emerald-soft);
+      }
+      :root[data-theme="dark"] td code,
+      :root[data-theme="dark"] .inline-code,
+      :root[data-theme="dark"] .step code {
+        background: rgba(40, 182, 115, 0.14);
+      }
+      :root[data-theme="dark"] .pill-all {
+        background: rgba(40, 182, 115, 0.16);
+        color: #7fe0b0;
+      }
+      :root[data-theme="dark"] .pill-mod {
+        background: rgba(216, 183, 95, 0.18);
+        color: var(--gold-soft);
+      }
+      :root[data-theme="dark"] .theme-toggle:hover {
+        background: rgba(40, 182, 115, 0.1);
+      }
     </style>
   </head>
   <body>
@@ -681,6 +771,15 @@
             rel="noopener"
             >GitHub</a
           >
+          <button
+            class="theme-toggle"
+            id="themeToggle"
+            type="button"
+            aria-label="Toggle dark mode"
+            title="Toggle light / dark"
+          >
+            🌙
+          </button>
           <a class="btn btn-primary invite-btn" href="#">Add to Discord</a>
         </nav>
       </div>
@@ -1138,6 +1237,27 @@
           });
         }
       });
+
+      // Theme toggle: flip data-theme, persist, swap icon
+      (function () {
+        var toggle = document.getElementById("themeToggle");
+        function setIcon() {
+          var dark =
+            document.documentElement.getAttribute("data-theme") === "dark";
+          toggle.textContent = dark ? "☀️" : "🌙";
+        }
+        setIcon();
+        toggle.addEventListener("click", function () {
+          var dark =
+            document.documentElement.getAttribute("data-theme") === "dark";
+          var next = dark ? "light" : "dark";
+          document.documentElement.setAttribute("data-theme", next);
+          try {
+            localStorage.setItem("hb-theme", next);
+          } catch (e) {}
+          setIcon();
+        });
+      })();
 
       // Copy buttons on command snippets
       document.querySelectorAll(".snippet .copy").forEach(function (btn) {
