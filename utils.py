@@ -1,6 +1,55 @@
-from typing import Dict
+from typing import Dict, Optional
 from dataclasses import dataclass
+from urllib.parse import quote
 import re
+
+_SUNNAH_SEARCH = "https://sunnah.com/search?q="
+# Use the opening words of the hadith as the search phrase. More words sharpen
+# the match (some hadiths share a generic opening with a parallel narration),
+# but Discord caps a link-button URL at 512 chars, so we also stop once the
+# encoded URL nears that ceiling -- the longest hadith here is ~9.7k chars and
+# would otherwise produce a ~12k-char URL Discord rejects outright.
+_MAX_WORDS = 25
+_MAX_URL_LEN = 500  # safely under Discord's 512-char button-URL limit
+
+
+def sunnah_url(hadith) -> Optional[str]:
+    """Build a sunnah.com link so readers can look a hadith up for more info.
+
+    This dataset's ``id_in_book`` is a sequential 1, 2, 3... counter per book.
+    It does NOT line up with sunnah.com's published reference numbers, which use
+    compound entries (e.g. 3000a / 3000b) and differ in total count per book. A
+    deep link like ``sunnah.com/bukhari:<id_in_book>`` therefore matches only at
+    hadith #1 and then drifts -- landing on the wrong hadith, or 404ing, for the
+    rest of the book (verified against sunnah.com across several collections).
+
+    So instead we link to a sunnah.com text search seeded with the opening words
+    of the hadith's English text. That distinctive snippet brings the exact
+    hadith back as the top result (or, for hadiths with a near-identical
+    parallel narration, that sibling -- still the same content), and the link is
+    correct for every book.
+    """
+    text = (hadith.get("english_text") or "").replace("ﷺ", " ")  # drop the ﷺ glyph
+    # ASCII words/digits only: enough to match (names like "Muzdalifa"/"Uhban"
+    # come through) without dragging in diacritics that could break a match.
+    words = re.findall(r"[A-Za-z0-9']+", text)[:_MAX_WORDS]
+    # Add words while the encoded URL stays under Discord's button-URL limit, so
+    # a long hadith never yields a URL Discord refuses to send.
+    chosen: list[str] = []
+    for word in words:
+        candidate = " ".join(chosen + [word])
+        if len(_SUNNAH_SEARCH + quote(candidate)) > _MAX_URL_LEN:
+            break
+        chosen.append(word)
+    query = " ".join(chosen)
+    if not query:
+        # No usable text (rare) -- fall back to the book title so the link still
+        # points somewhere relevant rather than nowhere.
+        title = (hadith.get("books_metadata") or {}).get("english_title") or ""
+        query = title[:100]  # titles are short, but stay within the URL budget
+    if not query:
+        return None
+    return f"{_SUNNAH_SEARCH}{quote(query)}"
 
 
 @dataclass

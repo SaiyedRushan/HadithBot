@@ -22,7 +22,7 @@ from db import (
     remove_channel_state,
     save_channel_state,
 )
-from utils import Name, getHadithFormattedMessage, getNameFormattedMessage
+from utils import Name, getHadithFormattedMessage, getNameFormattedMessage, sunnah_url
 
 
 class HadithBot(commands.Bot):
@@ -187,13 +187,39 @@ class HadithBot(commands.Bot):
         """Get next index with wraparound"""
         return (current + increment) if (current + increment < max_value) else 1
 
+    @staticmethod
+    def _hadith_link_view(hadith: dict) -> Optional[discord.ui.View]:
+        """A 'Look up on Sunnah.com' link button for the hadith, or None if no URL.
+
+        Link-style buttons never dispatch interactions, so the view needs no
+        callback handling or registration -- it keeps working indefinitely.
+        """
+        url = sunnah_url(hadith)
+        if not url:
+            return None
+        view = discord.ui.View()
+        view.add_item(
+            discord.ui.Button(
+                label="🔎 Look up on Sunnah.com",
+                style=discord.ButtonStyle.link,
+                url=url,
+            )
+        )
+        return view
+
     async def send_formatted_hadith(self, channel: discord.TextChannel, hadith: dict):
         """Send formatted hadith message"""
         if not hadith:
             return
         formatted_messages = getHadithFormattedMessage(hadith)
-        for message in formatted_messages:
-            await channel.send(message)
+        # Attach the link button to the last chunk so it sits under the full hadith.
+        view = self._hadith_link_view(hadith)
+        last_index = len(formatted_messages) - 1
+        for i, message in enumerate(formatted_messages):
+            if i == last_index and view is not None:
+                await channel.send(message, view=view)
+            else:
+                await channel.send(message)
 
     async def send_formatted_name(
         self, channel: discord.TextChannel, names: List[Name]
@@ -205,6 +231,39 @@ class HadithBot(commands.Bot):
             formatted_message = getNameFormattedMessage(name)
             await channel.send(formatted_message)
 
+    async def reply_formatted_hadith(
+        self, interaction: discord.Interaction, hadith: dict
+    ):
+        """Send a hadith privately (ephemeral) to the command invoker.
+
+        The interaction must already be deferred with ephemeral=True.
+        """
+        if not hadith:
+            return
+        formatted_messages = getHadithFormattedMessage(hadith)
+        # Attach the link button to the last chunk so it sits under the full hadith.
+        view = self._hadith_link_view(hadith)
+        last_index = len(formatted_messages) - 1
+        for i, message in enumerate(formatted_messages):
+            if i == last_index and view is not None:
+                await interaction.followup.send(message, view=view, ephemeral=True)
+            else:
+                await interaction.followup.send(message, ephemeral=True)
+
+    async def reply_formatted_name(
+        self, interaction: discord.Interaction, names: List[Name]
+    ):
+        """Send name(s) privately (ephemeral) to the command invoker.
+
+        The interaction must already be deferred with ephemeral=True.
+        """
+        if not names:
+            return
+        for name in names:
+            await interaction.followup.send(
+                getNameFormattedMessage(name), ephemeral=True
+            )
+
 
 # Command group for better organization
 @app_commands.guild_only()
@@ -215,10 +274,16 @@ class HadithCommands(app_commands.Group):
 
     @app_commands.command(name="random")
     async def random(self, interaction: discord.Interaction):
-        await interaction.response.defer()
+        # Ephemeral so the result is visible only to the member who ran it.
+        await interaction.response.defer(ephemeral=True)
         hadith = get_random_hadith()
-        await self.bot.send_formatted_hadith(interaction.channel, hadith)
-        await interaction.followup.send("Here is a random hadith", ephemeral=True)
+        if not hadith:
+            await interaction.followup.send(
+                "Couldn't fetch a hadith right now. Please try again.",
+                ephemeral=True,
+            )
+            return
+        await self.bot.reply_formatted_hadith(interaction, hadith)
 
     @app_commands.command(name="specific")
     @app_commands.describe(book_no="The book id of the hadith")
@@ -231,57 +296,47 @@ class HadithCommands(app_commands.Group):
         chapter_no: int,
         hadith_no: int,
     ):
+        await interaction.response.defer(ephemeral=True)
         hadith = get_hadith_in_same_chapter_and_book(hadith_no, book_no, chapter_no)
         if not hadith:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 "No hadith found for that book, chapter, and hadith combination.",
                 ephemeral=True,
             )
             return
-        hadith = hadith[0]
-        await interaction.response.defer()
-        await self.bot.send_formatted_hadith(interaction.channel, hadith)
-        await interaction.followup.send(
-            "Here is the hadith you requested", ephemeral=True
-        )
+        await self.bot.reply_formatted_hadith(interaction, hadith[0])
 
     async def _send_names(
         self,
         interaction: discord.Interaction,
         names: Optional[List[Name]],
-        success_message: str,
     ):
-        """Validate the requested names, then send them to the channel."""
+        """Validate the requested names, then send them privately to the invoker."""
+        await interaction.response.defer(ephemeral=True)
         if not names:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 f"Invalid name number. Please choose between 1 and {len(self.bot.names)}",
                 ephemeral=True,
             )
             return
-        await interaction.response.defer()
-        await self.bot.send_formatted_name(interaction.channel, names)
-        await interaction.followup.send(success_message, ephemeral=True)
+        await self.bot.reply_formatted_name(interaction, names)
 
     @app_commands.command(name="random_name")
     async def random_name(self, interaction: discord.Interaction):
         names = self.bot.get_names(random.randint(1, len(self.bot.names)), 1)
-        await self._send_names(
-            interaction, names, "Here is one of Allah's beautiful names"
-        )
+        await self._send_names(interaction, names)
 
     @app_commands.command(name="specific_names")
     @app_commands.describe(number="The starting number of the names")
     async def specific_names(self, interaction: discord.Interaction, number: int):
         names = self.bot.get_names(number, 3)
-        await self._send_names(
-            interaction, names, "Here are three of Allah's beautiful names"
-        )
+        await self._send_names(interaction, names)
 
     @app_commands.command(name="specific_name")
     @app_commands.describe(number="The number of the name")
     async def specific_name(self, interaction: discord.Interaction, number: int):
         names = self.bot.get_names(number, 1)
-        await self._send_names(interaction, names, "Here is the name you requested")
+        await self._send_names(interaction, names)
 
     @app_commands.command(name="setup")
     @app_commands.checks.has_permissions(manage_channels=True)

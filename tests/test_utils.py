@@ -9,6 +9,7 @@ from utils import (
     find_last_newline,
     getNameFormattedMessage,
     getHadithFormattedMessage,
+    sunnah_url,
 )
 
 DISCORD_MAX = 2000
@@ -81,3 +82,45 @@ def test_get_hadith_formatted_message_respects_discord_limit():
     msgs = getHadithFormattedMessage(make_hadith(text=long_text))
     assert len(msgs) > 1, "long hadith should be split into multiple messages"
     assert all(len(m) <= DISCORD_MAX for m in msgs), "every chunk must fit Discord's 2000-char limit"
+
+
+# --- sunnah_url --------------------------------------------------------------
+
+def test_sunnah_url_is_text_search_not_deep_link():
+    # id_in_book does NOT map to sunnah.com reference numbers, so a deep link by
+    # number would point at the wrong hadith -- we link to a text search instead.
+    h = make_hadith(text="The Prophet went out towards the Musalla for the Istisqa prayer.")
+    url = sunnah_url(h)
+    assert url.startswith("https://sunnah.com/search?q=")
+    assert "Musalla" in url  # a distinctive word from the text seeds the query
+    assert "bukhari:" not in url  # never a (mis-aligned) deep link by number
+
+
+def test_sunnah_url_uses_leading_words_up_to_the_word_cap():
+    long_text = " ".join(f"word{i}" for i in range(50))
+    url = sunnah_url(make_hadith(text=long_text))
+    assert "word0" in url and "word24" in url  # leading words up to the 25-word cap
+    assert "word25" not in url  # later words are dropped to keep the query tight
+
+
+def test_sunnah_url_stays_under_discord_button_url_limit():
+    # The longest real hadith is ~9.7k chars; the URL must still be sendable as a
+    # Discord link button, which caps url at 512 characters.
+    huge = "Heraclius " * 3000
+    url = sunnah_url(make_hadith(text=huge))
+    assert len(url) <= 512
+
+
+def test_sunnah_url_strips_the_honorific_glyph():
+    url = sunnah_url(make_hadith(text="The Messenger of Allah (ﷺ) said something."))
+    assert "%EF" not in url and "ﷺ" not in url  # the ﷺ glyph isn't in the query
+
+
+def test_sunnah_url_falls_back_to_title_without_text():
+    url = sunnah_url(make_hadith(text=""))
+    assert url.startswith("https://sunnah.com/search?q=")
+    assert "Bukhari" in url  # falls back to the book title
+
+
+def test_sunnah_url_returns_none_without_text_or_title():
+    assert sunnah_url({"english_text": "", "books_metadata": {}}) is None
