@@ -3,6 +3,11 @@ name: CI/CD
 on:
   push:
     branches: [main]
+    # Website/docs-only changes don't affect the running bot, so skip the whole
+    # pipeline (and the redeploy) when a push touches only these paths.
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
   pull_request:
   workflow_dispatch: # lets you trigger a deploy manually from the Actions tab
 
