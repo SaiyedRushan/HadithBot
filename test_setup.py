@@ -95,7 +95,7 @@ def test_database_connection():
 
         result = get_channels()
         print("✅ Database connection successful")
-        print(f"✅ Found {len(result.data)} configured channels")
+        print(f"✅ Found {len(result)} configured channels")
         return True
     except Exception as e:
         print(f"❌ Database connection failed: {e}")

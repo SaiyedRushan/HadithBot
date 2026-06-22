@@ -1,7 +1,7 @@
 import os
 import random
 import logging
-from typing import Optional
+from typing import Optional, cast
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
@@ -50,15 +50,26 @@ def save_channel_state(
     ).execute()
 
 
-def get_channels():
-    return (
-        supabase.table("discord_channel_state").select("*").eq("active", True).execute()
+def get_channels() -> list[dict]:
+    """Active channel states, for the daily broadcast. Supabase's stub types
+    .data as the broad List[JSON]; in practice a select returns row dicts (empty
+    if none), so we cast -- callers then get list[dict], not possibly-None rows."""
+    return cast(
+        list[dict],
+        supabase.table("discord_channel_state")
+        .select("*")
+        .eq("active", True)
+        .execute()
+        .data,
     )
 
 
-def get_all_channels():
+def get_all_channels() -> list[dict]:
     """Every channel state (active or paused), for the /bismillah status command."""
-    return supabase.table("discord_channel_state").select("*").execute().data
+    return cast(
+        list[dict],
+        supabase.table("discord_channel_state").select("*").execute().data,
+    )
 
 
 def get_channel_state(channel_id: str):

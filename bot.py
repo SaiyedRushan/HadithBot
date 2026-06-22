@@ -107,7 +107,7 @@ class HadithBot(commands.Bot):
             self.logger.error(f"Failed to fetch active channels: {e}")
             return
 
-        for channel_row in channels.data:
+        for channel_row in channels:
             channel_id = channel_row["channel_id"]
             # Isolate each channel so one failure (e.g. missing permissions)
             # doesn't stop the broadcast to the remaining channels.
