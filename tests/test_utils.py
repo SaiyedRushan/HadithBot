@@ -77,6 +77,15 @@ def test_get_hadith_formatted_message_has_header_and_body():
     assert "hadith text" in body
 
 
+def test_get_hadith_formatted_message_omits_internal_number():
+    # id_in_book doesn't match sunnah.com's reference numbers, so it must not be
+    # shown as a "#N" citation -- the Sunnah.com button is the canonical pointer.
+    msgs = getHadithFormattedMessage(make_hadith(id_in_book=1000))
+    body = " ".join(msgs)
+    assert "#1000" not in body
+    assert "1000" not in body
+
+
 def test_get_hadith_formatted_message_respects_discord_limit():
     long_text = "word. " * 1000  # ~6000 chars, well over the 2000 limit
     msgs = getHadithFormattedMessage(make_hadith(text=long_text))

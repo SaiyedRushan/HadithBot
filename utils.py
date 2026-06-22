@@ -65,7 +65,11 @@ class Name:
 def getHadithFormattedMessage(hadith) -> list[str]:
     formatted_messages = []
     formatted_messages.append(f"> ### Book: {hadith['books_metadata']['english_title']} - Chapter: {hadith['chapters']['english']}\n")
-    formatted_hadith = f"> #{hadith['id_in_book']} - {hadith['english_narrator']} {hadith['english_text']}\n\n"
+    # We deliberately don't show id_in_book here: it's a sequential per-book
+    # counter that does NOT match sunnah.com's published reference numbers, so a
+    # "#1000" would read as a citation a reader couldn't reproduce. The
+    # Sunnah.com link button is the canonical pointer instead.
+    formatted_hadith = f"> {hadith['english_narrator']} {hadith['english_text']}\n\n"
     formatted_hadith = re.sub(r'\s+', ' ', formatted_hadith).strip()
 
     # while formatted_hadith is not empty
