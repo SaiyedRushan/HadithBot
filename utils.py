@@ -99,3 +99,50 @@ def getNameFormattedMessage(name) -> str:
     formatted_message += f"> ### ({name.number}) - {name.name} - {name.transliteration}\n"
     formatted_message += f"> {name.en['meaning']} - {name.en['desc']}\n"
     return formatted_message
+
+
+def resolve_start_position(
+    existing: Optional[dict],
+    start_book_id: Optional[int],
+    start_chapter_id: Optional[int],
+    start_hadith_id: Optional[int],
+) -> tuple[int, int, int]:
+    """Work out the (book, chapter, hadith) a channel should start from in setup.
+
+    Blank book/chapter keep the channel's stored value (or 1 for a new channel).
+
+    Chapter ids are global (each chapter belongs to one book), so changing the
+    book without naming a chapter must not carry over the old book's chapter --
+    we fall to 1, which at fetch time resolves to the new book's first chapter.
+
+    For the hadith: an explicit ``start_hadith_id`` always wins. Otherwise, if
+    the book or chapter is being changed, start at that chapter's *first* hadith
+    -- represented as 1, which at fetch time resolves to the chapter's lowest
+    ``id_in_book`` (the lookup is a ``>=`` scoped to the book+chapter). This
+    avoids carrying over the stale hadith number, which could overshoot and skip
+    past the chapter the admin just selected. If nothing positional changed,
+    the current chapter and hadith are kept.
+    """
+
+    def keep(value, key, default):
+        if value is not None:
+            return value
+        if existing is not None:
+            return existing.get(key, default)
+        return default
+
+    book = keep(start_book_id, "last_book_id", 1)
+    if start_chapter_id is not None:
+        chapter = start_chapter_id
+    elif start_book_id is not None:
+        # Book changed without a chapter -> start at the new book's beginning.
+        chapter = 1
+    else:
+        chapter = keep(None, "last_chapter_id", 1)
+    if start_hadith_id is not None:
+        hadith = start_hadith_id
+    elif start_book_id is not None or start_chapter_id is not None:
+        hadith = 1
+    else:
+        hadith = keep(None, "last_hadith_no", 1)
+    return book, chapter, hadith
