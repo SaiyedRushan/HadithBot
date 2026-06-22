@@ -17,18 +17,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.11"
-          cache: pip
-      - name: Install dependencies
-        run: pip install -r requirements.txt pytest pyflakes
+          version: "0.11.2"
+      - name: Install dependencies (runtime + dev, from lockfile)
+        run: uv sync --frozen
       - name: Lint (pyflakes catches undefined names & bad imports)
         # Static check on all repo Python -- would have caught the missing
         # resolve_start_position import that py_compile let through.
-        run: python -m pyflakes bot.py utils.py db.py server.py test_setup.py test_hadith_progression.py tests/
+        run: uv run pyflakes bot.py utils.py db.py server.py test_setup.py test_hadith_progression.py tests/
       - name: Run pytest
-        run: pytest -q
+        run: uv run pytest -q
 
   deploy:
     name: Deploy to Oracle VM

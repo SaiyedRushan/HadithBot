@@ -1,22 +1,27 @@
-# Use Python 3.11 slim image
+# Use Python 3.11 slim image (matches .python-version)
 FROM python:3.11-slim
 
-# Set working directory
+# Bring in the uv binary, pinned to match local dev and CI
+COPY --from=ghcr.io/astral-sh/uv:0.11.2 /uv /uvx /bin/
+
 WORKDIR /app
 
-# Install system dependencies
+# System build deps (some wheels may need a compiler)
 RUN apt-get update && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy dependency files
-COPY requirements.txt .
-COPY Pipfile* ./
+# Install runtime dependencies from the lockfile (no dev group), using the
+# image's Python 3.11 rather than letting uv download another interpreter.
+ENV UV_PYTHON_DOWNLOADS=never \
+    UV_PROJECT_ENVIRONMENT=/app/.venv
+COPY pyproject.toml uv.lock .python-version ./
+RUN uv sync --frozen --no-dev --python python3.11
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Put the project venv on PATH so gunicorn/python resolve to it
+ENV PATH="/app/.venv/bin:$PATH"
 
-# Copy application code
+# Copy application code (.dockerignore keeps the local .venv out)
 COPY . .
 
 # Create non-root user for security

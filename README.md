@@ -26,8 +26,8 @@ A Discord bot that sends daily Islamic hadiths and the 99 beautiful names of All
 - `db.py` - Database operations and Supabase integration
 - `utils.py` - Data models and utility functions
 - `test_setup.py` - Setup verification script
-- `requirements.txt` - Python dependencies
-- `Pipfile` / `Pipfile.lock` - Pipenv dependency management
+- `pyproject.toml` / `uv.lock` - Dependencies and lockfile (managed with uv)
+- `Makefile` - Common dev tasks (`make dev` / `test` / `lint`)
 - `.env.example` - Environment variables template
 - `Dockerfile` - Container configuration
 - `docker-compose.yml` - Multi-container orchestration
@@ -39,7 +39,7 @@ A Discord bot that sends daily Islamic hadiths and the 99 beautiful names of All
 - Python 3.11+
 - Discord Bot Token
 - Supabase Account and Project
-- pipenv (recommended) or pip
+- [uv](https://docs.astral.sh/uv/) (Python package/dependency manager)
 
 ## Local Development Setup
 
@@ -52,17 +52,19 @@ cd HadithBot
 
 ### 2. Install Dependencies
 
-Using pipenv (recommended):
+This project uses [uv](https://docs.astral.sh/uv/). With uv installed:
 
 ```bash
-pipenv install
-pipenv shell
+uv sync
 ```
 
-Or using pip:
+This creates a `.venv` with all dependencies (runtime + dev) from `uv.lock`.
+Run commands with `uv run ...`, or use the `Makefile` shortcuts:
 
 ```bash
-pip install -r requirements.txt
+make dev      # run the bot with autoreload on save
+make test     # run tests
+make lint     # static checks (undefined names, bad imports)
 ```
 
 ### 3. Environment Configuration
@@ -263,13 +265,13 @@ SUPABASE_KEY=your_production_supabase_key
 1. **Install dependencies**:
 
 ```bash
-pipenv install --deploy
+uv sync --frozen --no-dev
 ```
 
 2. **Run with Gunicorn**:
 
 ```bash
-gunicorn -w 1 -b 0.0.0.0:8080 server:app
+uv run gunicorn -w 1 -b 0.0.0.0:8080 server:app
 ```
 
 3. **Set up process manager** (systemd, supervisor, etc.):

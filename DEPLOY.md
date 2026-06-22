@@ -109,9 +109,11 @@ Endpoints: `/` → `"Hello. I am alive!"`, `/health` → JSON bot status.
 For a single bot, systemd is lighter than Docker.
 
 ```bash
-sudo apt update && sudo apt install -y python3-pip python3-venv git
+sudo apt update && sudo apt install -y git curl
 git clone https://github.com/SaiyedRushan/HadithBot.git && cd HadithBot
-python3 -m venv .venv && ./.venv/bin/pip install -r requirements.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh   # install uv
+source $HOME/.local/bin/env                        # put uv on PATH
+uv sync --frozen --no-dev                          # creates .venv with runtime deps
 nano .env        # add the three keys
 ```
 

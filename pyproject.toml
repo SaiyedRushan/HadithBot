@@ -1,0 +1,26 @@
+[project]
+name = "hadithbot"
+version = "0.1.0"
+description = "Discord bot that posts daily hadiths and the 99 names of Allah to configured channels."
+requires-python = ">=3.11"
+dependencies = [
+    "discord.py>=2.0.0",
+    "python-dotenv>=0.19.0",
+    "flask>=2.0.0",
+    "gunicorn>=20.0.0",
+    "aiofiles>=0.8.0",
+    "tzdata>=2022.0",
+    "supabase>=2.31.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0.0",
+    "pyflakes>=3.0.0",
+    "watchdog>=3.0.0",
+]
+
+# This is an application, not a distributable package, so uv shouldn't try to
+# build/install the project itself -- only manage its dependencies.
+[tool.uv]
+package = false

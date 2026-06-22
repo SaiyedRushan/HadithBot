@@ -1,0 +1,15 @@
+# Keep the build context lean, and (critically) prevent the local .venv from
+# being copied over the one uv builds inside the container.
+.venv/
+venv/
+env/
+.git/
+.github/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+.env.*
+!.env.example
+docs/
+*.md
