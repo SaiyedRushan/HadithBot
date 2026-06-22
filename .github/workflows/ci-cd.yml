@@ -22,7 +22,11 @@ jobs:
           python-version: "3.11"
           cache: pip
       - name: Install dependencies
-        run: pip install -r requirements.txt pytest
+        run: pip install -r requirements.txt pytest pyflakes
+      - name: Lint (pyflakes catches undefined names & bad imports)
+        # Static check on the deployed code -- would have caught the missing
+        # resolve_start_position import that py_compile let through.
+        run: python -m pyflakes bot.py utils.py db.py server.py
       - name: Run pytest
         run: pytest -q
 

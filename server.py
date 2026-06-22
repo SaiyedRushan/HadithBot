@@ -46,7 +46,6 @@ def health():
 @app.route("/bot/restart", methods=["POST"])
 def restart_bot():
     """Endpoint to restart the bot if needed"""
-    global bot_instance, bot_task
     try:
         if bot_instance and not bot_instance.is_closed():
             asyncio.create_task(bot_instance.close())
