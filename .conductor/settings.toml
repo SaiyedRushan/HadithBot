@@ -1,0 +1,23 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+# Copy gitignored local secrets into every new workspace.
+# The bot needs a .env with DISCORD_TOKEN / SUPABASE_URL / SUPABASE_KEY.
+file_include_globs = ".env*\n"
+
+[scripts]
+# Create a per-workspace virtualenv and install Python deps.
+# Also fast-forward the repo root so new workspaces branch from the latest commit.
+setup = """
+git -C "$CONDUCTOR_ROOT_PATH" fetch --prune origin && git -C "$CONDUCTOR_ROOT_PATH" pull --ff-only || true
+python3 -m venv .venv
+./.venv/bin/pip install --upgrade pip --quiet
+./.venv/bin/pip install -r requirements.txt
+"""
+
+# Run the Discord bot + Flask health server. PORT is honored by server.py.
+run = "PORT=$CONDUCTOR_PORT ./.venv/bin/python server.py"
+
+# The bot uses a single Discord token and a single shared Supabase database,
+# so only one workspace can run the bot at a time (a second gateway connection
+# with the same token would conflict).
+run_mode = "nonconcurrent"

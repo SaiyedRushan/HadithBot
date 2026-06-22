@@ -105,7 +105,8 @@ if __name__ == "__main__":
     start_bot()
 
     # Start Flask server
-    app.run(host="0.0.0.0", port=8080, debug=False)
+    port = int(os.getenv("PORT", "8080"))
+    app.run(host="0.0.0.0", port=port, debug=False)
 else:
     # When running with Gunicorn
     logging.basicConfig(level=logging.INFO)
