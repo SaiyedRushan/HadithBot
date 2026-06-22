@@ -106,17 +106,16 @@ def test_data_loading():
     print("\nTesting data loading...")
     try:
         import json
-        import aiofiles
-        
+
         # Test 99 names loading
         with open('data/99names.json', 'r') as f:
             names_data = json.load(f)
         
         print(f"✅ Loaded {len(names_data)} names from 99names.json")
         
-        # Test Name dataclass
+        # Test Name dataclass (constructs without error)
         from utils import Name
-        test_name = Name(**names_data[0])
+        Name(**names_data[0])
         print("✅ Name dataclass working correctly")
         
         return True
