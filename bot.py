@@ -346,7 +346,7 @@ class HadithCommands(app_commands.Group):
         names_per_day="How many of Allah's names to send each day, 1-10 (default 3; kept if blank)",
         start_book_id="Book id to start from — see /bismillah books (blank keeps current, or starts at the beginning)",
         start_chapter_id="Chapter id to start from — see /bismillah chapters (blank keeps current)",
-        start_hadith_id="Hadith id to start from (blank keeps current)",
+        start_hadith_id="Hadith id to start from (blank uses the chapter's first hadith, or keeps current)",
         start_name="Name number to start from (blank keeps current)",
     )
     async def setup(
@@ -390,12 +390,18 @@ class HadithCommands(app_commands.Group):
             )
             return
 
+        # Book/chapter/hadith are resolved together so that changing the book or
+        # chapter (without naming a hadith) starts at that chapter's first hadith
+        # instead of keeping the stale number. See resolve_start_position.
+        last_book, last_chapter, last_hadith = resolve_start_position(
+            existing, start_book_id, start_chapter_id, start_hadith_id
+        )
         save_channel_state(
             str(target.id),
-            pick(start_hadith_id, "last_hadith_no", 1),
+            last_hadith,
             pick(start_name, "last_name_no", 1),
-            pick(start_book_id, "last_book_id", 1),
-            pick(start_chapter_id, "last_chapter_id", 1),
+            last_book,
+            last_chapter,
             active=True,
             hadiths_per_day=hpd,
             names_per_day=npd,

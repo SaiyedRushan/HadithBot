@@ -10,6 +10,7 @@ from utils import (
     getNameFormattedMessage,
     getHadithFormattedMessage,
     sunnah_url,
+    resolve_start_position,
 )
 
 DISCORD_MAX = 2000
@@ -133,3 +134,39 @@ def test_sunnah_url_falls_back_to_title_without_text():
 
 def test_sunnah_url_returns_none_without_text_or_title():
     assert sunnah_url({"english_text": "", "books_metadata": {}}) is None
+
+
+# --- resolve_start_position --------------------------------------------------
+
+EXISTING = {"last_book_id": 3, "last_chapter_id": 40, "last_hadith_no": 1200}
+
+
+def test_resolve_start_position_changing_chapter_resets_to_first_hadith():
+    # Set a new chapter, leave hadith blank -> start at the chapter's first
+    # hadith (1), not the stale 1200 that would overshoot the chapter.
+    book, chapter, hadith = resolve_start_position(EXISTING, None, 5, None)
+    assert (book, chapter, hadith) == (3, 5, 1)
+
+
+def test_resolve_start_position_changing_book_resets_chapter_and_hadith():
+    # Changing the book without a chapter must not keep book 3's chapter 40;
+    # it resets to the new book's start (chapter 1, hadith 1, resolved at fetch).
+    assert resolve_start_position(EXISTING, 7, None, None) == (7, 1, 1)
+
+
+def test_resolve_start_position_explicit_hadith_wins():
+    book, chapter, hadith = resolve_start_position(EXISTING, 7, 2, 99)
+    assert (book, chapter, hadith) == (7, 2, 99)
+
+
+def test_resolve_start_position_no_positional_change_keeps_current():
+    # Only counts/name changed elsewhere -> position untouched, including hadith.
+    assert resolve_start_position(EXISTING, None, None, None) == (3, 40, 1200)
+
+
+def test_resolve_start_position_new_channel_defaults_to_one():
+    assert resolve_start_position(None, None, None, None) == (1, 1, 1)
+
+
+def test_resolve_start_position_new_channel_with_chapter_starts_at_first_hadith():
+    assert resolve_start_position(None, None, 12, None) == (1, 12, 1)
