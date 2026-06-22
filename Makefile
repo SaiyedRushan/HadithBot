@@ -1,4 +1,4 @@
-.PHONY: install dev dev-server test lint
+.PHONY: install dev dev-server test lint format
 
 install:  ## Install all deps (runtime + dev) into .venv
 	uv sync
@@ -12,5 +12,8 @@ dev-server:  ## Autoreload the full server on save (bot + Flask /health)
 test:  ## Run the test suite
 	uv run pytest -q
 
-lint:  ## Static checks (undefined names, bad imports)
-	uv run pyflakes bot.py utils.py db.py server.py test_setup.py test_hadith_progression.py tests/
+lint:  ## Lint (undefined names, bad imports, style) -- ruff
+	uv run ruff check .
+
+format:  ## Auto-format and fix lint issues -- ruff
+	uv run ruff format . && uv run ruff check --fix .

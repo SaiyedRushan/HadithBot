@@ -23,10 +23,8 @@ jobs:
           version: "0.11.2"
       - name: Install dependencies (runtime + dev, from lockfile)
         run: uv sync --frozen
-      - name: Lint (pyflakes catches undefined names & bad imports)
-        # Static check on all repo Python -- would have caught the missing
-        # resolve_start_position import that py_compile let through.
-        run: uv run pyflakes bot.py utils.py db.py server.py test_setup.py test_hadith_progression.py tests/
+      - name: Lint (ruff catches undefined names, bad imports & style)
+        run: uv run ruff check .
       - name: Run pytest
         run: uv run pytest -q
 
