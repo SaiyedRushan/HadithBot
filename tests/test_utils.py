@@ -64,6 +64,20 @@ def test_get_name_formatted_message_includes_all_fields():
     assert "the most merciful" in out
 
 
+def test_get_name_formatted_message_includes_dua_note_when_present():
+    name = make_name()
+    name.en["dua"] = "Call upon Ar-Rahman when seeking mercy."
+    out = getNameFormattedMessage(name)
+    assert "In your dua:" in out
+    assert "Call upon Ar-Rahman when seeking mercy." in out
+
+
+def test_get_name_formatted_message_omits_dua_note_when_absent():
+    # The dua note is optional; names without it must still render cleanly.
+    out = getNameFormattedMessage(make_name())
+    assert "In your dua:" not in out
+
+
 # --- getHadithFormattedMessage ----------------------------------------------
 
 def test_get_hadith_formatted_message_has_header_and_body():
