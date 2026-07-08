@@ -18,6 +18,7 @@ from db import (
     get_channels,
     get_channel_state,
     get_hadith_in_same_chapter_and_book,
+    get_next_hadiths,
     get_random_hadith,
     remove_channel_state,
     save_channel_state,
@@ -125,6 +126,12 @@ class HadithBot(commands.Bot):
                     self.logger.error(f"Channel {channel_id} not found")
                     continue
 
+                # The book/chapter we resumed from (before position resolution).
+                # Used to detect when today's batch moves into a new book/chapter
+                # -- including a day-boundary roll-over -- so we can announce it.
+                prev_book_no = last_book_no
+                prev_chapter_no = last_chapter_no
+
                 last_hadith_no, last_book_no, last_chapter_no = (
                     find_valid_hadith_position(
                         last_hadith_no, last_book_no, last_chapter_no
@@ -142,18 +149,34 @@ class HadithBot(commands.Bot):
                 )
                 await self.send_formatted_name(channel, names)
 
-                # get hadith for the given hadith number, book number, chapter number and send message
-                hadith = get_hadith_in_same_chapter_and_book(
+                # get today's batch starting at the current position; this crosses
+                # chapter/book boundaries so the full daily count is sent even when
+                # the current chapter has fewer hadiths left than hadiths_per_day
+                hadith = get_next_hadiths(
                     last_hadith_no, last_book_no, last_chapter_no, hadiths_per_day
                 )
 
                 if hadith:
                     for h in hadith:
-                        await self.send_formatted_hadith(channel, h)
-                        last_hadith_no = h["id_in_book"]
+                        # Announce whenever a hadith opens a book/chapter different
+                        # from the previous one sent (a new book implies a new
+                        # chapter, so only send one banner).
+                        if h["book_id"] != prev_book_no:
+                            await self.send_new_book_message(channel, h)
+                        elif h["chapter_id"] != prev_chapter_no:
+                            await self.send_new_chapter_message(channel, h)
+                        prev_book_no = h["book_id"]
+                        prev_chapter_no = h["chapter_id"]
 
-                    # Calculate next hadith position for tomorrow
-                    next_hadith_no = last_hadith_no + 1
+                        await self.send_formatted_hadith(channel, h)
+
+                    # The last hadith sent may be in a later chapter/book than we
+                    # started; advance the saved position past it so tomorrow
+                    # continues from the right spot.
+                    last = hadith[-1]
+                    last_book_no = last["book_id"]
+                    last_chapter_no = last["chapter_id"]
+                    next_hadith_no = last["id_in_book"] + 1
 
                     save_channel_state(
                         channel_id,
@@ -164,7 +187,7 @@ class HadithBot(commands.Bot):
                     )
 
                     self.logger.info(
-                        f"Successfully sent hadith from book {last_book_no}, chapter {last_chapter_no}, hadith {last_hadith_no}"
+                        f"Successfully sent hadith up to book {last_book_no}, chapter {last_chapter_no}, hadith {last['id_in_book']}"
                     )
                 else:
                     self.logger.error(
@@ -212,6 +235,22 @@ class HadithBot(commands.Bot):
             )
         )
         return view
+
+    async def send_new_book_message(self, channel: discord.TextChannel, hadith: dict):
+        """Announce that the daily readings have moved into a new book."""
+        book = (hadith.get("books_metadata") or {}).get("english_title") or "a new book"
+        chapter = (hadith.get("chapters") or {}).get("english") or ""
+        message = f"> # 📖 We are now starting a new book: {book}\n"
+        if chapter:
+            message += f"> ### Beginning with Chapter: {chapter}\n"
+        await channel.send(message)
+
+    async def send_new_chapter_message(
+        self, channel: discord.TextChannel, hadith: dict
+    ):
+        """Announce that the daily readings have moved into a new chapter."""
+        chapter = (hadith.get("chapters") or {}).get("english") or "a new chapter"
+        await channel.send(f"> # 📖 We are now starting a new chapter: {chapter}\n")
 
     async def send_formatted_hadith(self, channel: discord.TextChannel, hadith: dict):
         """Send formatted hadith message"""

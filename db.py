@@ -174,6 +174,37 @@ def get_hadith_in_same_chapter_and_book(
     return res.data
 
 
+def get_next_hadiths(hadith_no: int, book_no: int, chapter_no: int, count: int = 1):
+    """Up to `count` hadiths in reading order starting at the given position.
+
+    Unlike get_hadith_in_same_chapter_and_book, this crosses chapter and book
+    boundaries: if the current chapter runs out mid-batch it keeps going into
+    the next chapter/book, so the configured daily count is always honoured.
+    Reading order is the global `id` column (same order used elsewhere, e.g.
+    get_random_hadith)."""
+    start = (
+        supabase.table("hadiths")
+        .select("id")
+        .eq("id_in_book", hadith_no)
+        .eq("book_id", book_no)
+        .eq("chapter_id", chapter_no)
+        .limit(1)
+        .execute()
+    )
+    if not start.data:
+        return []
+    start_id = start.data[0]["id"]
+    res = (
+        supabase.table("hadiths")
+        .select("*, chapters(*), books_metadata(*)")
+        .gte("id", start_id)
+        .order("id")
+        .limit(count)
+        .execute()
+    )
+    return res.data
+
+
 def check_hadith_exists(hadith_no: int, book_no: int, chapter_no: int):
     res = (
         supabase.table("hadiths")
