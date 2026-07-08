@@ -178,12 +178,16 @@ class HadithBot(commands.Bot):
                     last_chapter_no = last["chapter_id"]
                     next_hadith_no = last["id_in_book"] + 1
 
+                    guild = getattr(channel, "guild", None)
                     save_channel_state(
                         channel_id,
                         next_hadith_no,
                         current_name_index,
                         last_book_no,
                         last_chapter_no,
+                        channel_name=getattr(channel, "name", None),
+                        guild_id=str(guild.id) if guild else None,
+                        guild_name=guild.name if guild else None,
                     )
 
                     self.logger.info(
@@ -450,6 +454,9 @@ class HadithCommands(app_commands.Group):
             active=True,
             hadiths_per_day=hpd,
             names_per_day=npd,
+            channel_name=target.name,
+            guild_id=str(target.guild.id),
+            guild_name=target.guild.name,
         )
         verb = "updated for" if existing else "set up for"
         await interaction.followup.send(

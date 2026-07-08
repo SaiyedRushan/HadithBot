@@ -101,14 +101,24 @@ SUPABASE_KEY=your_supabase_anon_key
 ```sql
 CREATE TABLE discord_channel_state (
     channel_id TEXT PRIMARY KEY,
+    channel_name TEXT,
+    guild_id TEXT,
+    guild_name TEXT,
     last_hadith_no INTEGER NOT NULL DEFAULT 1,
     last_name_no INTEGER NOT NULL DEFAULT 1,
     last_book_id INTEGER NOT NULL DEFAULT 1,
     last_chapter_id INTEGER NOT NULL DEFAULT 1,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    hadiths_per_day INTEGER NOT NULL DEFAULT 3,
+    names_per_day INTEGER NOT NULL DEFAULT 3,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ```
+
+`channel_name`, `guild_name`, and `guild_id` are stored purely for readability
+(so you can tell rows apart in the Supabase dashboard) — the bot keys everything
+off `channel_id`. They're refreshed on every save, so renames stay in sync.
 
 #### `hadiths` table:
 
@@ -397,19 +407,16 @@ The bot automatically handles daily message scheduling using Discord.py's task l
 ### Common Issues
 
 1. **Bot not responding to commands**:
-
    - Verify bot permissions in Discord server
    - Check if commands are synced (`await self.tree.sync()` in setup_hook)
    - Ensure bot token is correct
 
 2. **Database connection errors**:
-
    - Verify Supabase URL and key
    - Check Supabase project status
    - Ensure tables exist with correct schema
 
 3. **Daily messages not sending**:
-
    - Check timezone configuration
    - Verify channel IDs in database
    - Review bot permissions in target channels

@@ -28,6 +28,9 @@ def save_channel_state(
     active: Optional[bool] = None,
     hadiths_per_day: Optional[int] = None,
     names_per_day: Optional[int] = None,
+    channel_name: Optional[str] = None,
+    guild_id: Optional[str] = None,
+    guild_name: Optional[str] = None,
 ):
     record = {
         "channel_id": channel_id,
@@ -36,7 +39,7 @@ def save_channel_state(
         "last_book_id": last_book_no,
         "last_chapter_id": last_chapter_no,
     }
-    # Only touch these when explicitly given. The daily progress-save omits them
+    # Only touch these when explicitly given. The daily progress-save omits some
     # so the upsert preserves the existing values; setup passes them in.
     if active is not None:
         record["active"] = active
@@ -44,6 +47,14 @@ def save_channel_state(
         record["hadiths_per_day"] = hadiths_per_day
     if names_per_day is not None:
         record["names_per_day"] = names_per_day
+    # Human-readable labels so rows are identifiable at a glance. Refreshed on
+    # every save (server/channel renames happen), hence not gated behind "new only".
+    if channel_name is not None:
+        record["channel_name"] = channel_name
+    if guild_id is not None:
+        record["guild_id"] = guild_id
+    if guild_name is not None:
+        record["guild_name"] = guild_name
     supabase.table("discord_channel_state").upsert(
         record,
         on_conflict="channel_id",
