@@ -98,6 +98,10 @@ def getNameFormattedMessage(name) -> str:
     formatted_message = ""
     formatted_message += f"> ### ({name.number}) - {name.name} - {name.transliteration}\n"
     formatted_message += f"> {name.en['meaning']} - {name.en['desc']}\n"
+    # Optional practical note on how/when to invoke this name in dua.
+    dua = name.en.get("dua")
+    if dua:
+        formatted_message += f"> \n> 🤲 **In your dua:** {dua}\n"
     return formatted_message
 
 
