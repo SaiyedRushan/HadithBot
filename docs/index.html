@@ -61,6 +61,8 @@
         background: var(--cream);
         line-height: 1.6;
         -webkit-font-smoothing: antialiased;
+        overflow-wrap: break-word;
+        -webkit-tap-highlight-color: rgba(14, 92, 63, 0.12);
       }
       a {
         color: var(--emerald);
@@ -107,6 +109,12 @@
         text-decoration: none;
         transform: translateY(-1px);
       }
+      /* no lift on touch devices — hover states stick after a tap */
+      @media (hover: none) {
+        .btn:hover {
+          transform: none;
+        }
+      }
       .btn-primary {
         background: var(--emerald);
         color: #fff;
@@ -137,12 +145,15 @@
       .nav {
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        gap: 20px;
         height: 68px;
       }
       .brand {
         display: flex;
         align-items: center;
+        /* absorbs the free space, so links + actions stay right-aligned
+           whether or not .nav-links is visible */
+        margin-right: auto;
         gap: 11px;
         font-family: var(--serif);
         font-size: 1.28rem;
@@ -163,6 +174,9 @@
         font-size: 18px;
         box-shadow: inset 0 0 0 1px rgba(216, 183, 95, 0.35);
       }
+      .brand .name {
+        white-space: nowrap;
+      }
       .nav-links {
         display: flex;
         align-items: center;
@@ -177,9 +191,69 @@
         color: var(--emerald);
         text-decoration: none;
       }
-      @media (max-width: 760px) {
-        .nav-links .lnk {
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .menu-toggle {
+        display: none;
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--ink);
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
+        cursor: pointer;
+        font-size: 1.15rem;
+        line-height: 1;
+        place-items: center;
+        flex: none;
+      }
+      .menu-toggle:hover {
+        border-color: var(--emerald);
+      }
+
+      /* mobile dropdown panel */
+      .mobile-menu {
+        display: none;
+        background: var(--cream);
+        border-top: 1px solid var(--line);
+      }
+      .mobile-menu.open {
+        display: block;
+      }
+      .mobile-menu .wrap {
+        display: flex;
+        flex-direction: column;
+        padding-top: 6px;
+        padding-bottom: 18px;
+      }
+      .mobile-menu a.lnk {
+        color: var(--ink);
+        font-weight: 500;
+        font-size: 1.02rem;
+        padding: 14px 2px;
+        border-bottom: 1px solid var(--line);
+      }
+      .mobile-menu a.lnk:hover {
+        text-decoration: none;
+        color: var(--emerald);
+      }
+      .mobile-menu .btn {
+        margin-top: 18px;
+        justify-content: center;
+      }
+
+      @media (max-width: 860px) {
+        .nav-links {
           display: none;
+        }
+        .nav-actions .invite-btn {
+          display: none;
+        }
+        .menu-toggle {
+          display: grid;
         }
       }
 
@@ -203,12 +277,15 @@
         grid-template-columns: 1.05fr 0.95fr;
         gap: 48px;
         align-items: center;
-        padding: 72px 0 84px;
+        /* vertical longhands so .wrap keeps supplying the horizontal padding */
+        padding-top: 72px;
+        padding-bottom: 84px;
       }
       @media (max-width: 880px) {
         .hero-grid {
           grid-template-columns: 1fr;
-          padding: 48px 0 56px;
+          padding-top: 40px;
+          padding-bottom: 56px;
           gap: 36px;
         }
       }
@@ -311,17 +388,31 @@
       .preview .block b {
         color: #fff;
       }
-      .preview .label {
-        color: var(--gold-soft);
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        font-weight: 700;
+      .preview .dua {
+        margin-top: 8px;
+      }
+      .preview .dua b {
+        color: #fff;
+      }
+      /* mimics Discord's link-button under the hadith */
+      .preview .srcbtn {
+        display: inline-block;
+        margin-top: 10px;
+        background: #4f545c;
+        color: #fff;
+        border-radius: 5px;
+        padding: 5px 11px;
+        font-size: 0.78rem;
+        font-weight: 500;
       }
 
       /* ---------- sections ---------- */
       section {
         padding: 76px 0;
+      }
+      /* keep anchored sections clear of the sticky header */
+      section[id] {
+        scroll-margin-top: 80px;
       }
       .section-head {
         text-align: center;
@@ -352,20 +443,64 @@
         border-bottom: 1px solid var(--line);
       }
 
-      /* features */
+      /* real Discord screenshot */
+      .shot {
+        margin: 0;
+      }
+      .shot-link {
+        display: block;
+        border-radius: var(--radius);
+        overflow: hidden;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        background: #1e2124;
+        line-height: 0;
+      }
+      .shot-link:hover {
+        text-decoration: none;
+        border-color: var(--emerald);
+      }
+      .shot img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .shot figcaption {
+        margin-top: 14px;
+        text-align: center;
+        color: var(--ink-soft);
+        font-size: 0.9rem;
+      }
+      /* the screenshot's text is too small to read on a phone — offer the full size */
+      .shot-hint {
+        display: none;
+      }
+      @media (max-width: 760px) {
+        .shot-hint {
+          display: inline;
+        }
+      }
+
+      /* features — flex rather than grid so a partial last row centres itself
+         instead of leaving a hole where the empty cells would be */
       .features {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
         gap: 22px;
       }
+      .features .card {
+        flex: 1 1 260px;
+        max-width: calc((100% - 44px) / 3);
+      }
       @media (max-width: 880px) {
-        .features {
-          grid-template-columns: 1fr 1fr;
+        .features .card {
+          max-width: calc((100% - 22px) / 2);
         }
       }
       @media (max-width: 560px) {
-        .features {
-          grid-template-columns: 1fr;
+        .features .card {
+          max-width: 100%;
         }
       }
       .card {
@@ -453,26 +588,37 @@
       }
 
       /* code/command snippet */
+      /* code area scrolls on its own so long commands never slide under Copy */
       .snippet {
-        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
         background: var(--emerald-deep);
         color: #eafff5;
         border-radius: 12px;
-        padding: 16px 18px;
+        padding: 14px 14px 14px 16px;
         font-family: "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
         font-size: 0.9rem;
-        overflow-x: auto;
         margin: 16px 0;
       }
+      .snippet .code-text {
+        order: 1;
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow-x: auto;
+        white-space: pre;
+        -webkit-overflow-scrolling: touch;
+        padding: 2px 0;
+      }
       .snippet .copy {
-        position: absolute;
-        top: 8px;
-        right: 8px;
+        order: 2;
+        flex: none;
+        align-self: flex-start;
         background: rgba(255, 255, 255, 0.12);
         color: #fff;
         border: none;
         border-radius: 7px;
-        padding: 5px 10px;
+        padding: 6px 11px;
         font-size: 0.78rem;
         cursor: pointer;
         font-family: var(--sans);
@@ -487,6 +633,12 @@
         grid-template-columns: 1fr 1fr;
         gap: 36px;
         align-items: start;
+      }
+      /* grid items default to min-width:auto and won't shrink below the widest
+         unbreakable command string — that overflows the page on phones */
+      .config-grid > *,
+      .hero-grid > * {
+        min-width: 0;
       }
       @media (max-width: 820px) {
         .config-grid {
@@ -577,6 +729,68 @@
       .pill-mod {
         background: rgba(193, 154, 62, 0.16);
         color: #8a6a1c;
+      }
+      /* on phones the table becomes a stack of cards instead of a side-scroll */
+      @media (max-width: 620px) {
+        .table-scroll {
+          overflow-x: visible;
+          border: none;
+          border-radius: 0;
+          box-shadow: none;
+          background: transparent;
+        }
+        table,
+        tbody,
+        tr,
+        td {
+          display: block;
+          width: 100%;
+        }
+        table {
+          min-width: 0;
+        }
+        thead {
+          display: none;
+        }
+        tbody tr {
+          background: var(--cream-card);
+          border: 1px solid var(--line);
+          border-radius: var(--radius);
+          box-shadow: var(--shadow);
+          padding: 16px;
+          margin-bottom: 12px;
+        }
+        tbody tr:last-child {
+          margin-bottom: 0;
+        }
+        td,
+        tbody tr:last-child td {
+          border-bottom: none;
+          padding: 0;
+        }
+        td + td {
+          margin-top: 10px;
+        }
+        td:nth-child(2)::before,
+        td:nth-child(3)::before {
+          display: block;
+          font-size: 0.7rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: var(--ink-soft);
+          margin-bottom: 3px;
+        }
+        td:nth-child(2)::before {
+          content: "What it does";
+        }
+        td:nth-child(3)::before {
+          content: "Who can run it";
+        }
+        td code {
+          white-space: normal;
+          font-size: 0.92em;
+        }
       }
 
       /* faq */
@@ -679,6 +893,118 @@
         gap: 22px;
       }
 
+      /* ---------- small screens ---------- */
+      @media (max-width: 700px) {
+        /* longhands only — the `padding` shorthand would reset the vertical
+           padding that .hero-grid and friends set on their own .wrap element */
+        .wrap {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+        .nav {
+          height: 60px;
+        }
+        section {
+          padding: 56px 0;
+        }
+        section[id] {
+          scroll-margin-top: 68px;
+        }
+        .section-head {
+          margin-bottom: 34px;
+        }
+        .section-head p {
+          font-size: 1rem;
+        }
+        .hero p.lead {
+          font-size: 1.06rem;
+          max-width: none;
+          margin-bottom: 24px;
+        }
+        .bismillah {
+          font-size: 1.3rem;
+        }
+        .preview {
+          padding: 16px;
+          font-size: 0.88rem;
+        }
+        .preview .msg {
+          gap: 10px;
+        }
+        .preview .avatar {
+          width: 34px;
+          height: 34px;
+          font-size: 16px;
+        }
+        .card {
+          padding: 22px;
+        }
+        .step {
+          padding: 26px 22px 22px;
+        }
+        .config-grid {
+          gap: 28px;
+        }
+        /* wrap long commands rather than hiding them in a side-scroll */
+        .snippet {
+          font-size: 0.85rem;
+          align-items: flex-start;
+        }
+        .snippet .code-text {
+          white-space: pre-wrap;
+          overflow-wrap: anywhere;
+          overflow-x: visible;
+        }
+        details {
+          padding: 2px 16px;
+        }
+        summary {
+          font-size: 1rem;
+        }
+        .final {
+          padding: 44px 22px;
+          border-radius: 20px;
+        }
+        .final p {
+          font-size: 1.02rem;
+        }
+        .final::before {
+          font-size: 8rem;
+          top: -20px;
+        }
+        footer {
+          padding: 28px 0;
+        }
+        .foot {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .brand {
+          font-size: 1.14rem;
+        }
+        .eyebrow {
+          font-size: 0.76rem;
+        }
+        /* stack CTAs full-width so they're comfortable thumb targets */
+        .hero-cta {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .hero-cta .btn,
+        .steps-cta .btn,
+        .final .btn {
+          width: 100%;
+          justify-content: center;
+        }
+        .foot-links {
+          gap: 18px;
+          flex-wrap: wrap;
+        }
+      }
+
       /* ---------- theme toggle ---------- */
       .theme-toggle {
         background: transparent;
@@ -757,7 +1083,7 @@
       <div class="wrap nav">
         <a href="#top" class="brand">
           <span class="mark">☾</span>
-          HadithBot
+          <span class="name">HadithBot</span>
         </a>
         <nav class="nav-links">
           <a class="lnk" href="#features">Features</a>
@@ -771,6 +1097,8 @@
             rel="noopener"
             >GitHub</a
           >
+        </nav>
+        <div class="nav-actions">
           <button
             class="theme-toggle"
             id="themeToggle"
@@ -781,7 +1109,34 @@
             🌙
           </button>
           <a class="btn btn-primary invite-btn" href="#">Add to Discord</a>
-        </nav>
+          <button
+            class="menu-toggle"
+            id="menuToggle"
+            type="button"
+            aria-label="Open menu"
+            aria-expanded="false"
+            aria-controls="mobileMenu"
+          >
+            ☰
+          </button>
+        </div>
+      </div>
+      <div class="mobile-menu" id="mobileMenu">
+        <div class="wrap">
+          <a class="lnk" href="#features">Features</a>
+          <a class="lnk" href="#add">Add it</a>
+          <a class="lnk" href="#configure">Configure</a>
+          <a class="lnk" href="#commands">Commands</a>
+          <a class="lnk" href="#faq">FAQ</a>
+          <a
+            class="lnk"
+            href="https://github.com/SaiyedRushan/HadithBot"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >
+          <a class="btn btn-primary invite-btn" href="#">☾ Add to Discord</a>
+        </div>
       </div>
     </header>
 
@@ -821,21 +1176,77 @@
                   ><span class="time">Today at 6:00 PM</span>
                 </div>
                 <div class="greeting">
-                  Assalamu Alaikum — here is today's hadith and one of Allah's
-                  beautiful names 🌙
+                  Assalamu Alaikum Warahmatullahi Wabarakatuh, here is today's
+                  hadith and one of Allah's beautiful name
                 </div>
                 <div class="block">
-                  <div class="label">Name of Allah</div>
-                  <b>Ar-Rahman</b> — The Most Compassionate
+                  <b>(33) - الْعَظِيمُ - Al-'Azeem</b>
+                  <div>
+                    The Magnificent — whose greatness and majesty are beyond any
+                    measure.
+                  </div>
+                  <div class="dua">
+                    🤲 <b>In your dua:</b> Call upon Al-'Azeem when your troubles
+                    feel overwhelming.
+                  </div>
                 </div>
                 <div class="block">
-                  <div class="label">Hadith of the day</div>
-                  "The best among you are those who have the best manners and
-                  character." <b>— Sahih al-Bukhari</b>
+                  <b>Book: Riyad as-Salihin - Chapter: The Remembrance of Allah</b>
+                  <div>
+                    "Keep your tongue wet with the remembrance of Allah."
+                  </div>
+                  <span class="srcbtn">🔎 Look up on Sunnah.com</span>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- LIVE EXAMPLE -->
+      <section id="example" class="alt">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="kicker">From a live server</span>
+            <h2>What it actually looks like</h2>
+            <p>
+              A real daily message: each of Allah's names with its meaning and a
+              short reflection, then the hadith with a link straight to its
+              source.
+            </p>
+          </div>
+          <figure class="shot">
+            <a
+              class="shot-link"
+              href="img/discord-example.png"
+              target="_blank"
+              rel="noopener"
+            >
+              <picture>
+                <source
+                  type="image/webp"
+                  srcset="
+                    img/discord-example-800.webp   800w,
+                    img/discord-example-1600.webp 1600w
+                  "
+                  sizes="(max-width: 1080px) 100vw, 1032px"
+                />
+                <img
+                  src="img/discord-example.png"
+                  width="1600"
+                  height="934"
+                  loading="lazy"
+                  decoding="async"
+                  alt="HadithBot's daily message in a Discord channel: the names Al-'Azeem and Al-Ghafoor with their meanings and a dua reflection, followed by a hadith from Riyad as-Salihin with a 'Look up on Sunnah.com' button."
+                />
+              </picture>
+            </a>
+            <figcaption>
+              Posted automatically at 6:00&nbsp;PM — here under the nickname
+              “Akh”, since every server can rename the bot.
+              <span class="shot-hint">Tap to view it full size.</span>
+            </figcaption>
+          </figure>
         </div>
       </section>
 
@@ -871,8 +1282,24 @@
               <div class="ico">📿</div>
               <h3>The 99 names</h3>
               <p>
-                Works steadily through the beautiful names of Allah, each with
-                its meaning, so the whole list is covered over time.
+                Works steadily through the beautiful names of Allah, in order,
+                so the whole list is covered over time.
+              </p>
+            </div>
+            <div class="card">
+              <div class="ico">🤲</div>
+              <h3>A reflection with every name</h3>
+              <p>
+                Each name arrives with its meaning and a short note on when to
+                call upon it in your dua — all 99 of them.
+              </p>
+            </div>
+            <div class="card">
+              <div class="ico">🔎</div>
+              <h3>Straight to the source</h3>
+              <p>
+                Every hadith names its book and chapter, and comes with a button
+                to look it up on Sunnah.com.
               </p>
             </div>
             <div class="card">
@@ -1256,6 +1683,33 @@
             localStorage.setItem("hb-theme", next);
           } catch (e) {}
           setIcon();
+        });
+      })();
+
+      // Mobile menu: toggle the panel, close on navigate / Escape / resize to desktop
+      (function () {
+        var btn = document.getElementById("menuToggle");
+        var menu = document.getElementById("mobileMenu");
+        function close() {
+          menu.classList.remove("open");
+          btn.setAttribute("aria-expanded", "false");
+          btn.setAttribute("aria-label", "Open menu");
+          btn.textContent = "☰";
+        }
+        btn.addEventListener("click", function () {
+          var open = menu.classList.toggle("open");
+          btn.setAttribute("aria-expanded", open ? "true" : "false");
+          btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+          btn.textContent = open ? "✕" : "☰";
+        });
+        menu.querySelectorAll("a").forEach(function (a) {
+          a.addEventListener("click", close);
+        });
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape") close();
+        });
+        matchMedia("(min-width: 861px)").addEventListener("change", function (e) {
+          if (e.matches) close();
         });
       })();
 
