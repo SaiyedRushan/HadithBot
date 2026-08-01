@@ -443,6 +443,67 @@
         border-bottom: 1px solid var(--line);
       }
 
+      /* ---------- sister apps ---------- */
+      .apps {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 22px;
+      }
+      .app-card {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        background: var(--cream-card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 26px;
+        box-shadow: var(--shadow);
+        color: inherit;
+        transition: transform 0.15s ease, border-color 0.15s ease;
+      }
+      .app-card:hover {
+        text-decoration: none;
+        transform: translateY(-3px);
+        border-color: var(--emerald);
+      }
+      @media (hover: none) {
+        .app-card:hover {
+          transform: none;
+        }
+      }
+      .app-card .ico {
+        width: 44px;
+        height: 44px;
+        border-radius: 11px;
+        background: rgba(14, 92, 63, 0.09);
+        display: grid;
+        place-items: center;
+        font-size: 22px;
+        margin-bottom: 16px;
+      }
+      .app-card .platform {
+        color: var(--gold);
+        font-weight: 700;
+        font-size: 0.74rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .app-card h3 {
+        font-size: 1.18rem;
+        margin: 6px 0 0;
+      }
+      .app-card p {
+        color: var(--ink-soft);
+        margin: 10px 0 0;
+        font-size: 0.96rem;
+      }
+      .app-card .go {
+        margin-top: 16px;
+        font-weight: 600;
+        font-size: 0.92rem;
+        color: var(--emerald);
+      }
+
       /* real Discord screenshot */
       .shot {
         margin: 0;
@@ -1603,8 +1664,88 @@
         </div>
       </section>
 
+      <!-- SISTER APPS -->
+      <section id="more-apps" class="alt">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="kicker">More apps</span>
+            <h2>Built for the same reason</h2>
+            <p>
+              A small family of free, private tools for everyday Muslim life. No
+              accounts, no ads, no tracking — take whatever helps.
+            </p>
+          </div>
+          <div class="apps">
+            <a
+              class="app-card"
+              href="https://saiyedrushan.github.io/hayya-site/"
+              target="_blank"
+              rel="noopener"
+            >
+              <div class="ico">📞</div>
+              <span class="platform">iPhone · Android</span>
+              <h3>Hayya — Prayer Alarm</h3>
+              <p>
+                Prayer times that ring like an incoming call — full-screen, with
+                a real ringtone, calling back until you answer. Answering logs
+                the prayer and grows a streak you have to earn.
+              </p>
+              <span class="go">Get the app →</span>
+            </a>
+            <a
+              class="app-card"
+              href="https://learn-quran.app"
+              target="_blank"
+              rel="noopener"
+            >
+              <div class="ico">📖</div>
+              <span class="platform">Web · Android</span>
+              <h3>Learn Quran</h3>
+              <p>
+                Section-by-section memorization guides for Juz 29 and 30 —
+                verified Arabic and translation, key vocabulary, memory hooks, a
+                recitation guide, and drills to test yourself.
+              </p>
+              <span class="go">learn-quran.app →</span>
+            </a>
+            <a
+              class="app-card"
+              href="https://lower-your-gaze.vercel.app"
+              target="_blank"
+              rel="noopener"
+            >
+              <div class="ico">🌿</div>
+              <span class="platform">Web</span>
+              <h3>Lower Your Gaze</h3>
+              <p>
+                A quiet companion for guarding your gaze — a daily reminder, a
+                check-in streak, a library of practical tactics, and a
+                full-screen refuge for the moment an urge hits.
+              </p>
+              <span class="go">lower-your-gaze.vercel.app →</span>
+            </a>
+            <a
+              class="app-card"
+              href="https://saiyedrushan.github.io/marketplace-dua/"
+              target="_blank"
+              rel="noopener"
+            >
+              <div class="ico">🛒</div>
+              <span class="platform">Chrome extension</span>
+              <h3>Marketplace Du'a</h3>
+              <p>
+                A browser extension that gently reminds you of the du'a for
+                entering the marketplace when you land on Amazon, eBay, or any
+                shop you add yourself.
+              </p>
+              <span class="go">Get the extension →</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
       <!-- FINAL CTA -->
-      <section style="padding-top: 0">
+      <section>
         <div class="wrap">
           <div class="final">
             <h2>Bring daily reminders to your server</h2>
@@ -1627,6 +1768,7 @@
         <div class="foot-links">
           <a href="#features">Features</a>
           <a href="#commands">Commands</a>
+          <a href="#more-apps">More apps</a>
           <a
             href="https://github.com/SaiyedRushan/HadithBot"
             target="_blank"
