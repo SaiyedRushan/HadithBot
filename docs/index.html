@@ -1553,16 +1553,22 @@
       /* ---------- scroll reveal ---------- */
       /* Hidden up front only when JS is running (html.js), so the page still
          reads fine if the reveal script never gets to run. */
-      html.js .section-head,
-      html.js .shot,
-      html.js .features .card,
-      html.js .steps .step,
-      html.js .steps-cta,
-      html.js .config-block,
-      html.js .table-scroll,
-      html.js .faq details,
-      html.js .apps .app-card,
-      html.js .final {
+      /* :where() keeps the hidden state at a single class of specificity, so
+         .revealed below always outranks it — a bare `.features .card` would
+         otherwise be the more specific selector and stay hidden forever. */
+      html.js
+        :where(
+          .section-head,
+          .shot,
+          .features .card,
+          .steps .step,
+          .steps-cta,
+          .config-block,
+          .table-scroll,
+          .faq details,
+          .apps .app-card,
+          .final
+        ) {
         opacity: 0;
         transform: translateY(22px);
         transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s),
