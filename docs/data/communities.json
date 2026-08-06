@@ -1,0 +1,29 @@
+{
+  "_readme": [
+    "Communities shown on the website's wall, in the order they appear.",
+    "This file is hand-curated on purpose: a server is listed only when one of",
+    "its admins has asked to be, never automatically because the bot happens to",
+    "be installed there. Requests come in through the 'Add my community' issue",
+    "template, which carries the consent checkbox.",
+    "",
+    "Fields — name is required, the rest are optional:",
+    "  name      Full name as its members would write it.",
+    "  location  Campus, city, or country. Shown under the name.",
+    "  initials  Monogram for the crest. Derived from the name when omitted.",
+    "  logo      Path under docs/, e.g. 'img/communities/yorku.png'. Replaces the",
+    "            monogram. Square images look best; only use one you've been given",
+    "            permission to use.",
+    "  url       Optional link — their site or a public invite. Makes the card a link.",
+    "",
+    "After editing, run `make site` to regenerate the wall in docs/index.html."
+  ],
+  "communities": [
+    {
+      "name": "York University MSA",
+      "location": "Toronto, Canada",
+      "initials": "YU",
+      "logo": "img/communities/york-msa.png",
+      "url": "https://yorkumsa.com/"
+    }
+  ]
+}

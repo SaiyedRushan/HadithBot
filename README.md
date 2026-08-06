@@ -26,6 +26,8 @@ A Discord bot that sends daily Islamic hadiths and the 99 beautiful names of All
 - `db.py` - Database operations and Supabase integration
 - `utils.py` - Data models and utility functions
 - `test_setup.py` - Setup verification script
+- `update_site.py` - Regenerates the site's usage counts and community wall (`make site`)
+- `OUTREACH.md` - Copy-paste templates for introducing the bot to new communities
 - `pyproject.toml` / `uv.lock` - Dependencies and lockfile (managed with uv)
 - `Makefile` - Common dev tasks (`make dev` / `test` / `lint`)
 - `.env.example` - Environment variables template
@@ -33,6 +35,7 @@ A Discord bot that sends daily Islamic hadiths and the 99 beautiful names of All
 - `docker-compose.yml` - Multi-container orchestration
 - `Procfile` - Heroku deployment configuration
 - `data/99names.json` - The 99 beautiful names of Allah
+- `docs/data/communities.json` - Communities listed on the website, opt-in only
 
 ## Prerequisites
 

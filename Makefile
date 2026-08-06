@@ -1,4 +1,4 @@
-.PHONY: install dev dev-server test lint format
+.PHONY: install dev dev-server test lint format site site-wall
 
 install:  ## Install all deps (runtime + dev) into .venv
 	uv sync
@@ -17,3 +17,9 @@ lint:  ## Lint (undefined names, bad imports, style) -- ruff
 
 format:  ## Auto-format and fix lint issues -- ruff
 	uv run ruff format . && uv run ruff check --fix .
+
+site:  ## Regenerate the site's usage counts and community wall (needs SUPABASE_*)
+	uv run python update_site.py
+
+site-wall:  ## Regenerate just the community wall, without touching the database
+	uv run python update_site.py --no-stats
