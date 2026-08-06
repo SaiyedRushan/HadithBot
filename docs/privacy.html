@@ -8,11 +8,10 @@
       name="description"
       content="What HadithBot stores, what it deliberately doesn't, and how to have it deleted. No accounts, no tracking, no message content."
     />
-    <meta name="theme-color" content="#0e5c3f" />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230e5c3f'/><circle cx='44' cy='52' r='27' fill='%23d8b75f'/><circle cx='57' cy='43' r='23' fill='%230e5c3f'/><circle cx='70' cy='60' r='5' fill='%23d8b75f'/></svg>"
-    />
+    <meta name="theme-color" content="#5e4a2a" />
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="144x144" href="img/akh.png" />
+    <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
     <script>
       // Apply theme before paint (no flash): stored choice, else system preference.
       (function () {
@@ -30,19 +29,19 @@
       /* Same tokens as index.html — kept in sync by hand; these pages are
          deliberately small enough not to need the full landing-page stylesheet. */
       :root {
-        --emerald: #0e5c3f;
-        --emerald-deep: #0a3f2c;
-        --emerald-soft: #137a52;
-        --gold: #c19a3e;
-        --gold-soft: #d8b75f;
-        --cream: #fbf8f1;
-        --cream-card: #ffffff;
-        --ink: #1b241f;
-        --ink-soft: #4d5a52;
-        --line: #e7e2d6;
+        --brand: #5e4a2a;
+        --brand-deep: #232419;
+        --brand-soft: #7d6440;
+        --accent: #c8883a;
+        --accent-soft: #ddbb74;
+        --cream: #f5f1e1;
+        --cream-card: #fffdf6;
+        --ink: #26231a;
+        --ink-soft: #6b6450;
+        --line: #e4dcc4;
         --radius: 16px;
-        --shadow: 0 1px 2px rgba(14, 92, 63, 0.04),
-          0 12px 32px -12px rgba(14, 92, 63, 0.18);
+        --shadow: 0 1px 2px rgba(94, 74, 42, 0.04),
+          0 12px 32px -12px rgba(94, 74, 42, 0.18);
         --maxw: 760px;
         --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
           "Times New Roman", serif;
@@ -61,10 +60,10 @@
         line-height: 1.7;
         -webkit-font-smoothing: antialiased;
         overflow-wrap: break-word;
-        -webkit-tap-highlight-color: rgba(14, 92, 63, 0.12);
+        -webkit-tap-highlight-color: rgba(94, 74, 42, 0.12);
       }
       a {
-        color: var(--emerald);
+        color: var(--brand);
         text-decoration: none;
       }
       a:hover {
@@ -94,7 +93,7 @@
         position: sticky;
         top: 0;
         z-index: 50;
-        background: rgba(251, 248, 241, 0.85);
+        background: rgba(245, 241, 225, 0.85);
         backdrop-filter: blur(10px);
         border-bottom: 1px solid var(--line);
       }
@@ -121,13 +120,21 @@
         width: 34px;
         height: 34px;
         border-radius: 9px;
-        background: linear-gradient(140deg, var(--emerald), var(--emerald-deep));
-        color: var(--gold-soft);
+        background: linear-gradient(140deg, var(--brand), var(--brand-deep));
+        color: var(--accent-soft);
         display: grid;
         place-items: center;
         font-size: 18px;
-        box-shadow: inset 0 0 0 1px rgba(216, 183, 95, 0.35);
+        /* clips the painting to the rounded corners; the inset ring sits on top */
+        overflow: hidden;
+        box-shadow: inset 0 0 0 1px rgba(221, 187, 116, 0.35);
         flex: none;
+      }
+      .mark img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
       }
       .brand .name {
         white-space: nowrap;
@@ -138,7 +145,7 @@
         font-size: 0.95rem;
       }
       .nav a.lnk:hover {
-        color: var(--emerald);
+        color: var(--brand);
         text-decoration: none;
       }
       .theme-toggle {
@@ -157,8 +164,8 @@
         flex: none;
       }
       .theme-toggle:hover {
-        border-color: var(--emerald);
-        background: rgba(14, 92, 63, 0.06);
+        border-color: var(--brand);
+        background: rgba(94, 74, 42, 0.06);
       }
 
       /* ---------- document ---------- */
@@ -178,7 +185,7 @@
         letter-spacing: 0.14em;
         text-transform: uppercase;
         font-weight: 700;
-        color: var(--emerald);
+        color: var(--brand);
       }
       .updated {
         color: var(--ink-soft);
@@ -188,7 +195,7 @@
       .summary {
         background: var(--cream-card);
         border: 1px solid var(--line);
-        border-left: 3px solid var(--gold);
+        border-left: 3px solid var(--accent);
         border-radius: var(--radius);
         padding: 22px 24px;
         margin: 0 0 44px;
@@ -222,8 +229,8 @@
       .inline-code {
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-size: 0.9em;
-        background: rgba(14, 92, 63, 0.07);
-        color: var(--emerald);
+        background: rgba(94, 74, 42, 0.07);
+        color: var(--brand);
         padding: 2px 7px;
         border-radius: 6px;
       }
@@ -308,28 +315,28 @@
 
       /* ---------- dark mode ---------- */
       :root[data-theme="dark"] {
-        --emerald: #1f9a61;
-        --emerald-deep: #0a3f2c;
-        --emerald-soft: #28b673;
-        --gold: #d8b75f;
-        --gold-soft: #ecd695;
-        --cream: #0e1411;
-        --cream-card: #161e1a;
-        --ink: #eaf1ec;
-        --ink-soft: #9db0a6;
-        --line: #273229;
+        --brand: #d2a869;
+        --brand-deep: #232419;
+        --brand-soft: #e3c08a;
+        --accent: #ddbb74;
+        --accent-soft: #f0dcae;
+        --cream: #14140e;
+        --cream-card: #1e1f16;
+        --ink: #ece7d3;
+        --ink-soft: #aaa591;
+        --line: #33362a;
         --shadow: 0 1px 2px rgba(0, 0, 0, 0.4),
           0 16px 40px -16px rgba(0, 0, 0, 0.7);
       }
       :root[data-theme="dark"] header {
-        background: rgba(14, 20, 17, 0.85);
+        background: rgba(20, 20, 14, 0.85);
       }
       :root[data-theme="dark"] .inline-code {
-        color: var(--emerald-soft);
-        background: rgba(40, 182, 115, 0.14);
+        color: var(--brand-soft);
+        background: rgba(210, 168, 105, 0.14);
       }
       :root[data-theme="dark"] .theme-toggle:hover {
-        background: rgba(40, 182, 115, 0.1);
+        background: rgba(210, 168, 105, 0.1);
       }
     </style>
   </head>
@@ -337,7 +344,7 @@
     <header>
       <div class="wrap nav">
         <a href="index.html" class="brand">
-          <span class="mark">☾</span>
+          <span class="mark"><img src="img/akh.png" alt="" width="34" height="34" /></span>
           <span class="name">HadithBot</span>
         </a>
         <a class="lnk" href="index.html">← Back to site</a>
@@ -562,7 +569,7 @@
     <footer>
       <div class="wrap foot">
         <div>
-          <span class="arabic" style="color: var(--emerald)">﷽</span>
+          <span class="arabic" style="color: var(--brand)">﷽</span>
           &nbsp; HadithBot — built with care.
         </div>
         <div class="foot-links">

@@ -8,11 +8,10 @@
       name="description"
       content="HadithBot delivers a daily hadith and the 99 beautiful names of Allah to your Discord server, and answers on-demand slash commands. Free and open source."
     />
-    <meta name="theme-color" content="#0e5c3f" />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230e5c3f'/><circle cx='44' cy='52' r='27' fill='%23d8b75f'/><circle cx='57' cy='43' r='23' fill='%230e5c3f'/><circle cx='70' cy='60' r='5' fill='%23d8b75f'/></svg>"
-    />
+    <meta name="theme-color" content="#5e4a2a" />
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="144x144" href="img/akh.png" />
+    <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
     <script>
       // Apply theme before paint (no flash): stored choice, else system preference.
       (function () {
@@ -28,19 +27,22 @@
     </script>
     <style>
       :root {
-        --emerald: #0e5c3f;
-        --emerald-deep: #0a3f2c;
-        --emerald-soft: #137a52;
-        --gold: #c19a3e;
-        --gold-soft: #d8b75f;
-        --cream: #fbf8f1;
-        --cream-card: #ffffff;
-        --ink: #1b241f;
-        --ink-soft: #4d5a52;
-        --line: #e7e2d6;
+        --brand: #5e4a2a;
+        --brand-deep: #232419;
+        --brand-soft: #7d6440;
+        --accent: #c8883a;
+        --accent-soft: #ddbb74;
+        /* The ochre is a fill colour; as small text on cream it only reaches
+           2.6:1, so text uses this darker shade instead (5.1:1). */
+        --accent-ink: #8c5c1c;
+        --cream: #f5f1e1;
+        --cream-card: #fffdf6;
+        --ink: #26231a;
+        --ink-soft: #6b6450;
+        --line: #e4dcc4;
         --radius: 16px;
-        --shadow: 0 1px 2px rgba(14, 92, 63, 0.04),
-          0 12px 32px -12px rgba(14, 92, 63, 0.18);
+        --shadow: 0 1px 2px rgba(94, 74, 42, 0.04),
+          0 12px 32px -12px rgba(94, 74, 42, 0.18);
         --maxw: 1080px;
         --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
           "Times New Roman", serif;
@@ -62,10 +64,10 @@
         line-height: 1.6;
         -webkit-font-smoothing: antialiased;
         overflow-wrap: break-word;
-        -webkit-tap-highlight-color: rgba(14, 92, 63, 0.12);
+        -webkit-tap-highlight-color: rgba(94, 74, 42, 0.12);
       }
       a {
-        color: var(--emerald);
+        color: var(--brand);
         text-decoration: none;
       }
       a:hover {
@@ -116,21 +118,21 @@
         }
       }
       .btn-primary {
-        background: var(--emerald);
+        background: var(--brand);
         color: #fff;
-        box-shadow: 0 8px 20px -8px rgba(14, 92, 63, 0.6);
+        box-shadow: 0 8px 20px -8px rgba(94, 74, 42, 0.6);
       }
       .btn-primary:hover {
-        background: var(--emerald-soft);
+        background: var(--brand-soft);
       }
       .btn-ghost {
         background: transparent;
-        color: var(--emerald);
+        color: var(--brand);
         border-color: var(--line);
       }
       .btn-ghost:hover {
-        border-color: var(--emerald);
-        background: rgba(14, 92, 63, 0.04);
+        border-color: var(--brand);
+        background: rgba(94, 74, 42, 0.04);
       }
 
       /* ---------- header ---------- */
@@ -138,7 +140,7 @@
         position: sticky;
         top: 0;
         z-index: 50;
-        background: rgba(251, 248, 241, 0.85);
+        background: rgba(245, 241, 225, 0.85);
         backdrop-filter: blur(10px);
         border-bottom: 1px solid var(--line);
       }
@@ -167,12 +169,20 @@
         width: 34px;
         height: 34px;
         border-radius: 9px;
-        background: linear-gradient(140deg, var(--emerald), var(--emerald-deep));
-        color: var(--gold-soft);
+        background: linear-gradient(140deg, var(--brand), var(--brand-deep));
+        color: var(--accent-soft);
         display: grid;
         place-items: center;
         font-size: 18px;
-        box-shadow: inset 0 0 0 1px rgba(216, 183, 95, 0.35);
+        /* clips the painting to the rounded corners; the inset ring sits on top */
+        overflow: hidden;
+        box-shadow: inset 0 0 0 1px rgba(221, 187, 116, 0.35);
+      }
+      .mark img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
       }
       .brand .name {
         white-space: nowrap;
@@ -188,7 +198,7 @@
         font-size: 0.95rem;
       }
       .nav-links a.lnk:hover {
-        color: var(--emerald);
+        color: var(--brand);
         text-decoration: none;
       }
       .nav-actions {
@@ -211,7 +221,7 @@
         flex: none;
       }
       .menu-toggle:hover {
-        border-color: var(--emerald);
+        border-color: var(--brand);
       }
 
       /* mobile dropdown panel */
@@ -238,7 +248,7 @@
       }
       .mobile-menu a.lnk:hover {
         text-decoration: none;
-        color: var(--emerald);
+        color: var(--brand);
       }
       .mobile-menu .btn {
         margin-top: 18px;
@@ -263,12 +273,12 @@
         overflow: hidden;
         background: radial-gradient(
             1200px 500px at 80% -10%,
-            rgba(193, 154, 62, 0.1),
+            rgba(200, 136, 58, 0.1),
             transparent 60%
           ),
           radial-gradient(
             900px 500px at 0% 0%,
-            rgba(14, 92, 63, 0.07),
+            rgba(94, 74, 42, 0.07),
             transparent 55%
           );
       }
@@ -297,8 +307,8 @@
         font-weight: 600;
         letter-spacing: 0.04em;
         text-transform: uppercase;
-        color: var(--emerald);
-        background: rgba(14, 92, 63, 0.08);
+        color: var(--brand);
+        background: rgba(94, 74, 42, 0.08);
         padding: 6px 14px;
         border-radius: 999px;
       }
@@ -324,7 +334,7 @@
       }
       .bismillah {
         font-size: 1.5rem;
-        color: var(--emerald);
+        color: var(--brand);
         margin-bottom: 6px;
       }
 
@@ -333,7 +343,7 @@
         background: #36393f;
         border-radius: var(--radius);
         padding: 20px 20px 22px;
-        box-shadow: 0 30px 60px -25px rgba(10, 63, 44, 0.5);
+        box-shadow: 0 30px 60px -25px rgba(35, 36, 25, 0.5);
         color: #dcddde;
         font-size: 0.92rem;
         border: 1px solid rgba(255, 255, 255, 0.05);
@@ -347,8 +357,8 @@
         width: 40px;
         height: 40px;
         border-radius: 50%;
-        background: linear-gradient(140deg, var(--emerald), var(--emerald-deep));
-        color: var(--gold-soft);
+        background: linear-gradient(140deg, var(--brand), var(--brand-deep));
+        color: var(--accent-soft);
         display: grid;
         place-items: center;
         font-size: 18px;
@@ -359,7 +369,7 @@
         font-weight: 600;
       }
       .preview .tag {
-        background: var(--emerald-soft);
+        background: var(--brand-soft);
         color: #fff;
         font-size: 0.62rem;
         font-weight: 700;
@@ -380,7 +390,7 @@
         margin: 10px 0 6px;
       }
       .preview .block {
-        border-left: 3px solid var(--gold);
+        border-left: 3px solid var(--accent);
         padding: 6px 0 6px 12px;
         margin: 10px 0;
         color: #e6e7e8;
@@ -429,7 +439,7 @@
         margin: 0;
       }
       .kicker {
-        color: var(--gold);
+        color: var(--accent-ink);
         font-weight: 700;
         font-size: 0.82rem;
         letter-spacing: 0.08em;
@@ -438,7 +448,7 @@
         margin-bottom: 10px;
       }
       .alt {
-        background: linear-gradient(180deg, #fff, #fcfaf4);
+        background: linear-gradient(180deg, #fff, #faf6ea);
         border-top: 1px solid var(--line);
         border-bottom: 1px solid var(--line);
       }
@@ -464,7 +474,7 @@
       .app-card:hover {
         text-decoration: none;
         transform: translateY(-3px);
-        border-color: var(--emerald);
+        border-color: var(--brand);
       }
       @media (hover: none) {
         .app-card:hover {
@@ -475,14 +485,14 @@
         width: 44px;
         height: 44px;
         border-radius: 11px;
-        background: rgba(14, 92, 63, 0.09);
+        background: rgba(94, 74, 42, 0.09);
         display: grid;
         place-items: center;
         font-size: 22px;
         margin-bottom: 16px;
       }
       .app-card .platform {
-        color: var(--gold);
+        color: var(--accent-ink);
         font-weight: 700;
         font-size: 0.74rem;
         letter-spacing: 0.1em;
@@ -501,7 +511,7 @@
         margin-top: 16px;
         font-weight: 600;
         font-size: 0.92rem;
-        color: var(--emerald);
+        color: var(--brand);
       }
 
       /* real Discord screenshot */
@@ -519,7 +529,7 @@
       }
       .shot-link:hover {
         text-decoration: none;
-        border-color: var(--emerald);
+        border-color: var(--brand);
       }
       .shot img {
         display: block;
@@ -575,7 +585,7 @@
         width: 44px;
         height: 44px;
         border-radius: 11px;
-        background: rgba(14, 92, 63, 0.09);
+        background: rgba(94, 74, 42, 0.09);
         display: grid;
         place-items: center;
         font-size: 22px;
@@ -615,7 +625,7 @@
         width: 40px;
         height: 40px;
         border-radius: 50%;
-        background: var(--emerald);
+        background: var(--brand);
         color: #fff;
         font-family: var(--serif);
         font-size: 1.2rem;
@@ -623,7 +633,7 @@
         display: grid;
         place-items: center;
         margin-bottom: 16px;
-        box-shadow: 0 6px 16px -6px rgba(14, 92, 63, 0.6);
+        box-shadow: 0 6px 16px -6px rgba(94, 74, 42, 0.6);
       }
       .step h3 {
         font-size: 1.16rem;
@@ -637,8 +647,8 @@
       .step code,
       .inline-code {
         font-family: "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
-        background: rgba(14, 92, 63, 0.08);
-        color: var(--emerald-deep);
+        background: rgba(94, 74, 42, 0.08);
+        color: var(--brand-deep);
         padding: 1px 7px;
         border-radius: 6px;
         font-size: 0.86em;
@@ -654,8 +664,8 @@
         display: flex;
         align-items: center;
         gap: 12px;
-        background: var(--emerald-deep);
-        color: #eafff5;
+        background: var(--brand-deep);
+        color: #ece7d3;
         border-radius: 12px;
         padding: 14px 14px 14px 16px;
         font-family: "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
@@ -725,11 +735,11 @@
         font-size: 0.96rem;
       }
       .opt-list li b {
-        color: var(--emerald-deep);
+        color: var(--brand-deep);
       }
       .callout {
-        background: rgba(193, 154, 62, 0.1);
-        border: 1px solid rgba(193, 154, 62, 0.3);
+        background: rgba(200, 136, 58, 0.1);
+        border: 1px solid rgba(200, 136, 58, 0.3);
         border-radius: 12px;
         padding: 14px 16px;
         font-size: 0.92rem;
@@ -759,7 +769,7 @@
         vertical-align: top;
       }
       thead th {
-        background: var(--emerald);
+        background: var(--brand);
         color: #fff;
         font-weight: 600;
         font-size: 0.9rem;
@@ -769,8 +779,8 @@
       }
       td code {
         font-family: "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
-        background: rgba(14, 92, 63, 0.08);
-        color: var(--emerald-deep);
+        background: rgba(94, 74, 42, 0.08);
+        color: var(--brand-deep);
         padding: 2px 7px;
         border-radius: 6px;
         font-size: 0.85em;
@@ -784,11 +794,11 @@
         white-space: nowrap;
       }
       .pill-all {
-        background: rgba(14, 92, 63, 0.1);
-        color: var(--emerald-deep);
+        background: rgba(94, 74, 42, 0.1);
+        color: var(--brand-deep);
       }
       .pill-mod {
-        background: rgba(193, 154, 62, 0.16);
+        background: rgba(200, 136, 58, 0.16);
         color: #8a6a1c;
       }
       /* on phones the table becomes a stack of cards instead of a side-scroll */
@@ -882,7 +892,7 @@
       }
       summary::after {
         content: "+";
-        color: var(--emerald);
+        color: var(--brand);
         font-size: 1.4rem;
         font-weight: 400;
         transition: transform 0.2s;
@@ -897,7 +907,7 @@
 
       /* final cta */
       .final {
-        background: linear-gradient(150deg, var(--emerald), var(--emerald-deep));
+        background: linear-gradient(150deg, var(--brand), var(--brand-deep));
         color: #fff;
         text-align: center;
         border-radius: 24px;
@@ -913,7 +923,7 @@
         opacity: 0.06;
         right: -10px;
         top: -40px;
-        color: var(--gold-soft);
+        color: var(--accent-soft);
       }
       .final h2 {
         color: #fff;
@@ -928,11 +938,11 @@
         position: relative;
       }
       .final .btn-primary {
-        background: var(--gold);
-        color: var(--emerald-deep);
+        background: var(--accent);
+        color: var(--brand-deep);
       }
       .final .btn-primary:hover {
-        background: var(--gold-soft);
+        background: var(--accent-soft);
       }
 
       /* footer */
@@ -1084,59 +1094,61 @@
         flex: none;
       }
       .theme-toggle:hover {
-        border-color: var(--emerald);
-        background: rgba(14, 92, 63, 0.06);
+        border-color: var(--brand);
+        background: rgba(94, 74, 42, 0.06);
       }
 
       /* ---------- dark mode ---------- */
       :root[data-theme="dark"] {
-        --emerald: #1f9a61;
-        --emerald-deep: #0a3f2c;
-        --emerald-soft: #28b673;
-        --gold: #d8b75f;
-        --gold-soft: #ecd695;
-        --cream: #0e1411;
-        --cream-card: #161e1a;
-        --ink: #eaf1ec;
-        --ink-soft: #9db0a6;
-        --line: #273229;
+        --brand: #d2a869;
+        --brand-deep: #232419;
+        --brand-soft: #e3c08a;
+        --accent: #ddbb74;
+        --accent-soft: #f0dcae;
+        /* On the dark background the ochre is already high-contrast. */
+        --accent-ink: #ddbb74;
+        --cream: #14140e;
+        --cream-card: #1e1f16;
+        --ink: #ece7d3;
+        --ink-soft: #aaa591;
+        --line: #33362a;
         --shadow: 0 1px 2px rgba(0, 0, 0, 0.4),
           0 16px 40px -16px rgba(0, 0, 0, 0.7);
       }
       :root[data-theme="dark"] header {
-        background: rgba(14, 20, 17, 0.85);
+        background: rgba(20, 20, 14, 0.85);
       }
       :root[data-theme="dark"] .alt {
-        background: linear-gradient(180deg, #131b17, #0e1411);
+        background: linear-gradient(180deg, #1a1b13, #14140e);
       }
       :root[data-theme="dark"] details,
       :root[data-theme="dark"] .table-scroll {
         background: var(--cream-card);
       }
       :root[data-theme="dark"] .eyebrow {
-        background: rgba(40, 182, 115, 0.15);
+        background: rgba(210, 168, 105, 0.15);
       }
       :root[data-theme="dark"] td code,
       :root[data-theme="dark"] .inline-code,
       :root[data-theme="dark"] .step code,
       :root[data-theme="dark"] .opt-list li b {
-        color: var(--emerald-soft);
+        color: var(--brand-soft);
       }
       :root[data-theme="dark"] td code,
       :root[data-theme="dark"] .inline-code,
       :root[data-theme="dark"] .step code {
-        background: rgba(40, 182, 115, 0.14);
+        background: rgba(210, 168, 105, 0.14);
       }
       :root[data-theme="dark"] .pill-all {
-        background: rgba(40, 182, 115, 0.16);
-        color: #7fe0b0;
+        background: rgba(210, 168, 105, 0.16);
+        color: #ddbb74;
       }
       :root[data-theme="dark"] .pill-mod {
-        background: rgba(216, 183, 95, 0.18);
-        color: var(--gold-soft);
+        background: rgba(221, 187, 116, 0.18);
+        color: var(--accent-soft);
       }
       :root[data-theme="dark"] .theme-toggle:hover {
-        background: rgba(40, 182, 115, 0.1);
+        background: rgba(210, 168, 105, 0.1);
       }
     </style>
   </head>
@@ -1144,7 +1156,7 @@
     <header>
       <div class="wrap nav">
         <a href="#top" class="brand">
-          <span class="mark">☾</span>
+          <span class="mark"><img src="img/akh.png" alt="" width="34" height="34" /></span>
           <span class="name">HadithBot</span>
         </a>
         <nav class="nav-links">
@@ -1227,7 +1239,7 @@
 
           <!-- Discord message preview -->
           <div class="preview" aria-hidden="true">
-            <div class="bismillah arabic" style="color: var(--gold-soft); text-align: center; margin-bottom: 14px;">
+            <div class="bismillah arabic" style="color: var(--accent-soft); text-align: center; margin-bottom: 14px;">
               بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
             </div>
             <div class="msg">
@@ -1780,7 +1792,7 @@
     <footer>
       <div class="wrap foot">
         <div>
-          <span class="arabic" style="color: var(--emerald)">﷽</span>
+          <span class="arabic" style="color: var(--brand)">﷽</span>
           &nbsp; HadithBot — built with care.
         </div>
         <div class="foot-links">
