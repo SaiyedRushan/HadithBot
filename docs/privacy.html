@@ -281,6 +281,8 @@
       h2 {
         font-size: 1.4rem;
         margin: 44px 0 12px;
+        /* keeps a linked-to section clear of the sticky header */
+        scroll-margin-top: 80px;
       }
       h3 {
         font-size: 1.08rem;
@@ -509,7 +511,9 @@
                 <td>Server ID and name</td>
                 <td>
                   Readability, and so <span class="inline-code">/bismillah status</span>
-                  can list only the channels belonging to your server.
+                  can list only the channels belonging to your server. Your
+                  server's name is never published anywhere unless an admin asks
+                  for it to be — see <a href="#site">section 6</a>.
                 </td>
               </tr>
               <tr>
@@ -605,19 +609,39 @@
           with your server ID and they will be deleted.
         </p>
 
-        <h2>6. This website</h2>
+        <h2 id="site">6. This website</h2>
         <p>
-          This site is a single static page. It sets no cookies, loads no
+          This site is a handful of static pages. It sets no cookies, loads no
           third-party scripts, and runs no analytics. The one thing it saves is
           your light/dark preference, kept in your own browser's local storage
           under <span class="inline-code">hb-theme</span> — it never leaves your
           device and is never sent anywhere.
         </p>
         <p>
-          The site is hosted on GitHub Pages, and the "Add to Discord" button
-          takes you to Discord's own authorization page. Those services will
-          handle your visit under their own privacy policies, which are outside
-          this project's control.
+          The home page shows how many servers and channels the bot posts in.
+          Those are plain counts, worked out in advance and written into the
+          page; they identify no server and describe no person.
+        </p>
+        <p>
+          It also shows a short list of communities using the bot, by name. That
+          list is <b>opt-in only</b>. A server appears there when one of its
+          admins asks for it —
+          <a
+            href="https://github.com/SaiyedRushan/HadithBot/issues/new?template=add-community.yml"
+            target="_blank"
+            rel="noopener"
+            >through this form</a
+          >
+          — and never merely because the bot is installed. Ask and it comes
+          straight back off.
+        </p>
+        <p>
+          The site is hosted on
+          <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener"
+            >Vercel</a
+          >, and the "Add to Discord" button takes you to Discord's own
+          authorization page. Those services will handle your visit under their
+          own privacy policies, which are outside this project's control.
         </p>
 
         <h2>7. Children</h2>
