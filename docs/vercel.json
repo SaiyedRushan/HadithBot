@@ -4,23 +4,23 @@
   "trailingSlash": false,
   "redirects": [
     {
-      "source": "/:path*",
+      "source": "/(.*)",
       "has": [{ "type": "host", "value": "www.hadithbot.app" }],
-      "destination": "https://hadithbot.app/:path*",
+      "destination": "https://hadithbot.app/$1",
       "permanent": true
     },
     {
-      "source": "/:path*",
+      "source": "/(.*)",
       "has": [{ "type": "host", "value": "hadithbot-akh.vercel.app" }],
-      "destination": "https://hadithbot.app/:path*",
+      "destination": "https://hadithbot.app/$1",
       "permanent": true
     },
     {
-      "source": "/:path*",
+      "source": "/(.*)",
       "has": [
         { "type": "host", "value": "hadithbot-saiyedrushans-projects.vercel.app" }
       ],
-      "destination": "https://hadithbot.app/:path*",
+      "destination": "https://hadithbot.app/$1",
       "permanent": true
     }
   ],
