@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy Policy — HadithBot</title>
+    <meta
+      name="description"
+      content="What HadithBot stores, what it deliberately doesn't, and how to have it deleted. No accounts, no tracking, no message content."
+    />
+    <meta name="theme-color" content="#0e5c3f" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230e5c3f'/><circle cx='44' cy='52' r='27' fill='%23d8b75f'/><circle cx='57' cy='43' r='23' fill='%230e5c3f'/><circle cx='70' cy='60' r='5' fill='%23d8b75f'/></svg>"
+    />
+    <script>
+      // Apply theme before paint (no flash): stored choice, else system preference.
+      (function () {
+        try {
+          var t =
+            localStorage.getItem("hb-theme") ||
+            (matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light");
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+      })();
+    </script>
+    <style>
+      /* Same tokens as index.html — kept in sync by hand; these pages are
+         deliberately small enough not to need the full landing-page stylesheet. */
+      :root {
+        --emerald: #0e5c3f;
+        --emerald-deep: #0a3f2c;
+        --emerald-soft: #137a52;
+        --gold: #c19a3e;
+        --gold-soft: #d8b75f;
+        --cream: #fbf8f1;
+        --cream-card: #ffffff;
+        --ink: #1b241f;
+        --ink-soft: #4d5a52;
+        --line: #e7e2d6;
+        --radius: 16px;
+        --shadow: 0 1px 2px rgba(14, 92, 63, 0.04),
+          0 12px 32px -12px rgba(14, 92, 63, 0.18);
+        --maxw: 760px;
+        --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+          "Times New Roman", serif;
+        --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: var(--sans);
+        color: var(--ink);
+        background: var(--cream);
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+        overflow-wrap: break-word;
+        -webkit-tap-highlight-color: rgba(14, 92, 63, 0.12);
+      }
+      a {
+        color: var(--emerald);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: var(--serif);
+        line-height: 1.2;
+        color: var(--ink);
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .wrap {
+        max-width: var(--maxw);
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+      .arabic {
+        font-family: var(--serif);
+        direction: rtl;
+      }
+
+      /* ---------- header ---------- */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(251, 248, 241, 0.85);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--line);
+      }
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        height: 68px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        margin-right: auto;
+        gap: 11px;
+        font-family: var(--serif);
+        font-size: 1.28rem;
+        font-weight: 600;
+        color: var(--ink);
+      }
+      .brand:hover {
+        text-decoration: none;
+      }
+      .mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        background: linear-gradient(140deg, var(--emerald), var(--emerald-deep));
+        color: var(--gold-soft);
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        box-shadow: inset 0 0 0 1px rgba(216, 183, 95, 0.35);
+        flex: none;
+      }
+      .brand .name {
+        white-space: nowrap;
+      }
+      .nav a.lnk {
+        color: var(--ink-soft);
+        font-weight: 500;
+        font-size: 0.95rem;
+      }
+      .nav a.lnk:hover {
+        color: var(--emerald);
+        text-decoration: none;
+      }
+      .theme-toggle {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--ink);
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1rem;
+        line-height: 1;
+        display: grid;
+        place-items: center;
+        transition: border-color 0.15s ease, background 0.15s ease;
+        flex: none;
+      }
+      .theme-toggle:hover {
+        border-color: var(--emerald);
+        background: rgba(14, 92, 63, 0.06);
+      }
+
+      /* ---------- document ---------- */
+      main {
+        padding: 56px 0 72px;
+      }
+      .doc-head {
+        margin-bottom: 40px;
+      }
+      .doc-head h1 {
+        font-size: clamp(2rem, 5vw, 2.7rem);
+        margin: 10px 0 12px;
+      }
+      .kicker {
+        display: inline-block;
+        font-size: 0.78rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: var(--emerald);
+      }
+      .updated {
+        color: var(--ink-soft);
+        font-size: 0.92rem;
+        margin: 0;
+      }
+      .summary {
+        background: var(--cream-card);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--gold);
+        border-radius: var(--radius);
+        padding: 22px 24px;
+        margin: 0 0 44px;
+        box-shadow: var(--shadow);
+      }
+      .summary h2 {
+        font-size: 1.12rem;
+        margin: 0 0 8px;
+      }
+      .summary p:last-child {
+        margin-bottom: 0;
+      }
+      h2 {
+        font-size: 1.4rem;
+        margin: 44px 0 12px;
+      }
+      h3 {
+        font-size: 1.08rem;
+        margin: 28px 0 8px;
+      }
+      p {
+        margin: 0 0 16px;
+      }
+      ul {
+        margin: 0 0 16px;
+        padding-left: 22px;
+      }
+      li {
+        margin-bottom: 8px;
+      }
+      .inline-code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.9em;
+        background: rgba(14, 92, 63, 0.07);
+        color: var(--emerald);
+        padding: 2px 7px;
+        border-radius: 6px;
+      }
+      .table-scroll {
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--cream-card);
+        margin-bottom: 20px;
+        -webkit-overflow-scrolling: touch;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 480px;
+        font-size: 0.95rem;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      th {
+        font-weight: 600;
+        color: var(--ink);
+        white-space: nowrap;
+      }
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+      td:first-child {
+        white-space: nowrap;
+        font-weight: 500;
+      }
+
+      /* ---------- footer ---------- */
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 36px 0;
+        color: var(--ink-soft);
+        font-size: 0.92rem;
+      }
+      .foot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+      .foot-links {
+        display: flex;
+        gap: 22px;
+        flex-wrap: wrap;
+      }
+
+      @media (max-width: 700px) {
+        .wrap {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+        .nav {
+          height: 60px;
+        }
+        main {
+          padding: 40px 0 56px;
+        }
+        .foot {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+      @media (max-width: 480px) {
+        .brand .name {
+          display: none;
+        }
+        .foot-links {
+          gap: 16px;
+        }
+      }
+
+      /* ---------- dark mode ---------- */
+      :root[data-theme="dark"] {
+        --emerald: #1f9a61;
+        --emerald-deep: #0a3f2c;
+        --emerald-soft: #28b673;
+        --gold: #d8b75f;
+        --gold-soft: #ecd695;
+        --cream: #0e1411;
+        --cream-card: #161e1a;
+        --ink: #eaf1ec;
+        --ink-soft: #9db0a6;
+        --line: #273229;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.4),
+          0 16px 40px -16px rgba(0, 0, 0, 0.7);
+      }
+      :root[data-theme="dark"] header {
+        background: rgba(14, 20, 17, 0.85);
+      }
+      :root[data-theme="dark"] .inline-code {
+        color: var(--emerald-soft);
+        background: rgba(40, 182, 115, 0.14);
+      }
+      :root[data-theme="dark"] .theme-toggle:hover {
+        background: rgba(40, 182, 115, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap nav">
+        <a href="index.html" class="brand">
+          <span class="mark">☾</span>
+          <span class="name">HadithBot</span>
+        </a>
+        <a class="lnk" href="index.html">← Back to site</a>
+        <button
+          class="theme-toggle"
+          id="themeToggle"
+          type="button"
+          aria-label="Toggle dark mode"
+          title="Toggle light / dark"
+        >
+          🌙
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <div class="wrap">
+        <div class="doc-head">
+          <span class="kicker">Privacy</span>
+          <h1>Privacy Policy</h1>
+          <p class="updated">Last updated: 6 August 2026</p>
+        </div>
+
+        <div class="summary">
+          <h2>The short version</h2>
+          <p>
+            HadithBot has no accounts and no tracking. It stores one row per
+            channel you set it up in — the channel and server it posts to, and
+            which hadith it left off at — and nothing else. It cannot read your
+            messages, and it does not know who any of your members are. Run
+            <span class="inline-code">/bismillah stop</span> and that row is
+            deleted.
+          </p>
+        </div>
+
+        <h2>1. Who this covers</h2>
+        <p>
+          This policy applies to the HadithBot Discord application and to this
+          website. HadithBot is a free, open-source hobby project run by an
+          individual, not a company. You can read every line of the code that
+          handles your data at
+          <a
+            href="https://github.com/SaiyedRushan/HadithBot"
+            target="_blank"
+            rel="noopener"
+            >github.com/SaiyedRushan/HadithBot</a
+          >.
+        </p>
+
+        <h2>2. What the bot stores</h2>
+        <p>
+          When someone runs <span class="inline-code">/bismillah setup</span> in
+          a channel, one row is saved for that channel. That is the entirety of
+          what HadithBot keeps:
+        </p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>What</th>
+                <th>Why it's needed</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Channel ID</td>
+                <td>
+                  To know where to post the daily message. This is the only
+                  identifier the bot actually keys off.
+                </td>
+              </tr>
+              <tr>
+                <td>Channel name</td>
+                <td>
+                  Readability only — so rows can be told apart when maintaining
+                  the database. Refreshed if you rename the channel.
+                </td>
+              </tr>
+              <tr>
+                <td>Server ID and name</td>
+                <td>
+                  Readability, and so <span class="inline-code">/bismillah status</span>
+                  can list only the channels belonging to your server.
+                </td>
+              </tr>
+              <tr>
+                <td>Reading position</td>
+                <td>
+                  The book, chapter, and hadith number, plus which of the 99
+                  names is next, so each channel picks up where it left off.
+                </td>
+              </tr>
+              <tr>
+                <td>Your settings</td>
+                <td>
+                  How many hadiths and names to send per day, and whether the
+                  channel is currently active.
+                </td>
+              </tr>
+              <tr>
+                <td>Timestamps</td>
+                <td>When the row was created and last updated.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          None of this is personal data about a member of your server. It
+          describes a channel, not a person.
+        </p>
+
+        <h2>3. What the bot does not do</h2>
+        <ul>
+          <li>
+            <b>It does not read your messages.</b> HadithBot runs without the
+            Message Content intent, so Discord does not send it the text of
+            messages in your server at all. There is nothing to store because
+            there is nothing to receive.
+          </li>
+          <li>
+            <b>It does not collect your members.</b> The Server Members intent is
+            likewise off. The bot has no member list, no usernames, no roles, no
+            avatars.
+          </li>
+          <li>
+            <b>It does not record who ran a command.</b> Slash command replies go
+            back to the person who asked, and the interaction is then discarded.
+            No user ID is written down.
+          </li>
+          <li>
+            <b>It does not read or send DMs</b>, and it stores nothing about
+            direct messages.
+          </li>
+          <li>
+            <b>There is no analytics, profiling, or advertising</b>, and nothing
+            is ever sold, rented, or shared for marketing.
+          </li>
+        </ul>
+
+        <h2>4. Where the data lives</h2>
+        <p>
+          Channel rows are stored in a hosted
+          <a href="https://supabase.com/privacy" target="_blank" rel="noopener"
+            >Supabase</a
+          >
+          Postgres database, which acts as the data processor. The bot process
+          itself runs on a private server. Access is limited to the maintainer of
+          the project.
+        </p>
+        <p>
+          The bot also writes ordinary operational logs (for example, that a
+          daily post to a given channel failed because permissions were missing)
+          so that faults can be diagnosed. These logs are short-lived and are not
+          used for any other purpose.
+        </p>
+
+        <h2>5. Deleting your data</h2>
+        <p>
+          Run <span class="inline-code">/bismillah stop</span> in a channel and
+          that channel's row is deleted from the database immediately — not
+          flagged, not archived. Deleted.
+        </p>
+        <p>
+          One thing worth knowing: removing the bot from your server does
+          <b>not</b> by itself delete those rows, because Discord stops telling
+          the bot anything about a server the moment it's kicked. If you want a
+          clean exit, run <span class="inline-code">/bismillah stop</span> in
+          each set-up channel before removing the bot. If you've already removed
+          it and want the rows gone, open an issue on
+          <a
+            href="https://github.com/SaiyedRushan/HadithBot/issues"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >
+          with your server ID and they will be deleted.
+        </p>
+
+        <h2>6. This website</h2>
+        <p>
+          This site is a single static page. It sets no cookies, loads no
+          third-party scripts, and runs no analytics. The one thing it saves is
+          your light/dark preference, kept in your own browser's local storage
+          under <span class="inline-code">hb-theme</span> — it never leaves your
+          device and is never sent anywhere.
+        </p>
+        <p>
+          The site is hosted on GitHub Pages, and the "Add to Discord" button
+          takes you to Discord's own authorization page. Those services will
+          handle your visit under their own privacy policies, which are outside
+          this project's control.
+        </p>
+
+        <h2>7. Children</h2>
+        <p>
+          HadithBot is not directed at children. Discord's own Terms of Service
+          require users to be at least 13, or older where local law sets a higher
+          minimum age.
+        </p>
+
+        <h2>8. Changes to this policy</h2>
+        <p>
+          If this policy changes, the date at the top of the page changes with
+          it, and the edit will be visible in the project's public commit
+          history. Continued use of the bot after a change means the updated
+          policy applies.
+        </p>
+
+        <h2>9. Contact</h2>
+        <p>
+          Questions about privacy, or a request to delete data, go to
+          <a
+            href="https://github.com/SaiyedRushan/HadithBot/issues"
+            target="_blank"
+            rel="noopener"
+            >the GitHub issue tracker</a
+          >. Please don't include anything sensitive in an issue — it's public.
+        </p>
+      </div>
+    </main>
+
+    <footer>
+      <div class="wrap foot">
+        <div>
+          <span class="arabic" style="color: var(--emerald)">﷽</span>
+          &nbsp; HadithBot — built with care.
+        </div>
+        <div class="foot-links">
+          <a href="index.html">Home</a>
+          <a href="privacy.html">Privacy</a>
+          <a href="terms.html">Terms</a>
+          <a
+            href="https://github.com/SaiyedRushan/HadithBot"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Theme toggle: flip data-theme, persist, swap icon
+      (function () {
+        var toggle = document.getElementById("themeToggle");
+        function setIcon() {
+          var dark =
+            document.documentElement.getAttribute("data-theme") === "dark";
+          toggle.textContent = dark ? "☀️" : "🌙";
+        }
+        setIcon();
+        toggle.addEventListener("click", function () {
+          var dark =
+            document.documentElement.getAttribute("data-theme") === "dark";
+          var next = dark ? "light" : "dark";
+          document.documentElement.setAttribute("data-theme", next);
+          try {
+            localStorage.setItem("hb-theme", next);
+          } catch (e) {}
+          setIcon();
+        });
+      })();
+    </script>
+  </body>
+</html>

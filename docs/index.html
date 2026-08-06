@@ -952,6 +952,7 @@
       .foot-links {
         display: flex;
         gap: 22px;
+        flex-wrap: wrap;
       }
 
       /* ---------- small screens ---------- */
@@ -1414,7 +1415,10 @@
               <p>
                 Choose the server from the dropdown and press
                 <span class="inline-code">Authorize</span>. You'll need the
-                <b>Manage Server</b> permission on that server.
+                <b>Manage Server</b> permission on that server — owners and
+                admins have it; a moderator role often doesn't. If the server
+                you want isn't in the dropdown, that's why: ask an admin to add
+                it for you.
               </p>
             </div>
             <div class="step">
@@ -1660,6 +1664,20 @@
                 <b>Manage Channels</b> permission.
               </p>
             </details>
+            <details>
+              <summary>Can a moderator add the bot, or does it take an admin?</summary>
+              <p>
+                Discord itself decides this: only someone with the
+                <b>Manage Server</b> permission can add any bot to a server. The
+                owner and admins always have it. Moderators only do if their role
+                was given it — plenty of mod roles stop at Manage Messages, kick,
+                ban, and timeout, which isn't enough. A mod without it will find
+                the server greyed out on the authorization screen and will need an
+                admin to add HadithBot. Once it's in, though, configuring it is a
+                separate matter: any mod with <b>Manage Channels</b> can run
+                <span class="inline-code">/bismillah setup</span>.
+              </p>
+            </details>
           </div>
         </div>
       </section>
@@ -1769,6 +1787,8 @@
           <a href="#features">Features</a>
           <a href="#commands">Commands</a>
           <a href="#more-apps">More apps</a>
+          <a href="privacy.html">Privacy</a>
+          <a href="terms.html">Terms</a>
           <a
             href="https://github.com/SaiyedRushan/HadithBot"
             target="_blank"

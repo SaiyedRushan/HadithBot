@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Terms of Service — HadithBot</title>
+    <meta
+      name="description"
+      content="The terms for using HadithBot: a free, open-source Discord bot provided as-is, with no accounts and no charge."
+    />
+    <meta name="theme-color" content="#0e5c3f" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230e5c3f'/><circle cx='44' cy='52' r='27' fill='%23d8b75f'/><circle cx='57' cy='43' r='23' fill='%230e5c3f'/><circle cx='70' cy='60' r='5' fill='%23d8b75f'/></svg>"
+    />
+    <script>
+      // Apply theme before paint (no flash): stored choice, else system preference.
+      (function () {
+        try {
+          var t =
+            localStorage.getItem("hb-theme") ||
+            (matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light");
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+      })();
+    </script>
+    <style>
+      /* Same tokens as index.html — kept in sync by hand; these pages are
+         deliberately small enough not to need the full landing-page stylesheet. */
+      :root {
+        --emerald: #0e5c3f;
+        --emerald-deep: #0a3f2c;
+        --emerald-soft: #137a52;
+        --gold: #c19a3e;
+        --gold-soft: #d8b75f;
+        --cream: #fbf8f1;
+        --cream-card: #ffffff;
+        --ink: #1b241f;
+        --ink-soft: #4d5a52;
+        --line: #e7e2d6;
+        --radius: 16px;
+        --shadow: 0 1px 2px rgba(14, 92, 63, 0.04),
+          0 12px 32px -12px rgba(14, 92, 63, 0.18);
+        --maxw: 760px;
+        --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+          "Times New Roman", serif;
+        --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: var(--sans);
+        color: var(--ink);
+        background: var(--cream);
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+        overflow-wrap: break-word;
+        -webkit-tap-highlight-color: rgba(14, 92, 63, 0.12);
+      }
+      a {
+        color: var(--emerald);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: var(--serif);
+        line-height: 1.2;
+        color: var(--ink);
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .wrap {
+        max-width: var(--maxw);
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+      .arabic {
+        font-family: var(--serif);
+        direction: rtl;
+      }
+
+      /* ---------- header ---------- */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(251, 248, 241, 0.85);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--line);
+      }
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        height: 68px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        margin-right: auto;
+        gap: 11px;
+        font-family: var(--serif);
+        font-size: 1.28rem;
+        font-weight: 600;
+        color: var(--ink);
+      }
+      .brand:hover {
+        text-decoration: none;
+      }
+      .mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        background: linear-gradient(140deg, var(--emerald), var(--emerald-deep));
+        color: var(--gold-soft);
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        box-shadow: inset 0 0 0 1px rgba(216, 183, 95, 0.35);
+        flex: none;
+      }
+      .brand .name {
+        white-space: nowrap;
+      }
+      .nav a.lnk {
+        color: var(--ink-soft);
+        font-weight: 500;
+        font-size: 0.95rem;
+      }
+      .nav a.lnk:hover {
+        color: var(--emerald);
+        text-decoration: none;
+      }
+      .theme-toggle {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--ink);
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1rem;
+        line-height: 1;
+        display: grid;
+        place-items: center;
+        transition: border-color 0.15s ease, background 0.15s ease;
+        flex: none;
+      }
+      .theme-toggle:hover {
+        border-color: var(--emerald);
+        background: rgba(14, 92, 63, 0.06);
+      }
+
+      /* ---------- document ---------- */
+      main {
+        padding: 56px 0 72px;
+      }
+      .doc-head {
+        margin-bottom: 40px;
+      }
+      .doc-head h1 {
+        font-size: clamp(2rem, 5vw, 2.7rem);
+        margin: 10px 0 12px;
+      }
+      .kicker {
+        display: inline-block;
+        font-size: 0.78rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: var(--emerald);
+      }
+      .updated {
+        color: var(--ink-soft);
+        font-size: 0.92rem;
+        margin: 0;
+      }
+      .summary {
+        background: var(--cream-card);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--gold);
+        border-radius: var(--radius);
+        padding: 22px 24px;
+        margin: 0 0 44px;
+        box-shadow: var(--shadow);
+      }
+      .summary h2 {
+        font-size: 1.12rem;
+        margin: 0 0 8px;
+      }
+      .summary p:last-child {
+        margin-bottom: 0;
+      }
+      h2 {
+        font-size: 1.4rem;
+        margin: 44px 0 12px;
+      }
+      h3 {
+        font-size: 1.08rem;
+        margin: 28px 0 8px;
+      }
+      p {
+        margin: 0 0 16px;
+      }
+      ul {
+        margin: 0 0 16px;
+        padding-left: 22px;
+      }
+      li {
+        margin-bottom: 8px;
+      }
+      .inline-code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.9em;
+        background: rgba(14, 92, 63, 0.07);
+        color: var(--emerald);
+        padding: 2px 7px;
+        border-radius: 6px;
+      }
+
+      /* ---------- footer ---------- */
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 36px 0;
+        color: var(--ink-soft);
+        font-size: 0.92rem;
+      }
+      .foot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+      .foot-links {
+        display: flex;
+        gap: 22px;
+        flex-wrap: wrap;
+      }
+
+      @media (max-width: 700px) {
+        .wrap {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+        .nav {
+          height: 60px;
+        }
+        main {
+          padding: 40px 0 56px;
+        }
+        .foot {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+      @media (max-width: 480px) {
+        .brand .name {
+          display: none;
+        }
+        .foot-links {
+          gap: 16px;
+        }
+      }
+
+      /* ---------- dark mode ---------- */
+      :root[data-theme="dark"] {
+        --emerald: #1f9a61;
+        --emerald-deep: #0a3f2c;
+        --emerald-soft: #28b673;
+        --gold: #d8b75f;
+        --gold-soft: #ecd695;
+        --cream: #0e1411;
+        --cream-card: #161e1a;
+        --ink: #eaf1ec;
+        --ink-soft: #9db0a6;
+        --line: #273229;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.4),
+          0 16px 40px -16px rgba(0, 0, 0, 0.7);
+      }
+      :root[data-theme="dark"] header {
+        background: rgba(14, 20, 17, 0.85);
+      }
+      :root[data-theme="dark"] .inline-code {
+        color: var(--emerald-soft);
+        background: rgba(40, 182, 115, 0.14);
+      }
+      :root[data-theme="dark"] .theme-toggle:hover {
+        background: rgba(40, 182, 115, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap nav">
+        <a href="index.html" class="brand">
+          <span class="mark">☾</span>
+          <span class="name">HadithBot</span>
+        </a>
+        <a class="lnk" href="index.html">← Back to site</a>
+        <button
+          class="theme-toggle"
+          id="themeToggle"
+          type="button"
+          aria-label="Toggle dark mode"
+          title="Toggle light / dark"
+        >
+          🌙
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <div class="wrap">
+        <div class="doc-head">
+          <span class="kicker">Terms</span>
+          <h1>Terms of Service</h1>
+          <p class="updated">Last updated: 6 August 2026</p>
+        </div>
+
+        <div class="summary">
+          <h2>The short version</h2>
+          <p>
+            HadithBot is free, open source, and run as a personal project. Use it
+            in good faith, don't abuse it, and understand that it comes with no
+            guarantee of uptime and no warranty. Verify any hadith that matters
+            to you against a scholarly source. Don't want it any more? Run
+            <span class="inline-code">/bismillah stop</span> and remove it.
+          </p>
+        </div>
+
+        <h2>1. Agreement</h2>
+        <p>
+          By adding HadithBot to a Discord server, or by using its commands, you
+          agree to these terms. If you don't, please don't use the bot. Adding it
+          to a server also means you accept these terms on behalf of that server.
+        </p>
+        <p>
+          These terms sit alongside
+          <a
+            href="https://discord.com/terms"
+            target="_blank"
+            rel="noopener"
+            >Discord's Terms of Service</a
+          >
+          and
+          <a
+            href="https://discord.com/guidelines"
+            target="_blank"
+            rel="noopener"
+            >Community Guidelines</a
+          >, which apply to your use of Discord itself.
+        </p>
+
+        <h2>2. What HadithBot is</h2>
+        <p>
+          HadithBot posts a daily hadith and the 99 names of Allah to channels
+          you choose, and answers on-demand slash commands. It is free, with no
+          paid tier, no accounts, and no advertising. The source code is public
+          at
+          <a
+            href="https://github.com/SaiyedRushan/HadithBot"
+            target="_blank"
+            rel="noopener"
+            >github.com/SaiyedRushan/HadithBot</a
+          >.
+        </p>
+        <p>
+          It's maintained by one person in their spare time, and these terms are
+          written to be honest about what that means.
+        </p>
+
+        <h2>3. Who can add and configure it</h2>
+        <p>
+          Discord requires the <b>Manage Server</b> permission to add any bot to
+          a server. Within your server, the
+          <span class="inline-code">/bismillah setup</span>,
+          <span class="inline-code">stop</span>, and
+          <span class="inline-code">status</span> commands require the
+          <b>Manage Channels</b> permission. You're responsible for who you grant
+          those permissions to.
+        </p>
+
+        <h2>4. Acceptable use</h2>
+        <p>Please don't:</p>
+        <ul>
+          <li>
+            Use the bot to spam, harass, or flood channels, or to send its
+            content to people who haven't asked for it.
+          </li>
+          <li>
+            Use it in a way that breaks Discord's terms, guidelines, or
+            applicable law.
+          </li>
+          <li>
+            Deliberately overload, disrupt, or attempt to gain unauthorized
+            access to the bot or the infrastructure it runs on.
+          </li>
+          <li>
+            Present the bot's output in a misleading way — for example, altering
+            a hadith's text or attribution.
+          </li>
+        </ul>
+        <p>
+          Access may be withdrawn, and the bot removed from a server, if it is
+          being used this way. This is a rarely-used backstop, not an active
+          moderation programme; the bot cannot read your messages, so nobody is
+          monitoring your server.
+        </p>
+
+        <h2>5. Availability</h2>
+        <p>
+          The bot is provided on a best-effort basis. There is no uptime
+          guarantee, no support commitment, and no service level of any kind.
+          Features may change, daily posts may be delayed or missed, and the
+          service may be paused or discontinued at any time — including if
+          hosting costs or Discord's requirements make it impractical to keep
+          running.
+        </p>
+        <p>
+          If the project is ever shut down, reasonable notice will be given
+          through the GitHub repository where practical.
+        </p>
+
+        <h2>6. Religious content</h2>
+        <p>
+          Hadith texts, translations, and the names of Allah are drawn from
+          publicly available collections, and each hadith names its book and
+          chapter with a link to Sunnah.com so you can check it at the source.
+        </p>
+        <p>
+          Translations and compiled datasets can contain errors, and grading and
+          interpretation are matters for qualified scholars. HadithBot is a
+          reminder, not a religious authority, and nothing it posts should be
+          treated as a ruling or as a substitute for scholarly guidance. If you
+          spot an error in the text, please report it on GitHub so it can be
+          corrected.
+        </p>
+
+        <h2>7. Privacy</h2>
+        <p>
+          What the bot stores — and the much longer list of what it doesn't — is
+          set out in the <a href="privacy.html">Privacy Policy</a>, which forms
+          part of these terms.
+        </p>
+
+        <h2>8. No warranty</h2>
+        <p>
+          HadithBot is provided "as is" and "as available", without warranty of
+          any kind, express or implied, including any implied warranties of
+          merchantability, fitness for a particular purpose, accuracy, or
+          non-infringement.
+        </p>
+
+        <h2>9. Limitation of liability</h2>
+        <p>
+          To the fullest extent permitted by law, the maintainer of HadithBot is
+          not liable for any indirect, incidental, or consequential damages, or
+          for any loss of data, arising from your use of or inability to use the
+          bot. Since the bot is provided free of charge, no fees have been paid
+          for it, and no refund or compensation is available.
+        </p>
+        <p>
+          Nothing here limits liability that cannot be limited under applicable
+          law.
+        </p>
+
+        <h2>10. Ending it</h2>
+        <p>
+          You can stop using HadithBot at any time. Run
+          <span class="inline-code">/bismillah stop</span> in each channel you set
+          it up in — which deletes that channel's stored row — and then remove the
+          bot from your server.
+        </p>
+
+        <h2>11. Changes to these terms</h2>
+        <p>
+          These terms may be updated. When they are, the date at the top of the
+          page changes and the edit appears in the project's public commit
+          history. Continuing to use the bot after a change means you accept the
+          updated terms.
+        </p>
+
+        <h2>12. Contact</h2>
+        <p>
+          Questions, bug reports, and corrections belong on
+          <a
+            href="https://github.com/SaiyedRushan/HadithBot/issues"
+            target="_blank"
+            rel="noopener"
+            >the GitHub issue tracker</a
+          >.
+        </p>
+      </div>
+    </main>
+
+    <footer>
+      <div class="wrap foot">
+        <div>
+          <span class="arabic" style="color: var(--emerald)">﷽</span>
+          &nbsp; HadithBot — built with care.
+        </div>
+        <div class="foot-links">
+          <a href="index.html">Home</a>
+          <a href="privacy.html">Privacy</a>
+          <a href="terms.html">Terms</a>
+          <a
+            href="https://github.com/SaiyedRushan/HadithBot"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Theme toggle: flip data-theme, persist, swap icon
+      (function () {
+        var toggle = document.getElementById("themeToggle");
+        function setIcon() {
+          var dark =
+            document.documentElement.getAttribute("data-theme") === "dark";
+          toggle.textContent = dark ? "☀️" : "🌙";
+        }
+        setIcon();
+        toggle.addEventListener("click", function () {
+          var dark =
+            document.documentElement.getAttribute("data-theme") === "dark";
+          var next = dark ? "light" : "dark";
+          document.documentElement.setAttribute("data-theme", next);
+          try {
+            localStorage.setItem("hb-theme", next);
+          } catch (e) {}
+          setIcon();
+        });
+      })();
+    </script>
+  </body>
+</html>
