@@ -1,0 +1,73 @@
+name: Add my community to the site
+description: Have your MSA, halaqa, or server listed on hadithbot.app
+title: "Add community: "
+labels: ["community"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Jazakum Allahu khayran for running HadithBot in your server.
+
+        This form is how a community gets onto the wall at
+        [hadithbot.app](https://hadithbot.app/#communities). Nothing is listed
+        automatically — the bot knows which servers it's in, and that is
+        deliberately not what feeds the page. It only goes up if you ask.
+
+  - type: input
+    id: name
+    attributes:
+      label: Community name
+      description: However your members would write it.
+      placeholder: York University MSA
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: Campus, city, or country
+      placeholder: Toronto, Canada
+    validations:
+      required: true
+
+  - type: input
+    id: server_id
+    attributes:
+      label: Discord server ID (optional)
+      description: >
+        Only used to confirm the bot is actually in the server. Right-click the
+        server icon → Copy Server ID (needs Developer Mode on).
+    validations:
+      required: false
+
+  - type: input
+    id: url
+    attributes:
+      label: Link (optional)
+      description: >
+        A site or public invite to link the card to. Leave blank for no link.
+      placeholder: https://...
+    validations:
+      required: false
+
+  - type: textarea
+    id: logo
+    attributes:
+      label: Logo (optional)
+      description: >
+        Drag a square image in here and it'll be used instead of a monogram.
+        Only send one your community actually owns or has cleared for use.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Permission
+      options:
+        - label: >
+            I'm an admin or moderator of this server, and I'm happy for its name
+            (and logo, if I attached one) to appear publicly on hadithbot.app.
+            I understand I can ask for it to be removed at any time and it will
+            be, no questions asked.
+          required: true
