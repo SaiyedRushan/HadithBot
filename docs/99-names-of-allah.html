@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The 99 Names of Allah (Asma ul Husna) — Arabic, Transliteration &amp; Meaning</title>
+    <meta
+      name="description"
+      content="All 99 names of Allah with Arabic, transliteration and meaning — and a free Discord bot that posts one to your server every day, with the reflection to call upon it in dua."
+    />
+    <meta name="theme-color" content="#5e4a2a" />
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="144x144" href="img/akh.png" />
+    <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
+
+    <!-- Social / link previews -->
+    <link rel="canonical" href="https://hadithbot.app/99-names-of-allah" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="HadithBot" />
+    <meta property="og:url" content="https://hadithbot.app/99-names-of-allah" />
+    <meta property="og:title" content="The 99 Names of Allah (Asma ul Husna) — Arabic, Transliteration &amp; Meaning" />
+    <meta property="og:description" content="All 99 names of Allah with Arabic, transliteration and meaning — and a free Discord bot that posts one to your server every day, with the reflection to call upon it in dua." />
+    <meta property="og:image" content="https://hadithbot.app/img/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://hadithbot.app/img/og-image.png" />
+    <script>
+      // Apply theme before paint (no flash): stored choice, else system preference.
+      (function () {
+        try {
+          var t =
+            localStorage.getItem("hb-theme") ||
+            (matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light");
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+      })();
+    </script>
+    <style>
+      /* Same tokens as index.html — kept in sync by hand; these pages are
+         deliberately small enough not to need the full landing-page stylesheet. */
+      :root {
+        --brand: #5e4a2a;
+        --brand-deep: #232419;
+        --brand-soft: #7d6440;
+        --accent: #c8883a;
+        --accent-soft: #ddbb74;
+        --cream: #f5f1e1;
+        --cream-card: #fffdf6;
+        --ink: #26231a;
+        --ink-soft: #6b6450;
+        --line: #e4dcc4;
+        --radius: 16px;
+        --shadow: 0 1px 2px rgba(94, 74, 42, 0.04),
+          0 12px 32px -12px rgba(94, 74, 42, 0.18);
+        /* the header's lift shadow; falls back to black in dark mode */
+        --shade: 94, 74, 42;
+        --maxw: 760px;
+        --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+          "Times New Roman", serif;
+        --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: var(--sans);
+        color: var(--ink);
+        background: var(--cream);
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+        overflow-wrap: break-word;
+        -webkit-tap-highlight-color: rgba(94, 74, 42, 0.12);
+      }
+      a {
+        color: var(--brand);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: var(--serif);
+        line-height: 1.2;
+        color: var(--ink);
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .wrap {
+        max-width: var(--maxw);
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+      .arabic {
+        font-family: var(--serif);
+        direction: rtl;
+      }
+
+      /* ---------- header ---------- */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(245, 241, 225, 0.85);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--line);
+        transition: box-shadow 0.3s ease;
+      }
+      header.scrolled {
+        box-shadow: 0 10px 30px -20px rgba(var(--shade), 0.55);
+      }
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        height: 68px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        margin-right: auto;
+        gap: 11px;
+        font-family: var(--serif);
+        font-size: 1.28rem;
+        font-weight: 600;
+        color: var(--ink);
+      }
+      .brand:hover {
+        text-decoration: none;
+      }
+      .mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        background: linear-gradient(140deg, var(--brand), var(--brand-deep));
+        color: var(--accent-soft);
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        /* clips the painting to the rounded corners; the inset ring sits on top */
+        overflow: hidden;
+        box-shadow: inset 0 0 0 1px rgba(221, 187, 116, 0.35);
+        flex: none;
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .brand:hover .mark {
+        transform: rotate(-12deg) scale(1.06);
+      }
+      .mark img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .brand .name {
+        white-space: nowrap;
+      }
+      .nav a.lnk {
+        color: var(--ink-soft);
+        font-weight: 500;
+        font-size: 0.95rem;
+        transition: color 0.2s ease, transform 0.2s ease;
+      }
+      .nav a.lnk:hover {
+        transform: translateX(-3px);
+      }
+      .nav a.lnk:hover {
+        color: var(--brand);
+        text-decoration: none;
+      }
+      .theme-toggle {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--ink);
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1rem;
+        line-height: 1;
+        display: grid;
+        place-items: center;
+        transition: border-color 0.15s ease, background 0.15s ease;
+        flex: none;
+      }
+      .theme-toggle:hover {
+        border-color: var(--brand);
+        background: rgba(94, 74, 42, 0.06);
+      }
+      .theme-toggle .icon {
+        display: block;
+        transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .theme-toggle:hover .icon {
+        transform: rotate(-20deg) scale(1.1);
+      }
+      .theme-toggle.spin .icon {
+        animation: turn 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      @keyframes turn {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ---------- document ---------- */
+      main {
+        padding: 56px 0 72px;
+      }
+      /* the top of the page settles in on load, a line at a time */
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .doc-head > *,
+      .summary {
+        animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+      }
+      .doc-head > *:nth-child(1) {
+        animation-delay: 0.05s;
+      }
+      .doc-head > *:nth-child(2) {
+        animation-delay: 0.13s;
+      }
+      .doc-head > *:nth-child(3) {
+        animation-delay: 0.21s;
+      }
+      .summary {
+        animation-delay: 0.29s;
+      }
+      .doc-head {
+        margin-bottom: 40px;
+      }
+      .doc-head h1 {
+        font-size: clamp(2rem, 5vw, 2.7rem);
+        margin: 10px 0 12px;
+      }
+      .kicker {
+        display: inline-block;
+        font-size: 0.78rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: var(--brand);
+      }
+      .updated {
+        color: var(--ink-soft);
+        font-size: 0.92rem;
+        margin: 0;
+      }
+      .summary {
+        background: var(--cream-card);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--accent);
+        border-radius: var(--radius);
+        padding: 22px 24px;
+        margin: 0 0 44px;
+        box-shadow: var(--shadow);
+      }
+      .summary h2 {
+        font-size: 1.12rem;
+        margin: 0 0 8px;
+      }
+      .summary p:last-child {
+        margin-bottom: 0;
+      }
+      h2 {
+        font-size: 1.4rem;
+        margin: 44px 0 12px;
+      }
+      h3 {
+        font-size: 1.08rem;
+        margin: 28px 0 8px;
+      }
+      p {
+        margin: 0 0 16px;
+      }
+      ul {
+        margin: 0 0 16px;
+        padding-left: 22px;
+      }
+      li {
+        margin-bottom: 8px;
+      }
+      .inline-code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.9em;
+        background: rgba(94, 74, 42, 0.07);
+        color: var(--brand);
+        padding: 2px 7px;
+        border-radius: 6px;
+      }
+      .table-scroll {
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--cream-card);
+        margin-bottom: 20px;
+        -webkit-overflow-scrolling: touch;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 480px;
+        font-size: 0.95rem;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      th {
+        font-weight: 600;
+        color: var(--ink);
+        white-space: nowrap;
+      }
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+      td:first-child {
+        white-space: nowrap;
+        font-weight: 500;
+      }
+
+      td.num {
+        white-space: nowrap;
+        color: var(--ink-soft);
+        font-variant-numeric: tabular-nums;
+      }
+      td.ar {
+        font-family: var(--serif);
+        font-size: 1.25rem;
+        white-space: nowrap;
+      }
+      td.tr {
+        white-space: nowrap;
+        font-weight: 600;
+      }
+      table {
+        min-width: 560px;
+      }
+
+      /* ---------- footer ---------- */
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 36px 0;
+        color: var(--ink-soft);
+        font-size: 0.92rem;
+      }
+      .foot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+      .foot-links {
+        display: flex;
+        gap: 22px;
+        flex-wrap: wrap;
+      }
+
+      @media (max-width: 700px) {
+        .wrap {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+        .nav {
+          height: 60px;
+        }
+        main {
+          padding: 40px 0 56px;
+        }
+        .foot {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+      @media (max-width: 480px) {
+        .brand .name {
+          display: none;
+        }
+        .foot-links {
+          gap: 16px;
+        }
+      }
+
+      /* ---------- dark mode ---------- */
+      :root[data-theme="dark"] {
+        --brand: #d2a869;
+        --brand-deep: #232419;
+        --brand-soft: #e3c08a;
+        --accent: #ddbb74;
+        --accent-soft: #f0dcae;
+        --cream: #14140e;
+        --cream-card: #1e1f16;
+        --ink: #ece7d3;
+        --ink-soft: #aaa591;
+        --line: #33362a;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.4),
+          0 16px 40px -16px rgba(0, 0, 0, 0.7);
+        --shade: 0, 0, 0;
+      }
+      :root[data-theme="dark"] header {
+        background: rgba(20, 20, 14, 0.85);
+      }
+      :root[data-theme="dark"] .inline-code {
+        color: var(--brand-soft);
+        background: rgba(210, 168, 105, 0.14);
+      }
+      :root[data-theme="dark"] .theme-toggle:hover {
+        background: rgba(210, 168, 105, 0.1);
+      }
+
+      /* ---------- reduced motion ---------- */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap nav">
+        <a href="index.html" class="brand">
+          <span class="mark"><img src="img/akh.png" alt="" width="34" height="34" /></span>
+          <span class="name">HadithBot</span>
+        </a>
+        <a class="lnk" href="index.html">← Back to site</a>
+        <button
+          class="theme-toggle"
+          id="themeToggle"
+          type="button"
+          aria-label="Toggle dark mode"
+          title="Toggle light / dark"
+        >
+          <span class="icon">🌙</span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <div class="wrap">
+        <div class="doc-head">
+          <span class="kicker">Asma ul Husna</span>
+          <h1>The 99 Names of Allah</h1>
+          <p class="updated">
+            Arabic, transliteration and meaning — the same list HadithBot posts.
+          </p>
+        </div>
+
+        <div class="summary">
+          <h2>Have one sent to your Discord server each day</h2>
+          <p>
+            HadithBot posts Allah's names to any channel you choose, a few each
+            day, together with the meaning and a short reflection on when to
+            call upon that name in your dua. It picks up where it left off, so a
+            server works through all 99 in order rather than seeing the same
+            few. It's free, and setup is one command.
+          </p>
+          <p style="margin-bottom: 0">
+            <a class="btn btn-primary invite-btn" href="#">☾ Add to Discord</a>
+            &nbsp;<a href="index.html">See how it works →</a>
+          </p>
+        </div>
+
+        <h2>The full list</h2>
+        <p>
+          Ninety-nine names, in the traditional order. The Prophet
+          ﷺ said: “Allah has ninety-nine names, one hundred less one; whoever
+          memorises them will enter Paradise.”
+        </p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Arabic</th>
+                <th>Transliteration</th>
+                <th>Meaning</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="num">1</td>
+                <td class="ar" lang="ar" dir="rtl">الرَّحْمَنُ</td>
+                <td class="tr">Ar-Rahman</td>
+                <td>The Most Compassionate</td>
+              </tr>
+              <tr>
+                <td class="num">2</td>
+                <td class="ar" lang="ar" dir="rtl">الرَّحِيمُ</td>
+                <td class="tr">Ar-Raheem</td>
+                <td>The Most Merciful</td>
+              </tr>
+              <tr>
+                <td class="num">3</td>
+                <td class="ar" lang="ar" dir="rtl">الْمَلِكُ</td>
+                <td class="tr">Al-Malik</td>
+                <td>The Sovereign King</td>
+              </tr>
+              <tr>
+                <td class="num">4</td>
+                <td class="ar" lang="ar" dir="rtl">الْقُدُّوسُ</td>
+                <td class="tr">Al-Quddus</td>
+                <td>The Most Holy</td>
+              </tr>
+              <tr>
+                <td class="num">5</td>
+                <td class="ar" lang="ar" dir="rtl">السَّلاَمُ</td>
+                <td class="tr">As-Salam</td>
+                <td>The Source of Peace</td>
+              </tr>
+              <tr>
+                <td class="num">6</td>
+                <td class="ar" lang="ar" dir="rtl">الْمُؤْمِنُ</td>
+                <td class="tr">Al-Mu&#x27;min</td>
+                <td>The Granter of Security</td>
+              </tr>
+              <tr>
+                <td class="num">7</td>
+                <td class="ar" lang="ar" dir="rtl">الْمُهَيْمِنُ</td>
+                <td class="tr">Al-Muhaymin</td>
+                <td>The Guardian Overseer</td>
+              </tr>
+              <tr>
+                <td class="num">8</td>
+                <td class="ar" lang="ar" dir="rtl">الْعَزِيزُ</td>
+                <td class="tr">Al-Azeez</td>
+                <td>The Almighty</td>
+              </tr>
+              <tr>
+                <td class="num">9</td>
+                <td class="ar" lang="ar" dir="rtl">الْجَبَّارُ</td>
+                <td class="tr">Al-Jabbar</td>
+                <td>The Compeller and Restorer</td>
+              </tr>
+              <tr>
+                <td class="num">10</td>
+                <td class="ar" lang="ar" dir="rtl">الْمُتَكَبِّرُ</td>
+                <td class="tr">Al-Mutakabbir</td>
+                <td>The Supreme in Greatness</td>
+              </tr>
+              <tr>
+                <td class="num">11</td>
+                <td class="ar" lang="ar" dir="rtl">الْخَالِقُ</td>
+                <td class="tr">Al-Khaliq</td>
+                <td>The Creator</td>
+              </tr>
+              <tr>
+                <td class="num">12</td>
+                <td class="ar" lang="ar" dir="rtl">الْبَارِئُ</td>
+                <td class="tr">Al-Baari</td>
+                <td>The Maker</td>
+              </tr>
+              <tr>
+                <td class="num">13</td>
+                <td class="ar" lang="ar" dir="rtl">الْمُصَوِّرُ</td>
+                <td class="tr">Al-Musawwir</td>
+                <td>The Fashioner of Forms</td>
+              </tr>
+              <tr>
+                <td class="num">14</td>
+                <td class="ar" lang="ar" dir="rtl">الْغَفَّارُ</td>
+                <td class="tr">Al-Ghaffar</td>
+                <td>The Ever-Forgiving</td>
+              </tr>
+              <tr>
+                <td class="num">15</td>
+                <td class="ar" lang="ar" dir="rtl">الْقَهَّارُ</td>
+                <td class="tr">Al-Qahhar</td>
+                <td>The Subduer</td>
+              </tr>
+              <tr>
+                <td class="num">16</td>
+                <td class="ar" lang="ar" dir="rtl">الْوَهَّابُ</td>
+                <td class="tr">Al-Wahhab</td>
+                <td>The Bestower of Gifts</td>
+              </tr>
+              <tr>
+                <td class="num">17</td>
+                <td class="ar" lang="ar" dir="rtl">الرَّزَّاقُ</td>
+                <td class="tr">Ar-Razzaq</td>
+                <td>The Provider</td>
+              </tr>
+              <tr>
+                <td class="num">18</td>
+                <td class="ar" lang="ar" dir="rtl">الْفَتَّاحُ</td>
+                <td class="tr">Al-Fattah</td>
+                <td>The Opener</td>
+              </tr>
+              <tr>
+                <td class="num">19</td>
+                <td class="ar" lang="ar" dir="rtl">اَلْعَلِيْمُ</td>
+                <td class="tr">Al-&#x27;Aleem</td>
+                <td>The All-Knowing</td>
+              </tr>
+              <tr>
+                <td class="num">20</td>
+                <td class="ar" lang="ar" dir="rtl">الْقَابِضُ</td>
+                <td class="tr">Al-Qabid</td>
+                <td>The Withholder</td>
+              </tr>
+              <tr>
+                <td class="num">21</td>
+                <td class="ar" lang="ar" dir="rtl">الْبَاسِطُ</td>
+                <td class="tr">Al-Basit</td>
+                <td>The Expander</td>
+              </tr>
+              <tr>
+                <td class="num">22</td>
+                <td class="ar" lang="ar" dir="rtl">الْخَافِضُ</td>
+                <td class="tr">Al-Khafid</td>
+                <td>The Abaser</td>
+              </tr>
+              <tr>
+                <td class="num">23</td>
+                <td class="ar" lang="ar" dir="rtl">الرَّافِعُ</td>
+                <td class="tr">Ar-Rafi&#x27;</td>
+                <td>The Exalter</td>
+              </tr>
+              <tr>
+                <td class="num">24</td>
+                <td class="ar" lang="ar" dir="rtl">الْمُعِزُّ</td>
+                <td class="tr">Al-Mu&#x27;izz</td>
+                <td>The Giver of Honor</td>
+              </tr>
+              <tr>
+                <td class="num">25</td>
+                <td class="ar" lang="ar" dir="rtl">المُذِلُّ</td>
+                <td class="tr">Al-Mudhill</td>
+                <td>The Giver of Dishonor</td>
+              </tr>
+              <tr>
+                <td class="num">26</td>
+                <td class="ar" lang="ar" dir="rtl">السَّمِيعُ</td>
+                <td class="tr">As-Samee&#x27;</td>
+                <td>The All-Hearing</td>
+              </tr>
+              <tr>
+                <td class="num">27</td>
+                <td class="ar" lang="ar" dir="rtl">الْبَصِيرُ</td>
+                <td class="tr">Al-Baseer</td>
+                <td>The All-Seeing</td>
+              </tr>
+              <tr>
+                <td class="num">28</td>
+                <td class="ar" lang="ar" dir="rtl">الْحَكَمُ</td>
+                <td class="tr">Al-Hakam</td>
+                <td>The Judge</td>
+              </tr>
+              <tr>
+                <td class="num">29</td>
+                <td class="ar" lang="ar" dir="rtl">الْعَدْلُ</td>
+                <td class="tr">Al-&#x27;Adl</td>
+                <td>The Utterly Just</td>
+              </tr>
+              <tr>
+                <td class="num">30</td>
+                <td class="ar" lang="ar" dir="rtl">اللَّطِيفُ</td>
+                <td class="tr">Al-Lateef</td>
+                <td>The Subtle and Kind</td>
+              </tr>
+              <tr>
+                <td class="num">31</td>
+                <td class="ar" lang="ar" dir="rtl">الْخَبِيرُ</td>
+                <td class="tr">Al-Khabeer</td>
+                <td>The All-Aware</td>
+              </tr>
+              <tr>
+                <td class="num">32</td>
+                <td class="ar" lang="ar" dir="rtl">الْحَلِيمُ</td>
+                <td class="tr">Al-Haleem</td>
+                <td>The Forbearing</td>
+              </tr>
+              <tr>
+                <td class="num">33</td>
+                <td class="ar" lang="ar" dir="rtl">الْعَظِيمُ</td>
+                <td class="tr">Al-&#x27;Azeem</td>
+                <td>The Magnificent</td>
+              </tr>
+              <tr>
+                <td class="num">34</td>
+                <td class="ar" lang="ar" dir="rtl">الْغَفُورُ</td>
+                <td class="tr">Al-Ghafoor</td>
+                <td>The All-Forgiving</td>
+              </tr>
+              <tr>
+                <td class="num">35</td>
+                <td class="ar" lang="ar" dir="rtl">الشَّكُورُ</td>
+                <td class="tr">Ash-Shakoor</td>
+                <td>The Most Appreciative</td>
+              </tr>
+              <tr>
+                <td class="num">36</td>
+                <td class="ar" lang="ar" dir="rtl">الْعَلِيُّ</td>
+                <td class="tr">Al-&#x27;Aliyy</td>
+                <td>The Most High</td>
+              </tr>
+              <tr>
+                <td class="num">37</td>
+                <td class="ar" lang="ar" dir="rtl">الْكَبِيرُ</td>
+                <td class="tr">Al-Kabeer</td>
+                <td>The Most Great</td>
+              </tr>
+              <tr>
+                <td class="num">38</td>
+                <td class="ar" lang="ar" dir="rtl">الْحَفِيظُ</td>
+                <td class="tr">Al-Hafeez</td>
+                <td>The Preserver</td>
+              </tr>
+              <tr>
+                <td class="num">39</td>
+                <td class="ar" lang="ar" dir="rtl">المُقيِت</td>
+                <td class="tr">Al-Muqeet</td>
+                <td>The Sustainer</td>
+              </tr>
+              <tr>
+                <td class="num">40</td>
+                <td class="ar" lang="ar" dir="rtl">الْحسِيبُ</td>
+                <td class="tr">Al-Haseeb</td>
+                <td>The Reckoner</td>
+              </tr>
+              <tr>
+                <td class="num">41</td>
+                <td class="ar" lang="ar" dir="rtl">الْجَلِيلُ</td>
+                <td class="tr">Al-Jaleel</td>
+                <td>The Majestic</td>
+              </tr>
+              <tr>
+                <td class="num">42</td>
+                <td class="ar" lang="ar" dir="rtl">الْكَرِيمُ</td>
+                <td class="tr">Al-Kareem</td>
+                <td>The Most Generous</td>
+              </tr>
+              <tr>
+                <td class="num">43</td>
+                <td class="ar" lang="ar" dir="rtl">الرَّقِيبُ</td>
+                <td class="tr">Ar-Raqeeb</td>
+                <td>The Watchful</td>
+              </tr>
+              <tr>
+                <td class="num">44</td>
+                <td class="ar" lang="ar" dir="rtl">الْمُجِيبُ</td>
+                <td class="tr">Al-Mujeeb</td>
+                <td>The Responsive</td>
+              </tr>
+              <tr>
+                <td class="num">45</td>
+                <td class="ar" lang="ar" dir="rtl">الْوَاسِعُ</td>
+                <td class="tr">Al-Waasi&#x27;</td>
+                <td>The All-Encompassing</td>
+              </tr>
+              <tr>
+                <td class="num">46</td>
+                <td class="ar" lang="ar" dir="rtl">الْحَكِيمُ</td>
+                <td class="tr">Al-Hakeem</td>
+                <td>The All-Wise</td>
+              </tr>
+              <tr>
+                <td class="num">47</td>
+                <td class="ar" lang="ar" dir="rtl">الْوَدُودُ</td>
+                <td class="tr">Al-Wudood</td>
+                <td>The Most Loving</td>
+              </tr>
+              <tr>
+                <td class="num">48</td>
+                <td class="ar" lang="ar" dir="rtl">الْمَجِيدُ</td>
+                <td class="tr">Al-Majeed</td>
+                <td>The Most Glorious</td>
+              </tr>
+              <tr>
+                <td class="num">49</td>
+                <td class="ar" lang="ar" dir="rtl">الْبَاعِثُ</td>
+                <td class="tr">Al-Baa&#x27;ith</td>
+                <td>The Resurrector</td>
+              </tr>
+              <tr>
+                <td class="num">50</td>
+                <td class="ar" lang="ar" dir="rtl">الشَّهِيدُ</td>
+                <td class="tr">Ash-Shaheed</td>
+                <td>The Witness</td>
+              </tr>
+              <tr>
+                <td class="num">51</td>
+                <td class="ar" lang="ar" dir="rtl">الْحَقُّ</td>
+                <td class="tr">Al-Haqq</td>
+                <td>The Absolute Truth</td>
+              </tr>
+              <tr>
+                <td class="num">52</td>
+                <td class="ar" lang="ar" dir="rtl">الْوَكِيلُ</td>
+                <td class="tr">Al-Wakeel</td>
+                <td>The Trustee and Disposer of Affairs</td>
+              </tr>
+              <tr>
+                <td class="num">53</td>
+                <td class="ar" lang="ar" dir="rtl">الْقَوِيُّ</td>
+                <td class="tr">Al-Qawiyy</td>
+                <td>The All-Strong</td>
+              </tr>
+              <tr>
+                <td class="num">54</td>
+                <td class="ar" lang="ar" dir="rtl">الْمَتِينُ</td>
+                <td class="tr">Al-Mateen</td>
+                <td>The Firm and Steadfast</td>
+              </tr>
+              <tr>
+                <td class="num">55</td>
+                <td class="ar" lang="ar" dir="rtl">الْوَلِيُّ</td>
+                <td class="tr">Al-Waliyy</td>
+                <td>The Protecting Friend</td>
+              </tr>
+              <tr>
+                <td class="num">56</td>
+                <td class="ar" lang="ar" dir="rtl">الْحَمِيدُ</td>
+                <td class="tr">Al-Hameed</td>
+                <td>The All-Praiseworthy</td>
+              </tr>
+              <tr>
+                <td class="num">57</td>
+                <td class="ar" lang="ar" dir="rtl">الْمُحْصِي</td>
+                <td class="tr">Al-Muhsi</td>
+                <td>The All-Enumerating</td>
+              </tr>
+              <tr>
+                <td class="num">58</td>
+                <td class="ar" lang="ar" dir="rtl">الْمُبْدِئُ</td>
+                <td class="tr">Al-Mubdi</td>
+                <td>The Originator</td>
+              </tr>
+              <tr>
+                <td class="num">59</td>
+                <td class="ar" lang="ar" dir="rtl">الْمُعِيدُ</td>
+                <td class="tr">Al-Mu&#x27;eed</td>
+                <td>The Restorer</td>
+              </tr>
+              <tr>
+                <td class="num">60</td>
+                <td class="ar" lang="ar" dir="rtl">الْمُحْيِي</td>
+                <td class="tr">Al-Muhyi</td>
+                <td>The Giver of Life</td>
+              </tr>
+              <tr>
+                <td class="num">61</td>
+                <td class="ar" lang="ar" dir="rtl">اَلْمُمِيتُ</td>
+                <td class="tr">Al-Mumeet</td>
+                <td>The Bringer of Death</td>
+              </tr>
+              <tr>
+                <td class="num">62</td>
+                <td class="ar" lang="ar" dir="rtl">الْحَيُّ</td>
+                <td class="tr">Al-Hayy</td>
+                <td>The Ever-Living</td>
+              </tr>
+              <tr>
+                <td class="num">63</td>
+                <td class="ar" lang="ar" dir="rtl">الْقَيُّومُ</td>
+                <td class="tr">Al-Qayyoom</td>
+                <td>The Self-Sustaining Sustainer</td>
+              </tr>
+              <tr>
+                <td class="num">64</td>
+                <td class="ar" lang="ar" dir="rtl">الْوَاجِدُ</td>
+                <td class="tr">Al-Waajid</td>
+                <td>The Perceiver and Finder</td>
+              </tr>
+              <tr>
+                <td class="num">65</td>
+                <td class="ar" lang="ar" dir="rtl">الْمَاجِدُ</td>
+                <td class="tr">Al-Maajid</td>
+                <td>The Most Glorious and Noble</td>
+              </tr>
+              <tr>
+                <td class="num">66</td>
+                <td class="ar" lang="ar" dir="rtl">الْواحِدُ</td>
+                <td class="tr">Al-Waahid</td>
+                <td>The One</td>
+              </tr>
+              <tr>
+                <td class="num">67</td>
+                <td class="ar" lang="ar" dir="rtl">اَلاَحَدُ</td>
+                <td class="tr">Al-Ahad</td>
+                <td>The Indivisible One</td>
+              </tr>
+              <tr>
+                <td class="num">68</td>
+                <td class="ar" lang="ar" dir="rtl">الصَّمَدُ</td>
+                <td class="tr">As-Samad</td>
+                <td>The Eternal Refuge</td>
+              </tr>
+              <tr>
+                <td class="num">69</td>
+                <td class="ar" lang="ar" dir="rtl">الْقَادِرُ</td>
+                <td class="tr">Al-Qaadir</td>
+                <td>The All-Powerful</td>
+              </tr>
+              <tr>
+                <td class="num">70</td>
+                <td class="ar" lang="ar" dir="rtl">الْمُقْتَدِرُ</td>
+                <td class="tr">Al-Muqtadir</td>
+                <td>The Omnipotent</td>
+              </tr>
+              <tr>
+                <td class="num">71</td>
+                <td class="ar" lang="ar" dir="rtl">الْمُقَدِّمُ</td>
+                <td class="tr">Al-Muqaddim</td>
+                <td>The Expediter</td>
+              </tr>
+              <tr>
+                <td class="num">72</td>
+                <td class="ar" lang="ar" dir="rtl">الْمُؤَخِّرُ</td>
+                <td class="tr">Al-Mu&#x27;akhkhir</td>
+                <td>The Delayer</td>
+              </tr>
+              <tr>
+                <td class="num">73</td>
+                <td class="ar" lang="ar" dir="rtl">الأوَّلُ</td>
+                <td class="tr">Al-Awwal</td>
+                <td>The First</td>
+              </tr>
+              <tr>
+                <td class="num">74</td>
+                <td class="ar" lang="ar" dir="rtl">الآخِرُ</td>
+                <td class="tr">Al-Aakhir</td>
+                <td>The Last</td>
+              </tr>
+              <tr>
+                <td class="num">75</td>
+                <td class="ar" lang="ar" dir="rtl">الظَّاهِرُ</td>
+                <td class="tr">Az-Zaahir</td>
+                <td>The Manifest</td>
+              </tr>
+              <tr>
+                <td class="num">76</td>
+                <td class="ar" lang="ar" dir="rtl">الْبَاطِنُ</td>
+                <td class="tr">Al-Baatin</td>
+                <td>The Hidden One</td>
+              </tr>
+              <tr>
+                <td class="num">77</td>
+                <td class="ar" lang="ar" dir="rtl">الْوَالِي</td>
+                <td class="tr">Al-Waali</td>
+                <td>The Governor</td>
+              </tr>
+              <tr>
+                <td class="num">78</td>
+                <td class="ar" lang="ar" dir="rtl">الْمُتَعَالِي</td>
+                <td class="tr">Al-Muta&#x27;ali</td>
+                <td>The Supreme One</td>
+              </tr>
+              <tr>
+                <td class="num">79</td>
+                <td class="ar" lang="ar" dir="rtl">الْبَرُّ</td>
+                <td class="tr">Al-Barr</td>
+                <td>The Source of All Goodness</td>
+              </tr>
+              <tr>
+                <td class="num">80</td>
+                <td class="ar" lang="ar" dir="rtl">التَّوَابُ</td>
+                <td class="tr">At-Tawwaab</td>
+                <td>The Acceptor of Repentance</td>
+              </tr>
+              <tr>
+                <td class="num">81</td>
+                <td class="ar" lang="ar" dir="rtl">الْمُنْتَقِمُ</td>
+                <td class="tr">Al-Muntaqim</td>
+                <td>The Avenger</td>
+              </tr>
+              <tr>
+                <td class="num">82</td>
+                <td class="ar" lang="ar" dir="rtl">العَفُوُّ</td>
+                <td class="tr">Al-&#x27;Afuww</td>
+                <td>The Pardoner</td>
+              </tr>
+              <tr>
+                <td class="num">83</td>
+                <td class="ar" lang="ar" dir="rtl">الرَّؤُوفُ</td>
+                <td class="tr">Ar-Ra&#x27;oof</td>
+                <td>The Most Kind</td>
+              </tr>
+              <tr>
+                <td class="num">84</td>
+                <td class="ar" lang="ar" dir="rtl">مَالِكُ الْمُلْكِ</td>
+                <td class="tr">Maalik-ul-Mulk</td>
+                <td>The Owner of All Sovereignty</td>
+              </tr>
+              <tr>
+                <td class="num">85</td>
+                <td class="ar" lang="ar" dir="rtl">ذُوالْجَلاَلِ وَالإكْرَامِ</td>
+                <td class="tr">Dhul-Jalaali wal-Ikraam</td>
+                <td>The Lord of Majesty and Honor</td>
+              </tr>
+              <tr>
+                <td class="num">86</td>
+                <td class="ar" lang="ar" dir="rtl">الْمُقْسِطُ</td>
+                <td class="tr">Al-Muqsit</td>
+                <td>The Equitable One</td>
+              </tr>
+              <tr>
+                <td class="num">87</td>
+                <td class="ar" lang="ar" dir="rtl">الْجَامِعُ</td>
+                <td class="tr">Al-Jaami&#x27;</td>
+                <td>The Gatherer</td>
+              </tr>
+              <tr>
+                <td class="num">88</td>
+                <td class="ar" lang="ar" dir="rtl">الْغَنِيُّ</td>
+                <td class="tr">Al-Ghaniyy</td>
+                <td>The Self-Sufficient One</td>
+              </tr>
+              <tr>
+                <td class="num">89</td>
+                <td class="ar" lang="ar" dir="rtl">الْمُغْنِي</td>
+                <td class="tr">Al-Mughni</td>
+                <td>The Enricher</td>
+              </tr>
+              <tr>
+                <td class="num">90</td>
+                <td class="ar" lang="ar" dir="rtl">اَلْمَانِعُ</td>
+                <td class="tr">Al-Maani&#x27;</td>
+                <td>The Withholder</td>
+              </tr>
+              <tr>
+                <td class="num">91</td>
+                <td class="ar" lang="ar" dir="rtl">الضَّارَّ</td>
+                <td class="tr">Ad-Daarr</td>
+                <td>The Creator of Harm</td>
+              </tr>
+              <tr>
+                <td class="num">92</td>
+                <td class="ar" lang="ar" dir="rtl">النَّافِعُ</td>
+                <td class="tr">An-Naafi&#x27;</td>
+                <td>The Creator of Good</td>
+              </tr>
+              <tr>
+                <td class="num">93</td>
+                <td class="ar" lang="ar" dir="rtl">النُّورُ</td>
+                <td class="tr">An-Noor</td>
+                <td>The Light</td>
+              </tr>
+              <tr>
+                <td class="num">94</td>
+                <td class="ar" lang="ar" dir="rtl">الْهَادِي</td>
+                <td class="tr">Al-Haadi</td>
+                <td>The Guide</td>
+              </tr>
+              <tr>
+                <td class="num">95</td>
+                <td class="ar" lang="ar" dir="rtl">الْبَدِيعُ</td>
+                <td class="tr">Al-Badee&#x27;</td>
+                <td>The Originator</td>
+              </tr>
+              <tr>
+                <td class="num">96</td>
+                <td class="ar" lang="ar" dir="rtl">اَلْبَاقِي</td>
+                <td class="tr">Al-Baaqi</td>
+                <td>The Everlasting One</td>
+              </tr>
+              <tr>
+                <td class="num">97</td>
+                <td class="ar" lang="ar" dir="rtl">الْوَارِثُ</td>
+                <td class="tr">Al-Waarith</td>
+                <td>The Inheritor</td>
+              </tr>
+              <tr>
+                <td class="num">98</td>
+                <td class="ar" lang="ar" dir="rtl">الرَّشِيدُ</td>
+                <td class="tr">Ar-Rasheed</td>
+                <td>The Guide to the Right Path</td>
+              </tr>
+              <tr>
+                <td class="num">99</td>
+                <td class="ar" lang="ar" dir="rtl">الصَّبُورُ</td>
+                <td class="tr">As-Saboor</td>
+                <td>The Patient One</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>How HadithBot sends them</h2>
+        <p>
+          Run <span class="inline-code">/bismillah setup</span> in the channel
+          you want. By default it posts three names a day alongside three
+          hadiths, at 6:00 PM Toronto time. You can change how many with the
+          <span class="inline-code">names_per_day</span> option (1–10), or start
+          from a particular name with
+          <span class="inline-code">start_name</span>.
+        </p>
+        <p>
+          Each name arrives with its Arabic, its meaning, and a line on when to
+          call upon it — for example, to call upon
+          <b>Al-Ghafoor</b> when the weight of your sins burdens you. You can
+          also pull one on demand any time with
+          <span class="inline-code">/bismillah specific_name</span>, or ask for
+          a run of three with
+          <span class="inline-code">/bismillah specific_names</span>.
+        </p>
+        <p>
+          Every channel keeps its own position, so different channels can be at
+          different points in the list. Full setup instructions are on the
+          <a href="index.html">main page</a>.
+        </p>
+      </div>
+    </main>
+
+    <footer>
+      <div class="wrap foot">
+        <div>
+          <span class="arabic" style="color: var(--brand)">﷽</span>
+          &nbsp; HadithBot — built with care.
+        </div>
+        <div class="foot-links">
+          <a href="index.html">Home</a>
+          <a href="send-daily-hadith-discord.html">Setup guide</a>
+          <a href="99-names-of-allah.html">99 names</a>
+          <a href="privacy.html">Privacy</a>
+          <a href="terms.html">Terms</a>
+          <a
+            href="https://github.com/SaiyedRushan/HadithBot"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Theme toggle: flip data-theme, persist, swap icon
+      (function () {
+        var toggle = document.getElementById("themeToggle");
+        var icon = toggle.querySelector(".icon");
+        function setIcon() {
+          var dark =
+            document.documentElement.getAttribute("data-theme") === "dark";
+          icon.textContent = dark ? "☀️" : "🌙";
+        }
+        setIcon();
+        toggle.addEventListener("click", function () {
+          var dark =
+            document.documentElement.getAttribute("data-theme") === "dark";
+          var next = dark ? "light" : "dark";
+          document.documentElement.setAttribute("data-theme", next);
+          try {
+            localStorage.setItem("hb-theme", next);
+          } catch (e) {}
+          setIcon();
+          // spin the icon a full turn, then drop the class so it can spin again
+          toggle.classList.add("spin");
+          setTimeout(function () {
+            toggle.classList.remove("spin");
+          }, 520);
+        });
+      })();
+
+      // Sticky header gains a shadow once the page has scrolled
+      (function () {
+        var header = document.querySelector("header");
+        var ticking = false;
+        function update() {
+          header.classList.toggle("scrolled", window.scrollY > 8);
+          ticking = false;
+        }
+        addEventListener(
+          "scroll",
+          function () {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(update);
+          },
+          { passive: true }
+        );
+        update();
+      })();
+    </script>
+    <script>
+      // Same invite URL as the main page: bot + applications.commands, with
+      // View Channel (1024) + Send Messages (2048) = 3072.
+      var INVITE_URL =
+        "https://discord.com/oauth2/authorize?client_id=1285370394282295359" +
+        "&permissions=3072&scope=bot%20applications.commands";
+      document.querySelectorAll(".invite-btn").forEach(function (a) {
+        a.href = INVITE_URL;
+        a.target = "_blank";
+        a.rel = "noopener";
+      });
+    </script>
+  </body>
+</html>
