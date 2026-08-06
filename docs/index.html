@@ -3,15 +3,132 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HadithBot — Daily hadith & the 99 names of Allah for Discord</title>
+    <title>
+      HadithBot — Automatic Daily Hadith &amp; 99 Names of Allah for Discord
+    </title>
     <meta
       name="description"
-      content="HadithBot delivers a daily hadith and the 99 beautiful names of Allah to your Discord server, and answers on-demand slash commands. Free and open source."
+      content="Free Discord bot that automatically posts a daily hadith and the 99 names of Allah to your server. One-command setup, and every channel keeps its own place."
     />
+    <link rel="canonical" href="https://hadithbot.app/" />
     <meta name="theme-color" content="#5e4a2a" />
     <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="144x144" href="img/akh.png" />
     <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
+
+    <!-- Social / link previews -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="HadithBot" />
+    <meta property="og:url" content="https://hadithbot.app/" />
+    <meta
+      property="og:title"
+      content="HadithBot — Automatic Daily Hadith &amp; 99 Names of Allah for Discord"
+    />
+    <meta
+      property="og:description"
+      content="Free Discord bot that automatically posts a daily hadith and the 99 names of Allah to your server. One-command setup, and every channel keeps its own place."
+    />
+    <meta property="og:image" content="https://hadithbot.app/img/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="HadithBot posting the names Al-'Azeem and Al-Ghafoor and a hadith from Riyad as-Salihin in a Discord channel"
+    />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="HadithBot — Automatic Daily Hadith &amp; 99 Names of Allah for Discord"
+    />
+    <meta
+      name="twitter:description"
+      content="Free Discord bot that automatically posts a daily hadith and the 99 names of Allah to your server. One-command setup, and every channel keeps its own place."
+    />
+    <meta
+      name="twitter:image"
+      content="https://hadithbot.app/img/og-image.png"
+    />
+
+    <!-- Structured data. The FAQ entries below must stay in sync with the
+         visible FAQ section; Google requires marked-up answers to match the
+         page. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "SoftwareApplication",
+            "name": "HadithBot",
+            "url": "https://hadithbot.app/",
+            "applicationCategory": "CommunicationApplication",
+            "operatingSystem": "Discord",
+            "description": "A free Discord bot that automatically posts a daily hadith and the 99 names of Allah to the channels you choose, and answers on-demand slash commands.",
+            "image": "https://hadithbot.app/img/og-image.png",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "sameAs": ["https://github.com/SaiyedRushan/HadithBot"]
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Is it free?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes — completely free and open source. You can read the code, self-host it, or contribute on GitHub."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "When are the daily messages sent?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Every day at 6:00 PM Toronto time (America/Toronto), in each channel you've set up."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can different channels have different settings?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. Each channel keeps its own per-day counts and its own place in the hadiths and names, so you can run it differently in as many channels as you like."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Will changing the daily count reset my progress?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. Re-running /bismillah setup only changes the options you provide — anything left blank, including the reading position, is preserved."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What permissions does the bot need?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Just enough to do its job: View Channel and Send Messages in the channels you use it in. To run setup, stop, or status, a member needs the Manage Channels permission."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can a moderator add the bot, or does it take an admin?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Discord itself decides this: only someone with the Manage Server permission can add any bot to a server. The owner and admins always have it. Moderators only do if their role was given it — plenty of mod roles stop at Manage Messages, kick, ban, and timeout, which isn't enough. A mod without it will find the server greyed out on the authorization screen and will need an admin to add HadithBot. Once it's in, though, configuring it is a separate matter: any mod with Manage Channels can run /bismillah setup."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
     <script>
       // Apply theme before paint (no flash): stored choice, else system preference.
       (function () {
