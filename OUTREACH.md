@@ -38,6 +38,33 @@ pitch.
 > up without anyone having to remember to post it. hadithbot.app if you want a
 > look, no worries either way.
 
+## Short DM — for a friend to send on your behalf
+
+Hand this to someone who's willing to vouch for it in a server you're not in.
+Coming from a member it reads as a suggestion rather than a pitch, which is
+usually why it lands. Tell them to change the wording so it sounds like them —
+a message that's obviously been copy-pasted loses the whole advantage.
+
+> Assalamu alaikum! A friend of mine built a small Discord bot that posts a
+> hadith and one of Allah's 99 names to a channel every evening. It's free and
+> open source, no ads, and it can't read any messages in the server — he just
+> made it for his own MSA and put it out there.
+>
+> I thought it might be nice for [SERVER NAME]. Setup is one command and takes
+> about a minute (`/bismillah setup #channel`). hadithbot.app if you want a
+> look — no worries either way, just passing it along.
+
+If they'd rather send two lines than a paragraph:
+
+> Assalamu alaikum — a friend of mine made a free Discord bot that posts a daily
+> hadith and one of Allah's names: hadithbot.app. Open source, can't read
+> messages, takes a minute to set up. Thought it might suit [SERVER NAME].
+
+Two things worth telling them before they send it: the ask has to go to someone
+with **Manage Server** (see above), and if the person asks a question your
+friend can't answer, they should point them at hadithbot.app/privacy or offer to
+put them in touch with you rather than guess.
+
 ## Short DM — an MSA you don't know
 
 > Assalamu alaikum wa rahmatullah,
