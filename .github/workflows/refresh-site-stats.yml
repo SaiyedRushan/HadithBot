@@ -1,0 +1,58 @@
+name: Refresh site stats
+
+# The counts in the site's "Where it's running" section are baked into
+# docs/index.html rather than fetched by the browser, so something has to
+# regenerate them. This does it weekly and commits only when a number moved.
+#
+# Needs SUPABASE_URL and SUPABASE_KEY as repository secrets (Settings →
+# Secrets and variables → Actions). The read is aggregate-only.
+
+on:
+  schedule:
+    # Mondays, 09:00 UTC
+    - cron: "0 9 * * 1"
+  workflow_dispatch: # lets you refresh on demand from the Actions tab
+
+jobs:
+  refresh:
+    name: Regenerate the counts
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to push the refreshed page back to main
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.11.2"
+
+      - name: Install dependencies (from lockfile)
+        run: uv sync --frozen
+
+      - name: Regenerate docs/index.html
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "::error::SUPABASE_URL / SUPABASE_KEY are not set as repository secrets"
+            exit 1
+          fi
+          uv run python update_site.py
+
+      - name: Commit if the counts moved
+        run: |
+          # Only the generated page is ever committed here; anything else the
+          # run happened to touch is left behind deliberately.
+          if git diff --quiet -- docs/index.html; then
+            echo "counts unchanged — nothing to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(site): refresh usage counts" -- docs/index.html
+          git push
+          echo "### Counts refreshed" >> "$GITHUB_STEP_SUMMARY"
+          git show --stat --oneline HEAD >> "$GITHUB_STEP_SUMMARY"
