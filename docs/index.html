@@ -131,7 +131,19 @@
     </script>
     <script>
       // Apply theme before paint (no flash): stored choice, else system preference.
+      // Also flag that JS is alive — the scroll-reveal styles hide their targets
+      // up front, and must only do so when something is around to reveal them.
       (function () {
+        document.documentElement.classList.add("js");
+        // if any script on the page blows up, drop the flag so nothing the
+        // reveal styles hid can be stranded off-screen
+        addEventListener(
+          "error",
+          function () {
+            document.documentElement.classList.remove("js");
+          },
+          true
+        );
         try {
           var t =
             localStorage.getItem("hb-theme") ||
@@ -160,6 +172,11 @@
         --radius: 16px;
         --shadow: 0 1px 2px rgba(94, 74, 42, 0.04),
           0 12px 32px -12px rgba(94, 74, 42, 0.18);
+        /* rgb triples for the hover/motion states: --tint washes and borders,
+           --shade the shadows they lift on. Both flip in dark mode, where the
+           brand colour is light and shadows have to fall back to black. */
+        --tint: 94, 74, 42;
+        --shade: 94, 74, 42;
         --maxw: 1080px;
         --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
           "Times New Roman", serif;
@@ -234,13 +251,37 @@
           transform: none;
         }
       }
+      .btn:active {
+        transform: translateY(0) scale(0.98);
+      }
       .btn-primary {
+        position: relative;
+        overflow: hidden;
         background: var(--brand);
         color: #fff;
         box-shadow: 0 8px 20px -8px rgba(94, 74, 42, 0.6);
       }
       .btn-primary:hover {
         background: var(--brand-soft);
+        box-shadow: 0 14px 28px -10px rgba(var(--shade), 0.6);
+      }
+      /* a light sweeps across the button on hover, then resets instantly */
+      .btn-primary::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(
+          115deg,
+          transparent 35%,
+          rgba(255, 255, 255, 0.28) 50%,
+          transparent 65%
+        );
+        transform: translateX(-130%);
+      }
+      .btn-primary:hover::after {
+        transform: translateX(130%);
+        transition: transform 0.75s ease;
       }
       .btn-ghost {
         background: transparent;
@@ -260,6 +301,11 @@
         background: rgba(245, 241, 225, 0.85);
         backdrop-filter: blur(10px);
         border-bottom: 1px solid var(--line);
+        transition: box-shadow 0.3s ease, background 0.3s ease;
+      }
+      /* lifts off the page once you've scrolled past the hero's first fold */
+      header.scrolled {
+        box-shadow: 0 10px 30px -20px rgba(var(--shade), 0.55);
       }
       .nav {
         display: flex;
@@ -294,6 +340,10 @@
         /* clips the painting to the rounded corners; the inset ring sits on top */
         overflow: hidden;
         box-shadow: inset 0 0 0 1px rgba(221, 187, 116, 0.35);
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .brand:hover .mark {
+        transform: rotate(-12deg) scale(1.06);
       }
       .mark img {
         width: 100%;
@@ -310,13 +360,32 @@
         gap: 28px;
       }
       .nav-links a.lnk {
+        position: relative;
         color: var(--ink-soft);
         font-weight: 500;
         font-size: 0.95rem;
+        transition: color 0.2s ease;
+      }
+      /* underline wipes in from the left instead of the default text-decoration */
+      .nav-links a.lnk::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -6px;
+        height: 2px;
+        border-radius: 2px;
+        background: var(--brand);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
       }
       .nav-links a.lnk:hover {
         color: var(--brand);
         text-decoration: none;
+      }
+      .nav-links a.lnk:hover::after {
+        transform: scaleX(1);
       }
       .nav-actions {
         display: flex;
@@ -349,6 +418,17 @@
       }
       .mobile-menu.open {
         display: block;
+        animation: menu-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      @keyframes menu-in {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
       }
       .mobile-menu .wrap {
         display: flex;
@@ -399,7 +479,36 @@
             transparent 55%
           );
       }
+      /* slow-drifting wash of light behind the hero copy */
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: -30% -20%;
+        pointer-events: none;
+        z-index: 0;
+        background: radial-gradient(
+            420px 420px at 22% 30%,
+            rgba(200, 136, 58, 0.16),
+            transparent 65%
+          ),
+          radial-gradient(
+            520px 520px at 78% 70%,
+            rgba(var(--tint), 0.12),
+            transparent 65%
+          );
+        animation: drift 22s ease-in-out infinite alternate;
+      }
+      @keyframes drift {
+        from {
+          transform: translate3d(-3%, -2%, 0) scale(1);
+        }
+        to {
+          transform: translate3d(4%, 3%, 0) scale(1.12);
+        }
+      }
       .hero-grid {
+        position: relative;
+        z-index: 1;
         display: grid;
         grid-template-columns: 1.05fr 0.95fr;
         gap: 48px;
@@ -415,6 +524,35 @@
           padding-bottom: 56px;
           gap: 36px;
         }
+      }
+      /* hero copy rises in on load, one line after the next */
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(18px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .hero-copy > * {
+        animation: rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+      }
+      .hero-copy > *:nth-child(1) {
+        animation-delay: 0.05s;
+      }
+      .hero-copy > *:nth-child(2) {
+        animation-delay: 0.14s;
+      }
+      .hero-copy > *:nth-child(3) {
+        animation-delay: 0.23s;
+      }
+      .hero-copy > *:nth-child(4) {
+        animation-delay: 0.32s;
+      }
+      .hero-copy > *:nth-child(5) {
+        animation-delay: 0.41s;
       }
       .eyebrow {
         display: inline-flex;
@@ -455,8 +593,22 @@
         margin-bottom: 6px;
       }
 
-      /* message preview card */
+      /* message preview card — the wrapper does the idle float so the card
+         itself is free to run its own entrance animation */
+      .preview-float {
+        animation: float 9s ease-in-out 1.4s infinite;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-9px);
+        }
+      }
       .preview {
+        animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.3s backwards;
         background: #36393f;
         border-radius: var(--radius);
         padding: 20px 20px 22px;
@@ -469,6 +621,30 @@
         display: flex;
         gap: 12px;
         align-items: flex-start;
+      }
+      /* the message assembles itself line by line, as if it just arrived */
+      .preview .bismillah,
+      .preview .avatar,
+      .preview .msg > div > div {
+        animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+      }
+      .preview .bismillah {
+        animation-delay: 0.5s;
+      }
+      .preview .avatar {
+        animation-delay: 0.6s;
+      }
+      .preview .msg > div > div:nth-child(1) {
+        animation-delay: 0.66s;
+      }
+      .preview .msg > div > div:nth-child(2) {
+        animation-delay: 0.78s;
+      }
+      .preview .msg > div > div:nth-child(3) {
+        animation-delay: 0.9s;
+      }
+      .preview .msg > div > div:nth-child(4) {
+        animation-delay: 1.02s;
       }
       .preview .avatar {
         width: 40px;
@@ -652,6 +828,15 @@
         display: block;
         width: 100%;
         height: auto;
+        transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .shot-link:hover img {
+        transform: scale(1.015);
+      }
+      @media (hover: none) {
+        .shot-link:hover img {
+          transform: none;
+        }
       }
       .shot figcaption {
         margin-top: 14px;
@@ -697,6 +882,33 @@
         border-radius: var(--radius);
         padding: 26px;
         box-shadow: var(--shadow);
+        transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+          box-shadow 0.25s ease, border-color 0.25s ease;
+      }
+      .card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(var(--tint), 0.35);
+        box-shadow: 0 1px 2px rgba(var(--shade), 0.06),
+          0 22px 44px -20px rgba(var(--shade), 0.32);
+      }
+      .card .ico,
+      .app-card .ico {
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+          background 0.25s ease;
+      }
+      .card:hover .ico,
+      .app-card:hover .ico {
+        transform: scale(1.1) rotate(-5deg);
+        background: rgba(var(--tint), 0.16);
+      }
+      @media (hover: none) {
+        .card:hover {
+          transform: none;
+        }
+        .card:hover .ico,
+        .app-card:hover .ico {
+          transform: none;
+        }
       }
       .card .ico {
         width: 44px;
@@ -737,6 +949,26 @@
         border-radius: var(--radius);
         padding: 30px 26px 26px;
         box-shadow: var(--shadow);
+        transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+          box-shadow 0.25s ease, border-color 0.25s ease;
+      }
+      .step:hover {
+        transform: translateY(-4px);
+        border-color: rgba(var(--tint), 0.35);
+        box-shadow: 0 1px 2px rgba(var(--shade), 0.06),
+          0 22px 44px -20px rgba(var(--shade), 0.32);
+      }
+      .step .num {
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .step:hover .num {
+        transform: scale(1.12);
+      }
+      @media (hover: none) {
+        .step:hover,
+        .step:hover .num {
+          transform: none;
+        }
       }
       .step .num {
         width: 40px;
@@ -810,9 +1042,29 @@
         font-size: 0.78rem;
         cursor: pointer;
         font-family: var(--sans);
+        transition: background 0.2s ease, transform 0.2s ease;
       }
       .snippet .copy:hover {
         background: rgba(255, 255, 255, 0.22);
+      }
+      .snippet .copy:active {
+        transform: scale(0.94);
+      }
+      /* little pop to confirm the text landed on the clipboard */
+      .snippet .copy.copied {
+        background: var(--brand-soft);
+        animation: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      @keyframes pop {
+        0% {
+          transform: scale(0.9);
+        }
+        60% {
+          transform: scale(1.08);
+        }
+        100% {
+          transform: scale(1);
+        }
       }
 
       /* config layout */
@@ -893,6 +1145,12 @@
       }
       tbody tr:last-child td {
         border-bottom: none;
+      }
+      tbody tr {
+        transition: background 0.2s ease;
+      }
+      tbody tr:hover {
+        background: rgba(var(--tint), 0.06);
       }
       td code {
         font-family: "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
@@ -993,6 +1251,25 @@
         padding: 4px 20px;
         margin-bottom: 12px;
         box-shadow: var(--shadow);
+        transition: border-color 0.25s ease, box-shadow 0.25s ease;
+      }
+      details:hover,
+      details[open] {
+        border-color: rgba(var(--tint), 0.35);
+      }
+      /* the answer unfolds rather than snapping open */
+      details[open] > *:not(summary) {
+        animation: unfold 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      @keyframes unfold {
+        from {
+          opacity: 0;
+          transform: translateY(-6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
       }
       summary {
         cursor: pointer;
@@ -1007,15 +1284,21 @@
       summary::-webkit-details-marker {
         display: none;
       }
+      summary {
+        transition: color 0.2s ease;
+      }
+      summary:hover {
+        color: var(--brand);
+      }
       summary::after {
         content: "+";
         color: var(--brand);
         font-size: 1.4rem;
         font-weight: 400;
-        transition: transform 0.2s;
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
       details[open] summary::after {
-        transform: rotate(45deg);
+        transform: rotate(135deg);
       }
       details p {
         margin: 0 0 16px;
@@ -1024,7 +1307,14 @@
 
       /* final cta */
       .final {
-        background: linear-gradient(150deg, var(--brand), var(--brand-deep));
+        background: linear-gradient(
+          150deg,
+          var(--brand),
+          var(--brand-deep),
+          var(--brand)
+        );
+        background-size: 200% 200%;
+        animation: sheen 18s ease-in-out infinite alternate;
         color: #fff;
         text-align: center;
         border-radius: 24px;
@@ -1032,6 +1322,14 @@
         margin: 0 auto;
         position: relative;
         overflow: hidden;
+      }
+      @keyframes sheen {
+        from {
+          background-position: 0% 0%;
+        }
+        to {
+          background-position: 100% 100%;
+        }
       }
       .final::before {
         content: "﷽";
@@ -1041,6 +1339,18 @@
         right: -10px;
         top: -40px;
         color: var(--accent-soft);
+        animation: breathe 12s ease-in-out infinite;
+      }
+      @keyframes breathe {
+        0%,
+        100% {
+          opacity: 0.05;
+          transform: translateY(0);
+        }
+        50% {
+          opacity: 0.11;
+          transform: translateY(10px);
+        }
       }
       .final h2 {
         color: #fff;
@@ -1214,6 +1524,68 @@
         border-color: var(--brand);
         background: rgba(94, 74, 42, 0.06);
       }
+      .theme-toggle .icon {
+        display: block;
+        transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .theme-toggle:hover .icon {
+        transform: rotate(-20deg) scale(1.1);
+      }
+      /* full turn as the icon swaps, so the change reads as a flip */
+      .theme-toggle.spin .icon {
+        animation: turn 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      @keyframes turn {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .menu-toggle {
+        transition: border-color 0.2s ease, transform 0.2s ease;
+      }
+      .menu-toggle:active {
+        transform: scale(0.94);
+      }
+
+      /* ---------- scroll reveal ---------- */
+      /* Hidden up front only when JS is running (html.js), so the page still
+         reads fine if the reveal script never gets to run. */
+      html.js .section-head,
+      html.js .shot,
+      html.js .features .card,
+      html.js .steps .step,
+      html.js .steps-cta,
+      html.js .config-block,
+      html.js .table-scroll,
+      html.js .faq details,
+      html.js .apps .app-card,
+      html.js .final {
+        opacity: 0;
+        transform: translateY(22px);
+        transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s),
+          transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s);
+      }
+      html.js .revealed {
+        opacity: 1;
+        transform: none;
+      }
+
+      /* ---------- reduced motion ---------- */
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
 
       /* ---------- dark mode ---------- */
       :root[data-theme="dark"] {
@@ -1231,6 +1603,8 @@
         --line: #33362a;
         --shadow: 0 1px 2px rgba(0, 0, 0, 0.4),
           0 16px 40px -16px rgba(0, 0, 0, 0.7);
+        --tint: 210, 168, 105;
+        --shade: 0, 0, 0;
       }
       :root[data-theme="dark"] header {
         background: rgba(20, 20, 14, 0.85);
@@ -1297,7 +1671,7 @@
             aria-label="Toggle dark mode"
             title="Toggle light / dark"
           >
-            🌙
+            <span class="icon">🌙</span>
           </button>
           <a class="btn btn-primary invite-btn" href="#">Add to Discord</a>
           <button
@@ -1335,7 +1709,7 @@
       <!-- HERO -->
       <section class="hero" style="padding: 0">
         <div class="wrap hero-grid">
-          <div>
+          <div class="hero-copy">
             <span class="eyebrow">☾ Free &amp; open source Discord bot</span>
             <h1>A daily hadith &amp; the 99 names of Allah, in your server.</h1>
             <p class="lead">
@@ -1355,38 +1729,51 @@
           </div>
 
           <!-- Discord message preview -->
-          <div class="preview" aria-hidden="true">
-            <div class="bismillah arabic" style="color: var(--accent-soft); text-align: center; margin-bottom: 14px;">
-              بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
-            </div>
-            <div class="msg">
-              <div class="avatar">☾</div>
-              <div>
+          <div class="preview-float">
+            <div class="preview" aria-hidden="true">
+              <div
+                class="bismillah arabic"
+                style="
+                  color: var(--accent-soft);
+                  text-align: center;
+                  margin-bottom: 14px;
+                "
+              >
+                بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+              </div>
+              <div class="msg">
+                <div class="avatar">☾</div>
                 <div>
-                  <span class="uname">HadithBot</span><span class="tag">APP</span
-                  ><span class="time">Today at 6:00 PM</span>
-                </div>
-                <div class="greeting">
-                  Assalamu Alaikum Warahmatullahi Wabarakatuh, here is today's
-                  hadith and one of Allah's beautiful name
-                </div>
-                <div class="block">
-                  <b>(33) - الْعَظِيمُ - Al-'Azeem</b>
                   <div>
-                    The Magnificent — whose greatness and majesty are beyond any
-                    measure.
+                    <span class="uname">HadithBot</span
+                    ><span class="tag">APP</span
+                    ><span class="time">Today at 6:00 PM</span>
                   </div>
-                  <div class="dua">
-                    🤲 <b>In your dua:</b> Call upon Al-'Azeem when your troubles
-                    feel overwhelming.
+                  <div class="greeting">
+                    Assalamu Alaikum Warahmatullahi Wabarakatuh, here is today's
+                    hadith and one of Allah's beautiful name
                   </div>
-                </div>
-                <div class="block">
-                  <b>Book: Riyad as-Salihin - Chapter: The Remembrance of Allah</b>
-                  <div>
-                    "Keep your tongue wet with the remembrance of Allah."
+                  <div class="block">
+                    <b>(33) - الْعَظِيمُ - Al-'Azeem</b>
+                    <div>
+                      The Magnificent — whose greatness and majesty are beyond
+                      any measure.
+                    </div>
+                    <div class="dua">
+                      🤲 <b>In your dua:</b> Call upon Al-'Azeem when your
+                      troubles feel overwhelming.
+                    </div>
                   </div>
-                  <span class="srcbtn">🔎 Look up on Sunnah.com</span>
+                  <div class="block">
+                    <b
+                      >Book: Riyad as-Salihin - Chapter: The Remembrance of
+                      Allah</b
+                    >
+                    <div>
+                      "Keep your tongue wet with the remembrance of Allah."
+                    </div>
+                    <span class="srcbtn">🔎 Look up on Sunnah.com</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1959,10 +2346,11 @@
       // Theme toggle: flip data-theme, persist, swap icon
       (function () {
         var toggle = document.getElementById("themeToggle");
+        var icon = toggle.querySelector(".icon");
         function setIcon() {
           var dark =
             document.documentElement.getAttribute("data-theme") === "dark";
-          toggle.textContent = dark ? "☀️" : "🌙";
+          icon.textContent = dark ? "☀️" : "🌙";
         }
         setIcon();
         toggle.addEventListener("click", function () {
@@ -1974,6 +2362,11 @@
             localStorage.setItem("hb-theme", next);
           } catch (e) {}
           setIcon();
+          // spin the icon a full turn, then drop the class so it can spin again
+          toggle.classList.add("spin");
+          setTimeout(function () {
+            toggle.classList.remove("spin");
+          }, 520);
         });
       })();
 
@@ -2013,12 +2406,90 @@
           navigator.clipboard.writeText(text).then(function () {
             const old = btn.textContent;
             btn.textContent = "Copied!";
+            btn.classList.add("copied");
             setTimeout(function () {
               btn.textContent = old;
+              btn.classList.remove("copied");
             }, 1400);
           });
         });
       });
+
+      // Sections fade up as they scroll into view. The matching CSS hides them
+      // up front, so anything that throws here must un-hide them again.
+      (function () {
+        var groups = [
+          ".section-head",
+          ".shot",
+          ".features .card",
+          ".steps .step",
+          ".steps-cta",
+          ".config-block",
+          ".table-scroll",
+          ".faq details",
+          ".apps .app-card",
+          ".final",
+        ];
+        var targets = [];
+        groups.forEach(function (sel) {
+          document.querySelectorAll(sel).forEach(function (el, i) {
+            // members of a group trail each other slightly, capped so a long
+            // list never leaves the last card waiting
+            el.style.setProperty("--d", Math.min(i * 70, 350) + "ms");
+            targets.push(el);
+          });
+        });
+
+        function revealAll() {
+          targets.forEach(function (el) {
+            el.style.removeProperty("--d");
+            el.classList.add("revealed");
+          });
+        }
+
+        try {
+          var still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+          if (still || !("IntersectionObserver" in window)) {
+            revealAll();
+            return;
+          }
+          var io = new IntersectionObserver(
+            function (entries) {
+              entries.forEach(function (e) {
+                if (!e.isIntersecting) return;
+                e.target.classList.add("revealed");
+                io.unobserve(e.target);
+              });
+            },
+            { threshold: 0.1, rootMargin: "0px 0px -8% 0px" }
+          );
+          targets.forEach(function (el) {
+            io.observe(el);
+          });
+        } catch (e) {
+          revealAll();
+        }
+      })();
+
+      // Sticky header gains a shadow once the page has scrolled
+      (function () {
+        var header = document.querySelector("header");
+        var ticking = false;
+        function update() {
+          header.classList.toggle("scrolled", window.scrollY > 8);
+          ticking = false;
+        }
+        addEventListener(
+          "scroll",
+          function () {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(update);
+          },
+          { passive: true }
+        );
+        update();
+      })();
     </script>
   </body>
 </html>
