@@ -103,16 +103,30 @@ class HadithBot(commands.Bot):
                     "Failed to deliver error message to user", exc_info=True
                 )
 
-    # @tasks.loop(seconds=10)
     @tasks.loop(time=time(hour=18, tzinfo=ZoneInfo("America/Toronto")))
     async def send_daily_message(self):
         """Loops through the active channels and sends daily messages"""
+        await self.run_daily_broadcast()
+
+    async def run_daily_broadcast(self, only_channel_id: Optional[str] = None) -> int:
+        """The daily broadcast itself, callable outside the 6pm schedule.
+
+        Split out of send_daily_message so /bismillah send-now exercises this
+        exact code path rather than a copy that can drift from it. Returns the
+        number of channels delivered to; only_channel_id restricts it to one,
+        which is what the command uses so a test can't spam every server."""
         try:
             channels = get_channels()
         except Exception as e:
             self.logger.error(f"Failed to fetch active channels: {e}")
-            return
+            return 0
 
+        if only_channel_id is not None:
+            channels = [
+                c for c in channels if str(c["channel_id"]) == str(only_channel_id)
+            ]
+
+        delivered = 0
         for channel_row in channels:
             channel_id = channel_row["channel_id"]
             # Isolate each channel so one failure (e.g. missing permissions)
@@ -195,6 +209,7 @@ class HadithBot(commands.Bot):
                         guild_name=guild.name if guild else None,
                     )
 
+                    delivered += 1
                     self.logger.info(
                         f"Successfully sent hadith up to book {last_book_no}, chapter {last_chapter_no}, hadith {last['id_in_book']}"
                     )
@@ -207,6 +222,7 @@ class HadithBot(commands.Bot):
                     f"Failed to send daily message to channel {channel_id}: {e}",
                     exc_info=True,
                 )
+        return delivered
 
     @send_daily_message.before_loop
     async def before_daily_message(self):
@@ -662,6 +678,51 @@ class HadithCommands(app_commands.Group):
             f"**Delivery check** ({len(mine)} configured):",
             lines,
         )
+
+    @app_commands.command(name="send-now")
+    @app_commands.checks.has_permissions(manage_channels=True)
+    @app_commands.describe(
+        channel="Channel to send to (defaults to this channel)",
+    )
+    async def send_now(
+        self,
+        interaction: discord.Interaction,
+        channel: Optional[discord.TextChannel] = None,
+    ):
+        """Send this channel's daily message right now, without waiting for 6pm.
+
+        Runs the real broadcast for one channel, so what you see is what 6pm
+        would have produced. That means it genuinely advances the reading
+        position -- it is a real delivery, not a preview."""
+        await interaction.response.defer(ephemeral=True)
+        target = channel or interaction.channel
+        if not isinstance(target, discord.TextChannel):
+            await interaction.followup.send(
+                "Please pick a text channel (or run this inside one).",
+                ephemeral=True,
+            )
+            return
+
+        if get_channel_state(str(target.id)) is None:
+            await interaction.followup.send(
+                f"{target.mention} isn't set up yet — run `/bismillah setup` there first.",
+                ephemeral=True,
+            )
+            return
+
+        delivered = await self.bot.run_daily_broadcast(only_channel_id=str(target.id))
+        if delivered:
+            await interaction.followup.send(
+                f"Sent today's message to {target.mention}. Its place has moved "
+                "forward, so tomorrow continues from after this one.",
+                ephemeral=True,
+            )
+        else:
+            await interaction.followup.send(
+                f"Nothing was sent to {target.mention}. It may be paused — run "
+                "`/bismillah diagnose` to see what's blocking it.",
+                ephemeral=True,
+            )
 
     async def _send_reference(
         self, interaction: discord.Interaction, header: str, lines: List[str]
