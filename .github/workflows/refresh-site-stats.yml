@@ -21,10 +21,12 @@ jobs:
       contents: write # to push the refreshed page back to main
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
+      # Pinned to an exact patch on purpose: setup-uv stopped publishing major
+      # and minor tags in v8, so @v9 does not resolve.
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v9.0.0
         with:
           version: "0.11.2"
 
