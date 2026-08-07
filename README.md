@@ -27,6 +27,7 @@ A Discord bot that sends daily Islamic hadiths and the 99 beautiful names of All
 - `utils.py` - Data models and utility functions
 - `test_setup.py` - Setup verification script
 - `update_site.py` - Regenerates the site's usage counts and community wall (`make site`)
+- `update_books_page.py` - Regenerates `docs/books.html`, the book/chapter id reference (`make books`)
 - `OUTREACH.md` - Copy-paste templates for introducing the bot to new communities
 - `pyproject.toml` / `uv.lock` - Dependencies and lockfile (managed with uv)
 - `Makefile` - Common dev tasks (`make dev` / `test` / `lint`)

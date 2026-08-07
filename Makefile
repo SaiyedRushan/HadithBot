@@ -1,4 +1,4 @@
-.PHONY: install dev dev-server test lint format site site-wall
+.PHONY: install dev dev-server test lint format site site-wall books
 
 install:  ## Install all deps (runtime + dev) into .venv
 	uv sync
@@ -23,3 +23,6 @@ site:  ## Regenerate the site's usage counts and community wall (needs SUPABASE_
 
 site-wall:  ## Regenerate just the community wall, without touching the database
 	uv run python update_site.py --no-stats
+
+books:  ## Regenerate the site's books & chapters reference (needs SUPABASE_*)
+	uv run python update_books_page.py

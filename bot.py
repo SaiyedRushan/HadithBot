@@ -31,6 +31,11 @@ from utils import (
     resolve_start_position,
 )
 
+# Tail of the /bismillah books and /bismillah chapters replies. Both lists run
+# to several messages in Discord and can't be searched; the page holds the same
+# ids in one place, with the hadith counts and number ranges alongside them.
+BOOKS_PAGE_HINT = "\n-# The full list, searchable, is at <https://hadithbot.app/books>"
+
 
 class HadithBot(commands.Bot):
     def __init__(self):
@@ -554,6 +559,7 @@ class HadithCommands(app_commands.Group):
         """List all books and their ids (for use with /bismillah setup)."""
         await interaction.response.defer(ephemeral=True)
         lines = [f"`{b['id']}` — {b['english_title']}" for b in get_books()]
+        lines.append(BOOKS_PAGE_HINT)
         await self._send_reference(
             interaction,
             "**Books** — use the number as `start_book_id` in `/bismillah setup`:",
@@ -573,6 +579,7 @@ class HadithCommands(app_commands.Group):
             )
             return
         lines = [f"`{c['id']}` — {c['english']}" for c in chapters]
+        lines.append(BOOKS_PAGE_HINT)
         await self._send_reference(
             interaction,
             f"**Chapters in book {book}** — use the number as `start_chapter_id` in `/bismillah setup`:",
