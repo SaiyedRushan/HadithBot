@@ -29,7 +29,20 @@ Console → **Compute → Instances → Create Instance**:
 | --- | --- |
 | **Image** | Canonical Ubuntu 22.04 (or Oracle Linux) |
 | **Shape** | `VM.Standard.A1.Flex` (Arm, 1 OCPU / 6 GB) **or** `VM.Standard.E2.1.Micro` (AMD) — must show **"Always Free eligible"** |
-| **SSH keys** | Generate or upload your public key; **save the private key** |
+| **SSH keys** | **Upload your own public key** — see the warning below |
+
+> **Do not let the console generate the keypair.** It downloads the private key
+> once, to your browser's downloads folder, and Oracle keeps no copy. Lose it and
+> you are locked out for good: these images have no default password, so the
+> serial console can't rescue you either — recovery means editing the GRUB kernel
+> line to boot single-user, or rebuilding the VM.
+>
+> Generate the key yourself, keep it in `~/.ssh/`, and paste the **public** half:
+>
+> ```bash
+> ssh-keygen -t ed25519 -f ~/.ssh/hadithbot -C hadithbot
+> cat ~/.ssh/hadithbot.pub     # paste this into the console
+> ```
 
 > **Arm "out of capacity"?** Common in busy regions. Retry later, switch
 > availability domain, or use the AMD `E2.1.Micro` shape (more available, still
@@ -45,7 +58,7 @@ ssh ubuntu@<your-instance-public-ip>     # use opc@ for Oracle Linux
 
 ```bash
 # Install Docker
-sudo apt update && sudo apt install -y docker.io docker-compose git
+sudo apt update && sudo apt install -y docker.io docker-compose-v2 git
 sudo usermod -aG docker $USER && newgrp docker
 
 # Clone the repo
@@ -74,7 +87,37 @@ SUPABASE_KEY=your_supabase_anon_key
 [docker-compose.yml](docker-compose.yml), so the bot auto-restarts on crash or
 VM reboot.
 
-## 5. Update / restart / stop
+## 5. Name the host, then drive it from the Makefile
+
+Add the instance to `~/.ssh/config` once, so neither you nor the Makefile has to
+remember an IP or a key path:
+
+```
+Host hadithbot
+  HostName <your-instance-public-ip>
+  User ubuntu
+  IdentityFile ~/.ssh/hadithbot
+  IdentitiesOnly yes
+```
+
+`IdentitiesOnly yes` stops SSH offering every other key first — servers cut you
+off after a few failed attempts.
+
+With that in place, `ssh hadithbot` works, and so do the production targets:
+
+```bash
+make status     # is it up? container state + recent logs
+make logs       # tail the live logs
+make health     # gateway state and guild count, from the bot itself
+make deploy     # pull main and rebuild (CI does this automatically on push)
+make restart    # restart without rebuilding
+make shell      # ssh in
+```
+
+If you rebuild the VM, edit that one `HostName` line and everything else keeps
+working. `make` targets take `VM=` to override, e.g. `make logs VM=hadithbot2`.
+
+## 6. Update / restart / stop
 
 ```bash
 cd HadithBot

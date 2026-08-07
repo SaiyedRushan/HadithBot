@@ -7,11 +7,22 @@ services:
       - DISCORD_TOKEN=${DISCORD_TOKEN}
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
+      # Without this, stdout is block-buffered when it isn't a TTY, so anything
+      # print()ed is lost if the container dies before the buffer flushes.
+      # (logging writes to stderr, which is line-buffered, so it was already safe.)
+      - PYTHONUNBUFFERED=1
     env_file:
       - .env
     volumes:
       - ./data:/app/data:ro
     restart: unless-stopped
+    # The default json-file driver never rotates: on a long-running bot the log
+    # grows until it fills the boot volume. Cap it at 3 x 10MB.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8080/',timeout=5).getcode()==200 else 1)"]
       interval: 30s
