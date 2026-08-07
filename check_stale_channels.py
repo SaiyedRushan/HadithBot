@@ -23,7 +23,9 @@ from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
 
-from db import get_all_channels
+# db is imported inside main(): it raises at import time when SUPABASE_URL is
+# unset, which would make find_stale/format_report untestable without live
+# credentials. The logic below is pure and needs no database.
 
 # The send runs once a day, so anything past ~1 day is overdue. The default
 # allows a little over a full cycle so a late run, or a check that fires
@@ -94,6 +96,8 @@ def post_to_discord(webhook_url, content):
 
 def main():
     load_dotenv()
+    from db import get_all_channels  # noqa: PLC0415 -- see note at the imports
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--hours",
