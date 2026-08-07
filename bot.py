@@ -435,7 +435,6 @@ class HadithCommands(app_commands.Group):
                 for name, ok in (
                     ("View Channel", perms.view_channel),
                     ("Send Messages", perms.send_messages),
-                    ("Embed Links", perms.embed_links),
                 )
                 if not ok
             ]
@@ -632,7 +631,6 @@ class HadithCommands(app_commands.Group):
                 for name, ok in (
                     ("View Channel", perms.view_channel),
                     ("Send Messages", perms.send_messages),
-                    ("Embed Links", perms.embed_links),
                 )
                 if not ok
             ]

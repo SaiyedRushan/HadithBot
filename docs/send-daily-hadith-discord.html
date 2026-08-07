@@ -577,17 +577,42 @@
         </p>
 
         <h2>If it isn't posting</h2>
+        <p>
+          Run <span class="inline-code">/bismillah diagnose</span> in the server.
+          It checks every channel you've set up and tells you exactly what's
+          wrong with each one — no guessing. Add
+          <span class="inline-code">send_test: True</span> to have it attempt a
+          real post and report back whatever Discord says.
+        </p>
+        <p>
+          If it reports <b>missing View Channel, Send Messages</b>, the bot's
+          role has no access to that channel. This is by far the most common
+          cause, and it's usually an announcement-style channel — a
+          <span class="inline-code">#reminders</span> or
+          <span class="inline-code">#announcements</span> where everyone is
+          blocked from posting by default. The bot inherits that block. To fix
+          it:
+        </p>
+        <ol>
+          <li>Right-click the channel → <b>Edit Channel</b> → <b>Permissions</b></li>
+          <li>
+            Under <b>Roles/Members</b>, press <b>+</b> and add HadithBot's role
+          </li>
+          <li>Set <b>View Channel</b> and <b>Send Messages</b> to green ✓</li>
+          <li><b>Save Changes</b>, then run diagnose again</li>
+        </ol>
+        <p>
+          Two things that catch people out: if the channel is synced to its
+          category, the category's permissions win — set it there instead. And
+          grant it to the bot's <i>role</i> rather than the bot as a member, so
+          it survives re-inviting.
+        </p>
+        <p>Other things worth checking:</p>
         <ul>
           <li>
-            <b>Check the bot can see the channel.</b> The most common cause is a
-            private channel the bot's role has no access to. It needs View
-            Channel and Send Messages <i>in that specific channel</i>, not just
-            server-wide.
-          </li>
-          <li>
-            <b>Check the channel is actually set up.</b> Run
-            <span class="inline-code">/bismillah status</span> — if the channel
-            isn't listed, setup didn't complete.
+            <b>Check the channel is actually set up.</b> If
+            <span class="inline-code">/bismillah diagnose</span> says nothing is
+            configured, setup never completed.
           </li>
           <li>
             <b>Check you're not waiting on the wrong clock.</b> 6:00 PM Toronto
