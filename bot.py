@@ -423,6 +423,32 @@ class HadithCommands(app_commands.Group):
             )
             return
 
+        # Interaction replies use the interaction token, not channel permissions,
+        # so setup can otherwise report success for a channel the bot can never
+        # post in -- the failure only shows up as a missing message at 6pm.
+        # Check up front and tell the admin while they're still here to fix it.
+        me = target.guild.me
+        if me is not None:
+            perms = target.permissions_for(me)
+            missing = [
+                name
+                for name, ok in (
+                    ("View Channel", perms.view_channel),
+                    ("Send Messages", perms.send_messages),
+                    ("Embed Links", perms.embed_links),
+                )
+                if not ok
+            ]
+            if missing:
+                await interaction.followup.send(
+                    f"I can't post in {target.mention} — missing "
+                    f"{', '.join(f'**{m}**' for m in missing)}.\n"
+                    "Grant those in the channel's permission settings and run "
+                    "`/bismillah setup` again. Nothing has been saved.",
+                    ephemeral=True,
+                )
+                return
+
         # Re-running setup edits the existing config. Any field left blank keeps
         # its current value (or falls back to a default for a brand-new channel),
         # so changing the daily counts no longer resets a channel's progress.
@@ -537,6 +563,105 @@ class HadithCommands(app_commands.Group):
             interaction,
             f"**Daily message channels here** ({len(lines)} configured) — "
             "sent daily at 6:00 PM Toronto time:",
+            lines,
+        )
+
+    @app_commands.command(name="diagnose")
+    @app_commands.checks.has_permissions(manage_channels=True)
+    @app_commands.describe(
+        send_test="Actually post a test message to each channel (default: check only)"
+    )
+    async def diagnose(
+        self, interaction: discord.Interaction, send_test: Optional[bool] = False
+    ):
+        """Check why the daily message may not be arriving in a channel.
+
+        Walks the same path send_daily_message does -- cache lookup, then
+        permissions -- and reports where it breaks, instead of failing silently
+        at 6pm. With send_test, it also attempts a real post so Discord's own
+        error (not our guess at it) is surfaced."""
+        await interaction.response.defer(ephemeral=True)
+        try:
+            rows = get_all_channels()
+        except Exception:
+            self.bot.logger.error("Failed to fetch channel states", exc_info=True)
+            await interaction.followup.send(
+                "Couldn't fetch the channel status right now. Please try again later.",
+                ephemeral=True,
+            )
+            return
+
+        guild = interaction.guild
+        if guild is None:
+            await interaction.followup.send("Run this inside a server.", ephemeral=True)
+            return
+
+        # Only rows belonging to this guild. Match on the stored guild_id rather
+        # than resolving the channel, because an unresolvable channel is exactly
+        # the failure we're here to report -- filtering on it would hide it.
+        mine = [r for r in rows if str(r.get("guild_id")) == str(guild.id)]
+        if not mine:
+            await interaction.followup.send(
+                "No channels are set up in this server yet. "
+                "Use `/bismillah setup` to start daily messages in a channel.",
+                ephemeral=True,
+            )
+            return
+
+        lines: List[str] = []
+        for row in mine:
+            channel_id = row["channel_id"]
+            label = row.get("channel_name") or channel_id
+            if not row.get("active", True):
+                lines.append(f"⏸️ **{label}** — paused, no daily message by design.")
+                continue
+
+            channel = self.bot.get_channel(int(channel_id))
+            if channel is None:
+                lines.append(
+                    f"❌ **{label}** (`{channel_id}`) — the bot cannot see this channel. "
+                    "Either it was added to your account instead of the server "
+                    "(re-invite it with the **bot** scope), it was removed, or it "
+                    "lacks **View Channel** here."
+                )
+                continue
+
+            perms = channel.permissions_for(guild.me)
+            missing = [
+                name
+                for name, ok in (
+                    ("View Channel", perms.view_channel),
+                    ("Send Messages", perms.send_messages),
+                    ("Embed Links", perms.embed_links),
+                )
+                if not ok
+            ]
+            if missing:
+                lines.append(
+                    f"❌ {channel.mention} — missing {', '.join(f'**{m}**' for m in missing)}."
+                )
+                continue
+
+            if not send_test:
+                lines.append(f"✅ {channel.mention} — looks deliverable.")
+                continue
+
+            try:
+                await channel.send(
+                    "> 🧪 HadithBot test message — daily delivery to this channel is working."
+                )
+                lines.append(f"✅ {channel.mention} — test message sent.")
+            except discord.HTTPException as e:
+                # The real reason, straight from Discord, rather than our inference.
+                lines.append(f"❌ {channel.mention} — send failed: `{e.text or e}`")
+                self.bot.logger.error(
+                    f"Diagnose test send failed for channel {channel_id}: {e}",
+                    exc_info=True,
+                )
+
+        await self._send_reference(
+            interaction,
+            f"**Delivery check** ({len(mine)} configured):",
             lines,
         )
 
