@@ -1,6 +1,7 @@
 import os
 import random
 import logging
+from datetime import datetime, timezone
 from typing import Optional, cast
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -31,6 +32,7 @@ def save_channel_state(
     channel_name: Optional[str] = None,
     guild_id: Optional[str] = None,
     guild_name: Optional[str] = None,
+    mark_sent: bool = False,
 ):
     record = {
         "channel_id": channel_id,
@@ -55,6 +57,11 @@ def save_channel_state(
         record["guild_id"] = guild_id
     if guild_name is not None:
         record["guild_name"] = guild_name
+    # Opt-in, because setup() saves through here too -- stamping unconditionally
+    # would mark a freshly-configured channel as delivered and hide it from the
+    # stale check until its first real send.
+    if mark_sent:
+        record["last_sent_at"] = datetime.now(timezone.utc).isoformat()
     supabase.table("discord_channel_state").upsert(
         record,
         on_conflict="channel_id",

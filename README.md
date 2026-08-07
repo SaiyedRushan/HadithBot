@@ -203,10 +203,21 @@ Once the bot is running and added to your Discord server, you can test it using 
 #### Setup Commands
 
 ```
-/bismillah setup channel_id:<channel_id> start_book_id:1 start_chapter_id:1 start_hadith_id:1 start_name:1
+/bismillah setup channel:#reminders hadiths_per_day:3 names_per_day:3 start_book_id:1 start_chapter_id:1 start_hadith_id:1 start_name:1
 ```
 
-Sets up daily messages for a specific channel.
+Sets up daily messages for a channel. Every option is optional — blank keeps the
+current value, so re-running it to change the counts won't reset the reading
+position. It refuses (and saves nothing) if the bot can't post in the channel.
+
+```
+/bismillah diagnose
+/bismillah diagnose send_test:True
+```
+
+Checks every configured channel and reports what's blocking it — the first thing
+to run when messages aren't arriving. `send_test` attempts a real post and shows
+Discord's own error.
 
 #### Hadith Commands
 
@@ -226,39 +237,50 @@ Sets up daily messages for a specific channel.
 #### Management Commands
 
 ```
-/bismillah stop channel_id:<channel_id>
+/bismillah stop channel:#reminders
+/bismillah status
 ```
 
-Stops daily messages for a specific channel.
+`stop` pauses daily messages (the reading position is kept, so resuming picks up
+where it left off). `status` lists the configured channels in the server.
 
 ### Testing Daily Messages
 
-To test the daily message functionality without waiting for 6:00 PM:
-
-1. Temporarily modify the schedule in `bot.py`:
-
-```python
-# Change this line (around line 73):
-@tasks.loop(time=time(hour=18, tzinfo=ZoneInfo("America/Toronto")))
-
-# To this for testing (runs every 10 seconds):
-@tasks.loop(seconds=10)
+```
+/bismillah send-now
 ```
 
-2. Restart the bot and observe the messages being sent every 10 seconds
-3. Remember to revert this change before deploying to production
+Sends the channel's daily message immediately, running the same
+`run_daily_broadcast()` the 6:00 PM scheduler calls — so what you see is what the
+scheduled send would produce. It's a real delivery, not a preview: the reading
+position advances.
 
 ### Unit Testing
 
-Create test files to verify functionality:
+```bash
+make test          # pytest
+make lint          # ruff
+```
+
+The suite covers message formatting, hadith progression, and the stale-channel
+logic. Tests under `tests/` are pure unit tests with no network or database; the
+root-level `test_setup.py` and `test_hadith_progression.py` are interactive smoke
+scripts that hit the live database, and are excluded from collection by
+`pytest.ini`.
+
+### Monitoring
 
 ```bash
-# Test database connections
-python -c "from db import get_channels; print('Database connection successful:', get_channels())"
-
-# Test data loading
-python -c "from utils import *; import json; print('Data files loaded successfully')"
+make status        # container state + recent logs
+make health        # gateway state and guild count
+make logs          # tail the live logs
 ```
+
+A [scheduled workflow](.github/workflows/stale-channel-check.yml) runs
+`check_stale_channels.py` each morning and reports any active channel that
+didn't receive its daily message — the failure mode that is otherwise silent
+until someone in the server mentions it. Set `DISCORD_ALERT_WEBHOOK` as a
+repository secret to receive the report as a Discord message.
 
 ## Production Deployment
 
@@ -318,13 +340,13 @@ cp .env.example .env
 # Edit .env with your actual values
 
 # Build and run
-docker-compose up -d
+docker compose up -d
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
 
 # Stop
-docker-compose down
+docker compose down
 ```
 
 **Using Docker directly**:

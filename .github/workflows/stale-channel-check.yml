@@ -1,0 +1,44 @@
+name: Stale channel check
+
+# A channel can stop receiving the daily hadith without anyone noticing: the
+# bot loses access to it, send_daily_message logs the failure at 6pm, and the
+# server finds out only when a member asks. This checks the morning after each
+# send and reports anything overdue.
+#
+# Needs SUPABASE_URL and SUPABASE_KEY as repository secrets. Optionally
+# DISCORD_ALERT_WEBHOOK -- a webhook in your own server -- to get the report as
+# a message; without it the run simply fails, which still emails you.
+
+on:
+  schedule:
+    # 12:00 UTC daily = 08:00 Toronto (EDT), the morning after the 18:00 send.
+    - cron: "0 12 * * *"
+  workflow_dispatch: # run on demand from the Actions tab
+
+jobs:
+  check:
+    name: Report channels that missed the daily message
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.11.2"
+
+      - name: Install dependencies (from lockfile)
+        run: uv sync --frozen --no-dev
+
+      - name: Check for stale channels
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          DISCORD_ALERT_WEBHOOK: ${{ secrets.DISCORD_ALERT_WEBHOOK }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "::error::SUPABASE_URL / SUPABASE_KEY are not set as repository secrets"
+            exit 1
+          fi
+          uv run python check_stale_channels.py | tee "$GITHUB_STEP_SUMMARY"

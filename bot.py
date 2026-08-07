@@ -207,6 +207,7 @@ class HadithBot(commands.Bot):
                         channel_name=getattr(channel, "name", None),
                         guild_id=str(guild.id) if guild else None,
                         guild_name=guild.name if guild else None,
+                        mark_sent=True,
                     )
 
                     delivered += 1
