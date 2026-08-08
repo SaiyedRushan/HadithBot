@@ -2468,6 +2468,51 @@
         </div>
       </section>
 
+      <!-- CONTACT -->
+      <!-- Deliberately a mailto: rather than a form posting to a backend. The
+           site is static with no functions and no third-party scripts, and the
+           privacy policy says so — a hosted form would make both untrue. The
+           address is assembled in JS below so it isn't sitting in the markup
+           for scrapers. -->
+      <section id="contact" class="alt">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="kicker">Get in touch</span>
+            <h2>Something not working?</h2>
+          </div>
+          <div class="final">
+            <p>
+              If the daily message hasn't arrived, run
+              <span class="inline-code">/bismillah diagnose</span> in your server
+              first — it checks every channel you've set up and usually says
+              exactly what's wrong.
+            </p>
+            <p>
+              If that doesn't sort it, or you'd like your community listed on
+              this page, send a note. Mention your server's name and it'll be
+              easier to help.
+            </p>
+            <!-- Falls back to the GitHub issues page when JS is off, so the
+                 button is never a dead link. -->
+            <a
+              class="btn btn-primary contact-btn"
+              href="https://github.com/SaiyedRushan/HadithBot/issues"
+              >✉ Email support</a
+            >
+            <p style="margin-top: 18px; font-size: 0.92rem; opacity: 0.75">
+              Prefer not to email? Open an issue on
+              <a
+                href="https://github.com/SaiyedRushan/HadithBot/issues"
+                target="_blank"
+                rel="noopener"
+                >GitHub</a
+              >
+              instead — it's public, so don't include anything private.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <!-- FINAL CTA -->
       <section>
         <div class="wrap">
@@ -2497,6 +2542,7 @@
           <a href="send-daily-hadith-discord.html">Setup guide</a>
           <a href="books.html">Books &amp; chapters</a>
           <a href="99-names-of-allah.html">99 names</a>
+          <a href="#contact">Contact</a>
           <a href="privacy.html">Privacy</a>
           <a href="terms.html">Terms</a>
           <a
@@ -2522,6 +2568,19 @@
         "https://discord.com/oauth2/authorize?client_id=" +
         CLIENT_ID +
         "&permissions=3072&scope=bot%20applications.commands";
+
+      // Support address, joined at runtime so the plain string never appears
+      // in the served HTML. Trivially defeated by anything running JS, but it
+      // does stop the bulk scrapers that only read markup.
+      var SUPPORT_INBOX = ["support", "hadithbot.app"].join("@");
+
+      document.querySelectorAll(".contact-btn").forEach(function (a) {
+        a.href =
+          "mailto:" +
+          SUPPORT_INBOX +
+          "?subject=" +
+          encodeURIComponent("HadithBot — ");
+      });
 
       document.querySelectorAll(".invite-btn").forEach(function (a) {
         a.href = INVITE_URL;
