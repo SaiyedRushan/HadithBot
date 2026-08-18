@@ -52,6 +52,31 @@ def sunnah_url(hadith) -> Optional[str]:
     return f"{_SUNNAH_SEARCH}{quote(query)}"
 
 
+_DM_LIMIT = 2000  # Discord's per-message character cap
+
+
+def compose_flag_reply(hadith: dict, message: str) -> str:
+    """The DM a reporter gets back about a hadith they flagged.
+
+    Quotes enough of the hadith for them to recognise which report this answers
+    -- a bare reply weeks later is meaningless -- then the operator's message.
+    Trimmed to fit one Discord message, shortening the quote rather than the
+    reply, since the reply is the part that carries the information.
+    """
+    text = " ".join((hadith.get("english_text") or "").split())
+    message = message.strip()
+    head = "Assalamu alaikum — about the hadith you flagged:\n"
+    tail = f"\n\n{message}" if message else ""
+    budget = _DM_LIMIT - len(head) - len(tail) - len("> …\n")
+    if budget < 0:
+        # Reply alone fills the message; send it without the quote.
+        return (head + tail).strip()[:_DM_LIMIT]
+    quote = text[:budget]
+    if len(text) > len(quote):
+        quote = quote.rstrip() + "…"
+    return f"{head}> {quote}{tail}" if quote else (head + tail).strip()
+
+
 @dataclass
 class Name:
     number: int
