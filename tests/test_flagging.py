@@ -1,8 +1,9 @@
 """Unit tests for the flag-a-hadith button.
 
 These cover view assembly and custom_id round-tripping -- the parts that decide
-whether a click on an old message still resolves after a restart. Nothing here
-touches Discord's gateway or the database.
+whether a click on an old message still resolves after a restart. They import
+views, not bot: bot pulls in db, which raises at import time without Supabase
+credentials, so importing it here would make the suite fail to collect on CI.
 """
 
 import re
@@ -10,8 +11,8 @@ import re
 import discord
 import pytest
 
-from bot import FlagHadithButton, HadithBot
 from utils import compose_flag_reply
+from views import FlagHadithButton, build_hadith_view
 
 
 def make_hadith(hadith_id=1234, text="This is the hadith text.") -> dict:
@@ -39,7 +40,7 @@ def buttons(view: discord.ui.View) -> list:
 # --- view assembly -----------------------------------------------------------
 
 def test_view_has_lookup_and_flag_buttons():
-    view = HadithBot._hadith_view(make_hadith())
+    view = build_hadith_view(make_hadith())
     assert view is not None
     labels = [b.label for b in buttons(view)]
     assert "🔎 Look up on Sunnah.com" in labels
@@ -47,14 +48,14 @@ def test_view_has_lookup_and_flag_buttons():
 
 
 def test_flag_button_carries_the_hadith_id():
-    view = HadithBot._hadith_view(make_hadith(hadith_id=40991))
+    view = build_hadith_view(make_hadith(hadith_id=40991))
     ids = [b.custom_id for b in buttons(view) if b.custom_id]
     assert "flag_hadith:40991" in ids
 
 
 def test_view_never_times_out():
     """A timeout would silently stop flag clicks working on older messages."""
-    view = HadithBot._hadith_view(make_hadith())
+    view = build_hadith_view(make_hadith())
     assert view is not None
     assert view.timeout is None
 
@@ -63,7 +64,7 @@ def test_flag_button_present_even_without_a_lookup_url():
     """A hadith with no usable search text still has to be flaggable."""
     hadith = make_hadith(text="")
     hadith["books_metadata"] = {"english_title": ""}
-    view = HadithBot._hadith_view(hadith)
+    view = build_hadith_view(hadith)
     assert view is not None
     ids = [b.custom_id for b in buttons(view) if b.custom_id]
     assert ids == ["flag_hadith:1234"]
@@ -73,7 +74,7 @@ def test_no_view_when_there_is_nothing_to_attach():
     hadith = make_hadith(text="")
     hadith["books_metadata"] = {"english_title": ""}
     del hadith["id"]
-    assert HadithBot._hadith_view(hadith) is None
+    assert build_hadith_view(hadith) is None
 
 
 # --- custom_id round-trip ----------------------------------------------------
