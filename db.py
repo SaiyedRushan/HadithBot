@@ -108,6 +108,85 @@ def remove_channel_state(channel_id: str):
     ).execute()
 
 
+def save_hadith_flag(
+    hadith_id: int,
+    user_id: str,
+    reason: Optional[str] = None,
+    guild_id: Optional[str] = None,
+    guild_name: Optional[str] = None,
+    channel_id: Optional[str] = None,
+) -> None:
+    """Record a reader's report that a hadith looks wrong.
+
+    Upserted on (hadith_id, user_id) so a second flag from the same reader
+    updates their note rather than piling up duplicate rows -- the count of
+    flags on a hadith should mean "this many people", not "this many clicks".
+    """
+    supabase.table("hadith_flags").upsert(
+        {
+            "hadith_id": hadith_id,
+            "user_id": user_id,
+            "reason": reason,
+            "guild_id": guild_id,
+            "guild_name": guild_name,
+            "channel_id": channel_id,
+            "resolved": False,
+        },
+        on_conflict="hadith_id,user_id",
+    ).execute()
+
+
+def count_hadith_flags(hadith_id: int) -> int:
+    """How many distinct readers have an open flag on this hadith."""
+    res = (
+        supabase.table("hadith_flags")
+        .select("id", count="exact")
+        .eq("hadith_id", hadith_id)
+        .eq("resolved", False)
+        .execute()
+    )
+    return res.count or 0
+
+
+def get_open_flags(limit: int = 20) -> list[dict]:
+    """Unresolved flags, newest first, with enough of the hadith to judge them."""
+    return cast(
+        list[dict],
+        supabase.table("hadith_flags")
+        .select("*, hadiths(id, book_id, chapter_id, id_in_book, english_text)")
+        .eq("resolved", False)
+        .order("created_at", desc=True)
+        .limit(limit)
+        .execute()
+        .data,
+    )
+
+
+def get_flags_for_hadith(hadith_id: int) -> list[dict]:
+    """Every flag on one hadith, resolved or not, for replying to the reporters."""
+    return cast(
+        list[dict],
+        supabase.table("hadith_flags")
+        .select("*, hadiths(id, book_id, chapter_id, id_in_book, english_text)")
+        .eq("hadith_id", hadith_id)
+        .order("created_at")
+        .execute()
+        .data,
+    )
+
+
+def resolve_hadith_flags(hadith_id: int) -> int:
+    """Mark every open flag on a hadith as dealt with. Returns how many closed."""
+    res = (
+        supabase.table("hadith_flags")
+        .update({"resolved": True})
+        .eq("hadith_id", hadith_id)
+        .eq("resolved", False)
+        .execute()
+    )
+    return len(res.data or [])
+
+
 def get_books():
     """All books with their ids, for the /bismillah books reference command."""
     return (

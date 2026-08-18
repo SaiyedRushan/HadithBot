@@ -18,16 +18,20 @@ from db import (
     get_channels,
     get_channel_state,
     get_hadith_in_same_chapter_and_book,
+    get_flags_for_hadith,
     get_next_hadiths,
+    get_open_flags,
     get_random_hadith,
     remove_channel_state,
+    resolve_hadith_flags,
     save_channel_state,
 )
+from views import FlagHadithButton, build_hadith_view
 from utils import (
     Name,
+    compose_flag_reply,
     getHadithFormattedMessage,
     getNameFormattedMessage,
-    sunnah_url,
     resolve_start_position,
 )
 
@@ -51,6 +55,9 @@ class HadithBot(commands.Bot):
     async def setup_hook(self):
         """Initialize bot data and sync commands"""
         await self.load_data()
+        # Registered before anything is sent so flag clicks on messages from a
+        # previous run are still routed to a handler after a restart.
+        self.add_dynamic_items(FlagHadithButton)
         await self.tree.sync()
         self.send_daily_message.start()
 
@@ -242,26 +249,6 @@ class HadithBot(commands.Bot):
         """Get next index with wraparound"""
         return (current + increment) if (current + increment < max_value) else 1
 
-    @staticmethod
-    def _hadith_link_view(hadith: dict) -> Optional[discord.ui.View]:
-        """A 'Look up on Sunnah.com' link button for the hadith, or None if no URL.
-
-        Link-style buttons never dispatch interactions, so the view needs no
-        callback handling or registration -- it keeps working indefinitely.
-        """
-        url = sunnah_url(hadith)
-        if not url:
-            return None
-        view = discord.ui.View()
-        view.add_item(
-            discord.ui.Button(
-                label="🔎 Look up on Sunnah.com",
-                style=discord.ButtonStyle.link,
-                url=url,
-            )
-        )
-        return view
-
     async def send_new_book_message(self, channel: discord.TextChannel, hadith: dict):
         """Announce that the daily readings have moved into a new book."""
         book = (hadith.get("books_metadata") or {}).get("english_title") or "a new book"
@@ -284,7 +271,7 @@ class HadithBot(commands.Bot):
             return
         formatted_messages = getHadithFormattedMessage(hadith)
         # Attach the link button to the last chunk so it sits under the full hadith.
-        view = self._hadith_link_view(hadith)
+        view = build_hadith_view(hadith)
         last_index = len(formatted_messages) - 1
         for i, message in enumerate(formatted_messages):
             if i == last_index and view is not None:
@@ -313,7 +300,7 @@ class HadithBot(commands.Bot):
             return
         formatted_messages = getHadithFormattedMessage(hadith)
         # Attach the link button to the last chunk so it sits under the full hadith.
-        view = self._hadith_link_view(hadith)
+        view = build_hadith_view(hadith)
         last_index = len(formatted_messages) - 1
         for i, message in enumerate(formatted_messages):
             if i == last_index and view is not None:
@@ -770,6 +757,113 @@ class HadithCommands(app_commands.Group):
             f"**Chapters in book {book}** — use the number as `start_chapter_id` in `/bismillah setup`:",
             lines,
         )
+
+    @app_commands.command(name="flags")
+    @app_commands.describe(
+        resolve="Hadith id to mark as dealt with (leave blank to just list open flags)"
+    )
+    async def flags(
+        self, interaction: discord.Interaction, resolve: Optional[int] = None
+    ):
+        """Review hadiths readers have flagged. Bot owner only."""
+        await interaction.response.defer(ephemeral=True)
+        # Flags come in from every server the bot is in, so this is deliberately
+        # not a per-guild admin command -- it would leak other servers' reports.
+        if not await self.bot.is_owner(interaction.user):
+            await interaction.followup.send(
+                "Only the bot owner can review flags.", ephemeral=True
+            )
+            return
+
+        if resolve is not None:
+            closed = resolve_hadith_flags(resolve)
+            await interaction.followup.send(
+                f"Closed {closed} open flag(s) on hadith `{resolve}`."
+                if closed
+                else f"No open flags on hadith `{resolve}`.",
+                ephemeral=True,
+            )
+            return
+
+        open_flags = get_open_flags()
+        if not open_flags:
+            await interaction.followup.send("No open flags. 🎉", ephemeral=True)
+            return
+
+        # Group by hadith so a hadith several people flagged reads as one entry.
+        grouped: dict[int, list[dict]] = {}
+        for flag in open_flags:
+            grouped.setdefault(flag["hadith_id"], []).append(flag)
+
+        lines = []
+        for hadith_id, entries in grouped.items():
+            hadith = entries[0].get("hadiths") or {}
+            snippet = " ".join((hadith.get("english_text") or "").split())[:160]
+            lines.append(
+                f"\n**`{hadith_id}`** — {len(entries)} flag(s) "
+                f"· book {hadith.get('book_id')} ch {hadith.get('chapter_id')} "
+                f"#{hadith.get('id_in_book')}\n{snippet}…"
+            )
+            for entry in entries:
+                # <@id> renders as the member's name, so reports are attributable
+                # without storing usernames that go stale when people rename.
+                who = f"<@{entry['user_id']}>"
+                where = entry.get("guild_name") or "unknown server"
+                note = f" — “{entry['reason']}”" if entry.get("reason") else ""
+                lines.append(f"↳ {who} in {where}{note}")
+        lines.append(
+            "\n-# `/bismillah flags resolve:<hadith id>` closes one; "
+            "`/bismillah flag-reply` messages whoever reported it."
+        )
+        await self._send_reference(
+            interaction, f"**{len(grouped)} flagged hadith(s)**", lines
+        )
+
+    @app_commands.command(name="flag-reply")
+    @app_commands.describe(
+        hadith="Hadith id to reply about (the id shown by /bismillah flags)",
+        message="What to send the people who flagged it",
+    )
+    async def flag_reply(
+        self, interaction: discord.Interaction, hadith: int, message: str
+    ):
+        """DM everyone who flagged a hadith. Bot owner only."""
+        await interaction.response.defer(ephemeral=True)
+        if not await self.bot.is_owner(interaction.user):
+            await interaction.followup.send(
+                "Only the bot owner can reply to reporters.", ephemeral=True
+            )
+            return
+
+        flags = get_flags_for_hadith(hadith)
+        if not flags:
+            await interaction.followup.send(
+                f"Nobody has flagged hadith `{hadith}`.", ephemeral=True
+            )
+            return
+
+        body = compose_flag_reply(flags[0].get("hadiths") or {}, message)
+        delivered, blocked = [], []
+        # One DM per person even if they flagged from several servers.
+        for user_id in dict.fromkeys(f["user_id"] for f in flags):
+            try:
+                user = self.bot.get_user(int(user_id)) or await self.bot.fetch_user(
+                    int(user_id)
+                )
+                await user.send(body)
+                delivered.append(user_id)
+            except (discord.Forbidden, discord.HTTPException, ValueError):
+                # Closed DMs are the common case here, not an error worth raising.
+                blocked.append(user_id)
+
+        report = f"Sent to {len(delivered)} of {len(delivered) + len(blocked)} reporter(s)."
+        if blocked:
+            report += (
+                "\nCouldn't DM "
+                + ", ".join(f"<@{u}>" for u in blocked)
+                + " — they likely have DMs from server members turned off."
+            )
+        await interaction.followup.send(report, ephemeral=True)
 
 
 def main():

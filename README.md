@@ -161,6 +161,33 @@ CREATE TABLE books_metadata (
 );
 ```
 
+#### `hadith_flags` table:
+
+```sql
+CREATE TABLE hadith_flags (
+    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    hadith_id   BIGINT NOT NULL REFERENCES hadiths(id) ON DELETE CASCADE,
+    user_id     TEXT   NOT NULL,
+    guild_id    TEXT,
+    guild_name  TEXT,
+    channel_id  TEXT,
+    reason      TEXT,
+    resolved    BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    -- one standing flag per person per hadith; re-flagging updates the reason
+    UNIQUE (hadith_id, user_id)
+);
+
+CREATE INDEX hadith_flags_open_idx
+    ON hadith_flags (created_at DESC) WHERE NOT resolved;
+CREATE INDEX hadith_flags_hadith_idx ON hadith_flags (hadith_id);
+```
+
+Readers report a suspect hadith with the 🚩 button under each message. The
+`UNIQUE (hadith_id, user_id)` constraint is what makes a flag count mean "this
+many people" rather than "this many clicks" — a second report from the same
+reader updates their note instead of adding a row.
+
 3. Copy your Supabase URL and anon key to the `.env` file
 
 ### 6. Verify Setup
