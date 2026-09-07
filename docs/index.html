@@ -792,6 +792,104 @@
         font-size: 0.96rem;
       }
 
+      /* ---------- share it on (the reward of pointing others here) ---------- */
+      .share {
+        margin-top: 34px;
+        background: var(--cream-card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 30px 28px;
+        box-shadow: var(--shadow);
+        display: grid;
+        grid-template-columns: 1.3fr 1fr;
+        gap: 26px;
+        align-items: center;
+      }
+      @media (max-width: 720px) {
+        .share {
+          grid-template-columns: 1fr;
+        }
+      }
+      .share h3 {
+        font-size: 1.35rem;
+        margin: 0 0 8px;
+      }
+      .share p {
+        color: var(--ink-soft);
+        margin: 0;
+      }
+      .share .cite {
+        display: block;
+        margin-top: 12px;
+        font-family: var(--serif);
+        font-style: italic;
+        color: var(--ink);
+      }
+      .share .cite a {
+        font-family: var(--sans);
+        font-style: normal;
+        font-size: 0.86rem;
+        color: var(--accent-ink);
+        font-weight: 600;
+        margin-left: 6px;
+      }
+      .share-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      button.btn {
+        font-family: inherit;
+      }
+      .share-actions .btn {
+        justify-content: center;
+      }
+      .share-links {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+      }
+      .share-links a,
+      .share-links button {
+        font: inherit;
+        font-size: 0.86rem;
+        font-weight: 600;
+        color: var(--brand);
+        background: transparent;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 7px 14px;
+        cursor: pointer;
+        transition: border-color 0.15s ease, background 0.15s ease;
+      }
+      .share-links a:hover,
+      .share-links button:hover {
+        text-decoration: none;
+        border-color: var(--brand);
+        background: rgba(var(--tint), 0.05);
+      }
+      .share-links button.copied {
+        border-color: var(--accent);
+        color: var(--accent-ink);
+      }
+      /* on the dark closing band the ghost button needs light ink */
+      .final .btn-ghost {
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.45);
+      }
+      .final .btn-ghost:hover {
+        border-color: #fff;
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .final-cta {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+      }
+
       /* ---------- sister apps ---------- */
       .apps {
         display: grid;
@@ -2010,6 +2108,41 @@
               </div>
             </blockquote>
           </div>
+
+          <div class="share">
+            <div>
+              <h3>Know an MSA that would want this?</h3>
+              <p>
+                If HadithBot has been good for your server, pass it on to another
+                MSA, a halaqa group, or a president or mod who'd add it. Every
+                hadith that lands in their channel afterwards is a share in the
+                reward for you too, insha'Allah.
+              </p>
+              <span class="cite"
+                >"One who guides to something good has a reward similar to that
+                of its doer."
+                <a
+                  href="https://sunnah.com/muslim:1893"
+                  target="_blank"
+                  rel="noopener"
+                  >Sahih Muslim 1893</a
+                ></span
+              >
+            </div>
+            <div class="share-actions">
+              <button class="btn btn-primary share-btn" type="button">
+                ↗ Share HadithBot
+              </button>
+              <div class="share-links">
+                <a class="share-whatsapp" href="#" target="_blank" rel="noopener"
+                  >WhatsApp</a
+                >
+                <a class="share-x" href="#" target="_blank" rel="noopener">X</a>
+                <a class="share-email" href="#">Email</a>
+                <button class="share-copy" type="button">Copy link</button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -2630,9 +2763,14 @@
             <h2>Bring daily reminders to your server</h2>
             <p>
               Add HadithBot in under a minute and let the good deeds flow,
-              insha'Allah.
+              insha'Allah. Already have it? Send it to the next MSA.
             </p>
-            <a class="btn btn-primary invite-btn" href="#">☾ Add to Discord</a>
+            <div class="final-cta">
+              <a class="btn btn-primary invite-btn" href="#">☾ Add to Discord</a>
+              <button class="btn btn-ghost share-btn" type="button">
+                ↗ Share it
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -2707,6 +2845,64 @@
         }
       });
 
+      // Share buttons. The native share sheet where there is one (phones,
+      // Safari), otherwise copy the link -- pasting into a Discord channel or
+      // group chat is how this actually travels between MSAs.
+      (function () {
+        var SITE_URL = "https://hadithbot.app/";
+        var TITLE = "HadithBot — a daily hadith in your Discord server";
+        var BLURB =
+          "Assalamu alaikum — HadithBot posts a hadith and one of Allah's " +
+          "names to a Discord channel every day, free and open source. " +
+          "Worth adding to the MSA server:";
+        var TEXT = BLURB + " " + SITE_URL;
+
+        function flash(el, label) {
+          var old = el.textContent;
+          el.textContent = label;
+          el.classList.add("copied");
+          setTimeout(function () {
+            el.textContent = old;
+            el.classList.remove("copied");
+          }, 1400);
+        }
+        function copy(el) {
+          if (!navigator.clipboard) return;
+          navigator.clipboard.writeText(TEXT).then(function () {
+            flash(el, "Link copied ✓");
+          });
+        }
+
+        document.querySelectorAll(".share-btn").forEach(function (b) {
+          b.addEventListener("click", function () {
+            if (navigator.share) {
+              navigator
+                .share({ title: TITLE, text: BLURB, url: SITE_URL })
+                .catch(function () {}); // dismissed the sheet -- nothing to do
+            } else {
+              copy(b);
+            }
+          });
+        });
+        document.querySelectorAll(".share-copy").forEach(function (b) {
+          b.addEventListener("click", function () {
+            copy(b);
+          });
+        });
+        document.querySelectorAll(".share-whatsapp").forEach(function (a) {
+          a.href = "https://wa.me/?text=" + encodeURIComponent(TEXT);
+        });
+        document.querySelectorAll(".share-x").forEach(function (a) {
+          a.href = "https://x.com/intent/post?text=" + encodeURIComponent(TEXT);
+        });
+        document.querySelectorAll(".share-email").forEach(function (a) {
+          a.href =
+            "mailto:?subject=" +
+            encodeURIComponent(TITLE) +
+            "&body=" +
+            encodeURIComponent(TEXT);
+        });
+      })();
       // Theme toggle: flip data-theme, persist, swap icon
       (function () {
         var toggle = document.getElementById("themeToggle");
