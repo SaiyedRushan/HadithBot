@@ -746,6 +746,52 @@
         border-bottom: 1px solid var(--line);
       }
 
+      /* ---------- why it exists (the two hadiths) ---------- */
+      .hadith-quotes {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 22px;
+      }
+      .hadith-quote {
+        margin: 0;
+        background: var(--cream-card);
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--accent);
+        border-radius: var(--radius);
+        padding: 26px 28px;
+        box-shadow: var(--shadow);
+      }
+      .hadith-quote p {
+        font-family: var(--serif);
+        font-size: 1.12rem;
+        line-height: 1.6;
+        margin: 0;
+      }
+      .hadith-quote p::before {
+        content: "\201C";
+        color: var(--accent);
+        font-size: 1.6em;
+        line-height: 0;
+        margin-right: 2px;
+        vertical-align: -0.3em;
+      }
+      .hadith-quote footer {
+        margin-top: 14px;
+        font-size: 0.9rem;
+        color: var(--ink-soft);
+      }
+      .hadith-quote footer a {
+        color: var(--accent-ink);
+        font-weight: 600;
+      }
+      .hadith-quote .why {
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 1px dashed var(--line);
+        color: var(--ink-soft);
+        font-size: 0.96rem;
+      }
+
       /* ---------- sister apps ---------- */
       .apps {
         display: grid;
@@ -1903,6 +1949,70 @@
         </div>
       </section>
 
+      <!-- WHY IT EXISTS -->
+      <section id="why">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="kicker">Why it exists</span>
+            <h2>Convey from me, even if it is one verse</h2>
+            <p>
+              HadithBot is one small way of doing what the Prophet (ﷺ) asked of
+              everyone who hears his words. Two hadiths are the whole reason it
+              exists.
+            </p>
+          </div>
+          <div class="hadith-quotes">
+            <blockquote class="hadith-quote">
+              <p>
+                Convey (my teachings) to the people even if it were a single
+                sentence, and tell others the stories of Bani Israel (which have
+                been taught to you), for it is not sinful to do so. And whoever
+                tells a lie on me intentionally, will surely take his place in
+                the (Hell) Fire.
+              </p>
+              <footer>
+                Narrated ʿAbdullah bin ʿAmr ·
+                <a
+                  href="https://sunnah.com/bukhari:3461"
+                  target="_blank"
+                  rel="noopener"
+                  >Sahih al-Bukhari 3461</a
+                >
+              </footer>
+              <div class="why">
+                Passing on something true doesn't wait until you're a scholar.
+                One hadith, shared faithfully, counts. The warning in the second
+                half is why every message links back to Sunnah.com, and why
+                readers can flag anything that looks wrong.
+              </div>
+            </blockquote>
+            <blockquote class="hadith-quote">
+              <p>
+                May Allah gladden a man who hears a Hadith from us, so he
+                memorizes it until he conveys it to someone else. Perhaps he
+                carries Fiqh to one who is more understanding than him, and
+                perhaps the one who carries the Fiqh is not a Faqih.
+              </p>
+              <footer>
+                Narrated Zaid bin Thabit ·
+                <a
+                  href="https://sunnah.com/tirmidhi:2656"
+                  target="_blank"
+                  rel="noopener"
+                  >Jami' at-Tirmidhi 2656</a
+                >
+              </footer>
+              <div class="why">
+                A reminder dropped into a channel may land with someone who
+                understands it better than whoever sent it. The bot only carries
+                the words. Whatever grows from them is between the reader and
+                Allah.
+              </div>
+            </blockquote>
+          </div>
+        </div>
+      </section>
+
       <!-- LIVE EXAMPLE -->
       <section id="example" class="alt">
         <div class="wrap">
@@ -2535,6 +2645,7 @@
           &nbsp; HadithBot — built with care.
         </div>
         <div class="foot-links">
+          <a href="#why">Why</a>
           <a href="#features">Features</a>
           <a href="#commands">Commands</a>
           <a href="#communities">Communities</a>
