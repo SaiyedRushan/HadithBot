@@ -951,6 +951,84 @@
         color: var(--brand);
       }
 
+      /* The MugUp decks card: full row, head on the left, deck rows on the
+         right. Not a link itself, so it neither lifts nor recolours on hover. */
+      .decks-card {
+        grid-column: 1 / -1;
+        flex-direction: row;
+        gap: 28px;
+        cursor: default;
+      }
+      .decks-card:hover {
+        transform: none;
+        border-color: var(--line);
+      }
+      .decks-card:hover .ico {
+        transform: none;
+      }
+      .decks-card .decks-head {
+        flex: 1 1 0;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .decks-card .decks {
+        flex: 1.15 1 0;
+        min-width: 0;
+        list-style: none;
+        margin: 0;
+        padding: 0 0 0 18px;
+        border-left: 2px solid rgba(var(--tint), 0.3);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 12px;
+      }
+      .decks-card .decks a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: inherit;
+      }
+      .decks-card .decks a:hover {
+        text-decoration: none;
+      }
+      .decks-card .decks a > span {
+        flex: 1;
+        min-width: 0;
+      }
+      .decks-card .decks strong {
+        display: block;
+        font-size: 0.98rem;
+        font-weight: 600;
+      }
+      .decks-card .decks a:hover strong {
+        color: var(--brand);
+      }
+      .decks-card .decks small {
+        display: block;
+        font-size: 0.84rem;
+        color: var(--ink-soft);
+        margin-top: 2px;
+      }
+      .decks-card .decks a::after {
+        content: "→";
+        color: var(--brand);
+        opacity: 0.55;
+        transition: transform 0.15s ease, opacity 0.15s ease;
+      }
+      .decks-card .decks a:hover::after {
+        transform: translateX(3px);
+        opacity: 1;
+      }
+      @media (max-width: 640px) {
+        .decks-card {
+          flex-direction: column;
+          gap: 18px;
+        }
+      }
+
       /* ---------- communities ---------- */
       /* Both rows centre their last line rather than left-aligning it, since
          the counts and the wall are short lists that grow one at a time. */
@@ -2707,6 +2785,41 @@
               </p>
               <span class="go">Get the extension →</span>
             </a>
+            <!-- The MugUp decks: one app, three decks, so a list inside one
+                 card rather than three cards competing with the apps above. A
+                 <div>, not an <a>, because the rows inside are links of their
+                 own. Public deck pages, not /dashboard ones, which sit behind
+                 the login. -->
+            <div class="app-card decks-card">
+              <div class="decks-head">
+                <div class="ico">🧠</div>
+                <span class="platform">Web · free to clone</span>
+                <h3>Islamic decks on MugUp</h3>
+                <p>
+                  Three decks of drills — quizzes, flashcards and
+                  fill-in-the-blanks — free to copy into your own account and
+                  learn at your own pace.
+                </p>
+                <a class="go" href="https://mugup.app" target="_blank" rel="noopener">mugup.app →</a>
+              </div>
+              <ul class="decks">
+                <li>
+                  <a href="https://mugup.app/decks/101" target="_blank" rel="noopener">
+                    <span><strong>99 Names of Allah</strong><small>Meaning, root, and which name to invoke for which need</small></span>
+                  </a>
+                </li>
+                <li>
+                  <a href="https://mugup.app/decks/102" target="_blank" rel="noopener">
+                    <span><strong>Surahs of the Quran</strong><small>Every surah by name, meaning, place and theme</small></span>
+                  </a>
+                </li>
+                <li>
+                  <a href="https://mugup.app/decks/103" target="_blank" rel="noopener">
+                    <span><strong>80% of Quranic Words</strong><small>The vocabulary that covers most of what you recite</small></span>
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
