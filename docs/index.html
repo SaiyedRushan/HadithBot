@@ -154,6 +154,8 @@
         } catch (e) {}
       })();
     </script>
+    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+
     <style>
       :root {
         --brand: #5e4a2a;
@@ -2943,7 +2945,6 @@
           "?subject=" +
           encodeURIComponent("HadithBot — ");
       });
-
       document.querySelectorAll(".invite-btn").forEach(function (a) {
         a.href = INVITE_URL;
         a.target = "_blank";
@@ -2955,9 +2956,7 @@
               "Set your Discord Application ID in docs/index.html (the CLIENT_ID variable) to enable this button."
             );
           });
-        }
       });
-
       // Share buttons. The native share sheet where there is one (phones,
       // Safari), otherwise copy the link -- pasting into a Discord channel or
       // group chat is how this actually travels between MSAs.
@@ -2984,7 +2983,6 @@
           navigator.clipboard.writeText(TEXT).then(function () {
             flash(el, "Link copied ✓");
           });
-        }
 
         document.querySelectorAll(".share-btn").forEach(function (b) {
           b.addEventListener("click", function () {
@@ -2996,26 +2994,21 @@
               copy(b);
             }
           });
-        });
         document.querySelectorAll(".share-copy").forEach(function (b) {
           b.addEventListener("click", function () {
             copy(b);
           });
-        });
         document.querySelectorAll(".share-whatsapp").forEach(function (a) {
           a.href = "https://wa.me/?text=" + encodeURIComponent(TEXT);
         });
-        document.querySelectorAll(".share-x").forEach(function (a) {
           a.href = "https://x.com/intent/post?text=" + encodeURIComponent(TEXT);
         });
-        document.querySelectorAll(".share-email").forEach(function (a) {
           a.href =
             "mailto:?subject=" +
             encodeURIComponent(TITLE) +
             "&body=" +
             encodeURIComponent(TEXT);
         });
-      })();
       // Theme toggle: flip data-theme, persist, swap icon
       (function () {
         var toggle = document.getElementById("themeToggle");
@@ -3041,7 +3034,6 @@
             toggle.classList.remove("spin");
           }, 520);
         });
-      })();
 
       // Mobile menu: toggle the panel, close on navigate / Escape / resize to desktop
       (function () {
@@ -3059,16 +3051,12 @@
           btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
           btn.textContent = open ? "✕" : "☰";
         });
-        menu.querySelectorAll("a").forEach(function (a) {
           a.addEventListener("click", close);
         });
-        document.addEventListener("keydown", function (e) {
           if (e.key === "Escape") close();
         });
-        matchMedia("(min-width: 861px)").addEventListener("change", function (e) {
           if (e.matches) close();
         });
-      })();
 
       // Copy buttons on command snippets
       document.querySelectorAll(".snippet .copy").forEach(function (btn) {
@@ -3085,9 +3073,7 @@
               btn.classList.remove("copied");
             }, 1400);
           });
-        });
       });
-
       // Sections fade up as they scroll into view. The matching CSS hides them
       // up front, so anything that throws here must un-hide them again.
       (function () {
@@ -3113,14 +3099,12 @@
             el.style.setProperty("--d", Math.min(i * 70, 350) + "ms");
             targets.push(el);
           });
-        });
 
         function revealAll() {
           targets.forEach(function (el) {
             el.style.removeProperty("--d");
             el.classList.add("revealed");
           });
-        }
 
         try {
           var still = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -3135,13 +3119,11 @@
                 e.target.classList.add("revealed");
                 io.unobserve(e.target);
               });
-            },
             { threshold: 0.1, rootMargin: "0px 0px -8% 0px" }
           );
           targets.forEach(function (el) {
             io.observe(el);
           });
-        } catch (e) {
           revealAll();
         }
       })();
