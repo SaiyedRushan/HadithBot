@@ -88,13 +88,17 @@ class Name:
 
 
 def getHadithFormattedMessage(hadith) -> list[str]:
+    # A heading, not a blockquote: Discord indents quoted text behind a vertical
+    # bar, which on a phone eats a chunk of every line's width and wraps the
+    # hadith far more than it needs to. A heading marks the start of each hadith
+    # just as clearly and leaves the body at full width.
     formatted_messages = []
-    formatted_messages.append(f"> ### Book: {hadith['books_metadata']['english_title']} - Chapter: {hadith['chapters']['english']}\n")
+    formatted_messages.append(f"### 📖 Book: {hadith['books_metadata']['english_title']} - Chapter: {hadith['chapters']['english']}\n")
     # We deliberately don't show id_in_book here: it's a sequential per-book
     # counter that does NOT match sunnah.com's published reference numbers, so a
     # "#1000" would read as a citation a reader couldn't reproduce. The
     # Sunnah.com link button is the canonical pointer instead.
-    formatted_hadith = f"> {hadith['english_narrator']} {hadith['english_text']}\n\n"
+    formatted_hadith = f"{hadith['english_narrator']} {hadith['english_text']}\n\n"
     formatted_hadith = re.sub(r'\s+', ' ', formatted_hadith).strip()
 
     # while formatted_hadith is not empty
@@ -107,7 +111,7 @@ def getHadithFormattedMessage(hadith) -> list[str]:
             if split_index == -1:
                 split_index = 2000
             formatted_messages.append(formatted_hadith[:split_index])
-            formatted_hadith = f'> {formatted_hadith[split_index:].lstrip()}'
+            formatted_hadith = formatted_hadith[split_index:].lstrip()
 
     return formatted_messages
 
@@ -121,12 +125,13 @@ def find_last_newline(message: str):
 
 def getNameFormattedMessage(name) -> str:
     formatted_message = ""
-    formatted_message += f"> ### ({name.number}) - {name.name} - {name.transliteration}\n"
-    formatted_message += f"> {name.en['meaning']} - {name.en['desc']}\n"
+    # Heading rather than a blockquote, for the same width reason as the hadith.
+    formatted_message += f"### ✨ ({name.number}) - {name.name} - {name.transliteration}\n"
+    formatted_message += f"{name.en['meaning']} - {name.en['desc']}\n"
     # Optional practical note on how/when to invoke this name in dua.
     dua = name.en.get("dua")
     if dua:
-        formatted_message += f"> \n> 🤲 **In your dua:** {dua}\n"
+        formatted_message += f"\n🤲 **In your dua:** {dua}\n"
     return formatted_message
 
 

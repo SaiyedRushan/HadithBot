@@ -57,7 +57,9 @@ def test_find_last_newline_falls_back_to_period():
 
 def test_get_name_formatted_message_includes_all_fields():
     out = getNameFormattedMessage(make_name())
-    assert out.startswith("> ")
+    # A heading, not a blockquote -- quoted text is indented and wraps more.
+    assert out.startswith("### ")
+    assert "> " not in out
     assert "(1)" in out
     assert "Ar-Rahman" in out
     assert "The Most Compassionate" in out
@@ -90,6 +92,8 @@ def test_get_hadith_formatted_message_has_header_and_body():
     body = " ".join(msgs[1:])
     assert "Abu Hurairah" in body
     assert "hadith text" in body
+    # No blockquote anywhere: the indent it adds costs width on every line.
+    assert not any(m.lstrip().startswith("> ") for m in msgs)
 
 
 def test_get_hadith_formatted_message_omits_internal_number():

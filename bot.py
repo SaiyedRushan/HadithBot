@@ -166,7 +166,7 @@ class HadithBot(commands.Bot):
 
                 # send greeting
                 await channel.send(
-                    "> # Assalamu Alaikum Warahmatullahi Wabarakatuh, here is today's hadith and one of Allah's beautiful name\n"
+                    "# Assalamu Alaikum Warahmatullahi Wabarakatuh, here is today's hadith and one of Allah's beautiful name\n"
                 )
                 # get name and send message
                 names = self.get_names(last_name_no, names_per_day)
@@ -253,9 +253,9 @@ class HadithBot(commands.Bot):
         """Announce that the daily readings have moved into a new book."""
         book = (hadith.get("books_metadata") or {}).get("english_title") or "a new book"
         chapter = (hadith.get("chapters") or {}).get("english") or ""
-        message = f"> # 📖 We are now starting a new book: {book}\n"
+        message = f"# 📖 We are now starting a new book: {book}\n"
         if chapter:
-            message += f"> ### Beginning with Chapter: {chapter}\n"
+            message += f"### Beginning with Chapter: {chapter}\n"
         await channel.send(message)
 
     async def send_new_chapter_message(
@@ -263,7 +263,7 @@ class HadithBot(commands.Bot):
     ):
         """Announce that the daily readings have moved into a new chapter."""
         chapter = (hadith.get("chapters") or {}).get("english") or "a new chapter"
-        await channel.send(f"> # 📖 We are now starting a new chapter: {chapter}\n")
+        await channel.send(f"# 📖 We are now starting a new chapter: {chapter}\n")
 
     async def send_formatted_hadith(self, channel: discord.TextChannel, hadith: dict):
         """Send formatted hadith message"""
@@ -650,7 +650,7 @@ class HadithCommands(app_commands.Group):
 
             try:
                 await channel.send(
-                    "> 🧪 HadithBot test message — daily delivery to this channel is working."
+                    "🧪 HadithBot test message — daily delivery to this channel is working."
                 )
                 lines.append(f"✅ {channel.mention} — test message sent.")
             except discord.HTTPException as e:
