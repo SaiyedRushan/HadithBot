@@ -37,6 +37,10 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           DISCORD_ALERT_WEBHOOK: ${{ secrets.DISCORD_ALERT_WEBHOOK }}
         run: |
+          # Without pipefail the step takes tee's exit code, so the script's
+          # "go red, nobody is watching the webhook" signal is thrown away and
+          # the run passes with the report sitting in the summary unread.
+          set -o pipefail
           if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
             echo "::error::SUPABASE_URL / SUPABASE_KEY are not set as repository secrets"
             exit 1
