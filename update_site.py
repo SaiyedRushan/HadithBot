@@ -74,6 +74,27 @@ def collect_stats() -> list[tuple[str, str]]:
         (f"{per_day:,}", "reminders a day"),
     ]
 
+    # People in those servers. Counted once per server, not once per channel,
+    # since two channels in the same server reach the same members. Rows saved
+    # before the column existed have no count; the tile is dropped entirely
+    # rather than shown short, because a headline number that silently leaves
+    # servers out is worse than no number.
+    per_guild = {
+        r["guild_id"]: r["guild_member_count"]
+        for r in rows
+        if r.get("guild_id") and r.get("guild_member_count")
+    }
+    if len(per_guild) == len(guilds) and per_guild:
+        members = sum(per_guild.values())
+        stats.append((f"{members:,}", "people in those servers"))
+    elif guilds:
+        missing = len(guilds) - len(per_guild)
+        print(
+            f"note: {missing} server(s) have no guild_member_count, so the "
+            "members tile is left off -- run backfill_channel_names.py to fill "
+            "them in"
+        )
+
     # Oldest channel row, as a "running since" tile. Older rows predate the
     # column, so this is best-effort and simply dropped when unavailable.
     started = min(

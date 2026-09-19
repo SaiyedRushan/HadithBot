@@ -1,5 +1,6 @@
 .PHONY: install dev dev-server test lint format site site-wall books \
-        logs status deploy restart shell health errors sends grep stale help
+        logs status deploy restart shell health errors sends grep stale \
+        members help
 
 help:  ## List the available targets
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -63,6 +64,11 @@ grep:  ## Search the logs: make grep Q=<pattern> (add SINCE=7d to widen)
 
 stale:  ## Which active channels missed their daily message? (runs locally)
 	uv run python check_stale_channels.py
+
+# Runs on the VM because it needs the production bot token to see the real
+# servers; the local .env holds the dev bot, which is in neither of them.
+members:  ## Refresh the stored server names and member counts from Discord
+	ssh $(VM) 'cd $(APP_DIR) && docker compose exec -T hadithbot python backfill_channel_names.py'
 
 deploy:  ## Pull main and rebuild on the VM (CI does this on push; use to force)
 	ssh $(VM) 'cd $(APP_DIR) && git pull --ff-only && docker compose up -d --build && docker image prune -f'
