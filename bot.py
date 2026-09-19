@@ -19,9 +19,12 @@ from db import (
     get_channel_state,
     get_hadith_in_same_chapter_and_book,
     get_flags_for_hadith,
+    get_known_guild_ids,
     get_next_hadiths,
     get_open_flags,
     get_random_hadith,
+    mark_guild_present,
+    mark_guild_removed,
     remove_channel_state,
     resolve_hadith_flags,
     save_channel_state,
@@ -149,7 +152,15 @@ class HadithBot(commands.Bot):
 
                 channel = self.get_channel(int(channel_id))
                 if not channel:
-                    self.logger.error(f"Channel {channel_id} not found")
+                    # Servers the bot was removed from are already filtered out
+                    # by get_channels(), so reaching here means the bot is still
+                    # in the server but can't see the channel: deleted, or View
+                    # Channel was revoked.
+                    self.logger.error(
+                        f"Channel {channel_id} not found in "
+                        f"{channel_row.get('guild_name') or 'unknown server'} -- "
+                        "deleted, or the bot lost View Channel"
+                    )
                     continue
 
                 # The book/chapter we resumed from (before position resolution).
@@ -214,6 +225,7 @@ class HadithBot(commands.Bot):
                         channel_name=getattr(channel, "name", None),
                         guild_id=str(guild.id) if guild else None,
                         guild_name=guild.name if guild else None,
+                        guild_member_count=guild.member_count if guild else None,
                         mark_sent=True,
                     )
 
@@ -236,7 +248,83 @@ class HadithBot(commands.Bot):
     async def before_daily_message(self):
         """Wait for the bot to be ready before starting the task"""
         await self.wait_until_ready()
+        await self.reconcile_guilds()
         self.logger.info("\nDaily message task is ready to start\n")
+
+    async def on_guild_remove(self, guild: discord.Guild):
+        """Kicked, banned, or the server was deleted.
+
+        The rows are kept -- see mark_guild_removed -- so re-adding the bot
+        resumes the server's reading position rather than starting over.
+        """
+        try:
+            flagged = mark_guild_removed(str(guild.id))
+        except Exception:
+            self.logger.error(
+                f"Removed from guild {guild.id} ({guild.name}) but couldn't flag "
+                "its channels; the startup reconcile will retry",
+                exc_info=True,
+            )
+            return
+        if flagged:
+            self.logger.info(
+                f"Removed from {guild.name} ({guild.id}) -- flagged {flagged} "
+                "channel(s) as removed, rows kept"
+            )
+
+    async def on_guild_join(self, guild: discord.Guild):
+        """Added to a server. If we'd been in it before, pick its channels back up."""
+        try:
+            restored = mark_guild_present(str(guild.id))
+        except Exception:
+            self.logger.error(
+                f"Joined guild {guild.id} ({guild.name}) but couldn't clear its "
+                "removed flag; the startup reconcile will retry",
+                exc_info=True,
+            )
+            return
+        if restored:
+            self.logger.info(
+                f"Re-added to {guild.name} ({guild.id}) -- resuming {restored} "
+                "channel(s) from where they left off"
+            )
+
+    async def reconcile_guilds(self):
+        """Match the stored guilds against the ones Discord just handed us.
+
+        on_guild_remove only fires while the bot is connected, so a kick during
+        a restart or an outage is missed entirely -- which is how a server the
+        bot had been out of for two weeks was still being counted on the site
+        and still logging a failed delivery every evening. This runs once per
+        startup and closes that gap in both directions.
+        """
+        live = {str(g.id) for g in self.guilds}
+        # A reconcile against an empty cache would flag every server as removed.
+        # That should be impossible after wait_until_ready(), so treat it as a
+        # broken connection rather than as the bot having been kicked from
+        # everywhere at once.
+        if not live:
+            self.logger.warning(
+                "Skipping guild reconcile: Discord reported no guilds, which is "
+                "more likely a connection problem than a removal from every server"
+            )
+            return
+
+        try:
+            known = get_known_guild_ids()
+            for guild_id in known - live:
+                if mark_guild_removed(guild_id):
+                    self.logger.info(
+                        f"Reconcile: no longer in guild {guild_id} -- flagged its "
+                        "channels as removed, rows kept"
+                    )
+            for guild_id in known & live:
+                if mark_guild_present(guild_id):
+                    self.logger.info(
+                        f"Reconcile: back in guild {guild_id} -- resuming its channels"
+                    )
+        except Exception:
+            self.logger.error("Guild reconcile failed", exc_info=True)
 
     def get_names(self, number: int, count: int = 1) -> Optional[List[Name]]:
         """Get name by number with validation"""
@@ -491,6 +579,7 @@ class HadithCommands(app_commands.Group):
             channel_name=target.name,
             guild_id=str(target.guild.id),
             guild_name=target.guild.name,
+            guild_member_count=target.guild.member_count,
         )
         verb = "updated for" if existing else "set up for"
         await interaction.followup.send(

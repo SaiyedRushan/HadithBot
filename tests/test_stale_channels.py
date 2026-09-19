@@ -50,6 +50,23 @@ def test_paused_channels_are_ignored():
     assert find_stale(rows, now=NOW) == []
 
 
+def test_removed_guilds_are_ignored():
+    """The bot isn't in the server, so a missed delivery isn't news."""
+    rows = [
+        row(
+            last_sent_at=(NOW - timedelta(days=14)).isoformat(),
+            removed_at=(NOW - timedelta(days=13)).isoformat(),
+        )
+    ]
+    assert find_stale(rows, now=NOW) == []
+
+
+def test_removed_guild_is_reported_again_once_the_bot_is_back():
+    """mark_guild_present clears removed_at, so the channel is watched again."""
+    rows = [row(last_sent_at=(NOW - timedelta(days=14)).isoformat(), removed_at=None)]
+    assert len(find_stale(rows, now=NOW)) == 1
+
+
 def test_missing_active_key_defaults_to_active():
     r = row(last_sent_at=(NOW - timedelta(hours=40)).isoformat())
     del r["active"]

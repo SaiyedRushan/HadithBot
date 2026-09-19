@@ -57,6 +57,11 @@ def find_stale(rows, stale_hours=DEFAULT_STALE_HOURS, now=None):
     for row in rows:
         if not row.get("active", True):
             continue
+        # The bot isn't in this server any more, so of course nothing was
+        # delivered. Reporting it every day would train you to ignore the
+        # alert, which is the one thing it can't afford.
+        if row.get("removed_at"):
+            continue
         last_sent = _parse_ts(row.get("last_sent_at"))
         if last_sent is None:
             created = _parse_ts(row.get("created_at"))
@@ -109,10 +114,21 @@ def main():
 
     rows = get_all_channels()
     stale = find_stale(rows, stale_hours=args.hours)
-    active = sum(1 for r in rows if r.get("active", True))
+    active = sum(
+        1 for r in rows if r.get("active", True) and not r.get("removed_at")
+    )
+    removed = sum(1 for r in rows if r.get("removed_at"))
+    removed_note = (
+        f" ({removed} channel(s) skipped: the bot is no longer in those servers.)"
+        if removed
+        else ""
+    )
 
     if not stale:
-        print(f"All {active} active channel(s) delivered within {args.hours}h.")
+        print(
+            f"All {active} active channel(s) delivered within {args.hours}h."
+            f"{removed_note}"
+        )
         return 0
 
     report = format_report(stale)

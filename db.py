@@ -32,6 +32,7 @@ def save_channel_state(
     channel_name: Optional[str] = None,
     guild_id: Optional[str] = None,
     guild_name: Optional[str] = None,
+    guild_member_count: Optional[int] = None,
     mark_sent: bool = False,
 ):
     record = {
@@ -57,6 +58,15 @@ def save_channel_state(
         record["guild_id"] = guild_id
     if guild_name is not None:
         record["guild_name"] = guild_name
+    # How many people are in that server, as Discord reported it on the last
+    # save. Refreshed alongside the names, so the site's headline count tracks
+    # servers growing and shrinking rather than freezing at setup time. Discord
+    # puts it in the guild payload, so it arrives without the Server Members
+    # intent -- and without that intent it can lag reality by a few, which is
+    # fine for a rounded figure on a marketing page and not fine for anything
+    # that has to be exact.
+    if guild_member_count is not None:
+        record["guild_member_count"] = guild_member_count
     # Opt-in, because setup() saves through here too -- stamping unconditionally
     # would mark a freshly-configured channel as delivered and hide it from the
     # stale check until its first real send.
@@ -69,25 +79,72 @@ def save_channel_state(
 
 
 def get_channels() -> list[dict]:
-    """Active channel states, for the daily broadcast. Supabase's stub types
+    """Live channel states, for the daily broadcast. Supabase's stub types
     .data as the broad List[JSON]; in practice a select returns row dicts (empty
-    if none), so we cast -- callers then get list[dict], not possibly-None rows."""
+    if none), so we cast -- callers then get list[dict], not possibly-None rows.
+
+    Excludes servers the bot has been removed from. Those rows are kept, but
+    sending to them is impossible, so counting them would overstate reach on
+    the site and leaving them in would log a daily error for nothing."""
     return cast(
         list[dict],
         supabase.table("discord_channel_state")
         .select("*")
         .eq("active", True)
+        .is_("removed_at", "null")
         .execute()
         .data,
     )
 
 
 def get_all_channels() -> list[dict]:
-    """Every channel state (active or paused), for the /bismillah status command."""
+    """Every channel state, including paused ones and servers the bot has been
+    removed from, for the /bismillah status command."""
     return cast(
         list[dict],
         supabase.table("discord_channel_state").select("*").execute().data,
     )
+
+
+def get_known_guild_ids() -> set[str]:
+    """Every guild_id with a stored channel, whether or not the bot is still
+    in it. The startup reconcile compares this against the guilds Discord
+    actually handed us."""
+    rows = cast(
+        list[dict],
+        supabase.table("discord_channel_state").select("guild_id").execute().data,
+    )
+    return {r["guild_id"] for r in rows if r.get("guild_id")}
+
+
+def mark_guild_removed(guild_id: str) -> int:
+    """Flag every channel in a server the bot is no longer in.
+
+    The rows survive untouched -- reading position, per-day counts, pause
+    state -- so a server that re-adds the bot carries on from where it left
+    off instead of restarting at hadith 1. Already-flagged rows are left
+    alone so the timestamp records the *first* time we noticed.
+    """
+    res = (
+        supabase.table("discord_channel_state")
+        .update({"removed_at": datetime.now(timezone.utc).isoformat()})
+        .eq("guild_id", guild_id)
+        .is_("removed_at", "null")
+        .execute()
+    )
+    return len(res.data or [])
+
+
+def mark_guild_present(guild_id: str) -> int:
+    """Clear the removed flag for a server the bot is in again."""
+    res = (
+        supabase.table("discord_channel_state")
+        .update({"removed_at": None})
+        .eq("guild_id", guild_id)
+        .not_.is_("removed_at", "null")
+        .execute()
+    )
+    return len(res.data or [])
 
 
 def get_channel_state(channel_id: str):

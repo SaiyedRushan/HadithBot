@@ -110,6 +110,7 @@ CREATE TABLE discord_channel_state (
     channel_name TEXT,
     guild_id TEXT,
     guild_name TEXT,
+    guild_member_count INTEGER,
     last_hadith_no INTEGER NOT NULL DEFAULT 1,
     last_name_no INTEGER NOT NULL DEFAULT 1,
     last_book_id INTEGER NOT NULL DEFAULT 1,
@@ -117,6 +118,8 @@ CREATE TABLE discord_channel_state (
     active BOOLEAN NOT NULL DEFAULT TRUE,
     hadiths_per_day INTEGER NOT NULL DEFAULT 3,
     names_per_day INTEGER NOT NULL DEFAULT 3,
+    last_sent_at TIMESTAMP WITH TIME ZONE,
+    removed_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -125,6 +128,36 @@ CREATE TABLE discord_channel_state (
 `channel_name`, `guild_name`, and `guild_id` are stored purely for readability
 (so you can tell rows apart in the Supabase dashboard) — the bot keys everything
 off `channel_id`. They're refreshed on every save, so renames stay in sync.
+
+`guild_member_count` is how many people are in that server, as Discord reported
+it on the last save. It's the only thing the site's "people in those servers"
+figure is built from, and it's a count and nothing else: no member is named,
+identified or stored. Adding the column to an existing database:
+
+```sql
+ALTER TABLE discord_channel_state ADD COLUMN guild_member_count INTEGER;
+```
+
+then run `python backfill_channel_names.py` once to fill it in for servers the
+bot is already in.
+
+`removed_at` is when the bot was found to be out of that server, and `NULL`
+means it's still there. Rows are never deleted when the bot is kicked: the
+reading position is worth keeping, so a server that re-adds the bot carries on
+from the hadith it left off at instead of restarting at the beginning. While
+it's set, the channel gets no delivery attempt, isn't counted on the site, and
+isn't reported by the stale-channel check.
+
+Two things keep it accurate. `on_guild_remove` and `on_guild_join` handle it
+live, and a reconcile on every startup compares the stored servers against the
+ones Discord hands the bot on connect, which covers a kick that happened while
+the bot was down. Adding the column to an existing database:
+
+```sql
+ALTER TABLE discord_channel_state ADD COLUMN removed_at TIMESTAMP WITH TIME ZONE;
+```
+
+Nothing else is needed: the first startup after the column exists fills it in.
 
 #### `hadiths` table:
 
