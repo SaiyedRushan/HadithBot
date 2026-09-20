@@ -58,7 +58,7 @@ sends:  ## What the last daily broadcast actually did (per channel)
 	@ssh $(VM) 'cd $(APP_DIR) && docker compose logs --since 48h 2>&1 | grep -iE "successfully sent|no hadith data|not found|failed to send" | tail -30' \
 	  || echo "no delivery activity in the last 48h"
 
-grep:  ## Search the logs: make grep Q=<pattern> (add SINCE=7d to widen)
+grep:  ## Search the logs: make grep Q=<pattern> (add SINCE=72h to widen; h/m/s only, not 7d)
 	@test -n "$(Q)" || { echo 'usage: make grep Q=<pattern> [SINCE=24h]'; exit 2; }
 	@ssh $(VM) 'cd $(APP_DIR) && docker compose logs --since $(or $(SINCE),24h) 2>&1 | grep -iE "$(Q)" | tail -50'
 
