@@ -15,6 +15,7 @@ know vouched for it lands very differently from a cold DM at scale.
 | Privacy | https://hadithbot.app/privacy |
 | Source | https://github.com/SaiyedRushan/HadithBot |
 | Ask to be listed on the site | https://github.com/SaiyedRushan/HadithBot/issues/new?template=add-community.yml |
+| Who to contact | [`outreach/msa-contacts.md`](outreach/msa-contacts.md) |
 
 ## Who to ask
 

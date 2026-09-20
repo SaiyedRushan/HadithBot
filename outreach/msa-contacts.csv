@@ -1,0 +1,116 @@
+institution,org_name,country,region,email,website,instagram,discord,confidence,notes
+University of Waterloo,UW MSA,Canada,Ontario,,https://uwmsa.com,https://instagram.com/uwmsa,https://discord.gg/nQZtrhxJsX,confirmed,Public Discord listed on their own Linktree. Also a WhatsApp community. No public email; contact via IG or Discord.
+Carleton University,CUMSA,Canada,Ontario,,https://cumsa.ca,,https://discord.com/invite/uVmpsVNauU,confirmed,"Official CUMSA Discord, ~1.2k members. Site returned 403 to automated fetch; Discord and Facebook (facebook.com/CarletonMSA) are live."
+McGill University,MSA McGill,Canada,Quebec,,https://linktr.ee/msamcgill,https://instagram.com/msamcgill,https://discord.gg/jEtmHXQf,confirmed,Discord + WhatsApp community both on their Linktree.
+University of Alberta,MSA UAlberta,Canada,Alberta,,http://msauofa.weebly.com,,https://discord.com/invite/QRZmXvy,confirmed,"Discord ~1.2k members. Website has a contact form only, no listed email."
+University of Toronto (St. George),UofT MSA,Canada,Ontario,,https://www.uoftmsa.com,https://instagram.com/uoftmsa,,partial,"Oldest MSA in Canada, 1500+ members. msa@utoronto.ca BOUNCED 2026-09-20: 550 5.4.1 Access denied from Exchange Online, the list only accepts mail from inside utoronto.ca. External email cannot reach it. Use the contact form or per-exec office hours at uoftmsa.com/contact-us.html, or IG @uoftmsa."
+University of Toronto Mississauga,UTM MSA,Canada,Ontario,msa@utmsu.ca,http://utmmsa.org,https://instagram.com/utmmsa,,confirmed,
+University of Guelph,Guelph MSA,Canada,Ontario,msa@uoguelph.ca,https://www.uogmsa.com,https://instagram.com/guelphmsa,,confirmed,Also https://linktr.ee/msauoguelph
+Seneca Polytechnic,Seneca MSA,Canada,Ontario,senecamsaofficial@gmail.com,https://clubs.ssfinc.ca/msa/,https://instagram.com/senecamsa,,confirmed,Newnham campus.
+University of British Columbia,MSA UBC,Canada,BC,askmsaubc@gmail.com,https://msaubc.org,https://instagram.com/msaubc,,confirmed,WhatsApp community instead of Discord.
+Simon Fraser University,SFU MSA,Canada,BC,,https://sfumsa.ca,https://instagram.com/sfu_msa,,lead-only,"contact-msa@sfu.ca BOUNCED 2026-09-20: 550 5.1.1 user unknown. The SFSS club directory still lists it but the address is gone. sfumsa.ca and IG @sfu_msa are live. sfumsa@hotmail.com appears in older listings, unverified."
+Concordia University,MSA Concordia,Canada,Quebec,,https://linktr.ee/msaconcordia,,,lead-only,"external@msaconcordia.ca BOUNCED 2026-09-20: NXDOMAIN, the msaconcordia.ca domain has lapsed entirely. They run on Facebook (facebook.com/msaconcordia) and linktr.ee/msaconcordia now. No working email found."
+McMaster University,MacMSA,Canada,Ontario,,https://macmsa.com,https://instagram.com/macmsa,,partial,Contact form + email link on Linktree (linktr.ee/macmsa); address itself is obfuscated. Also msumcmaster.ca/initiative/muslim-students-association/
+University of Calgary,MSA UCalgary,Canada,Alberta,,https://msaucalgary.com,https://instagram.com/msaucalgary,,partial,Very active (Linktree full of forms). Use the 'Connect With Us' page or IG DM.
+Western University,Western MSA,Canada,Ontario,,https://western-msa.com,https://instagram.com/westernmsa,,partial,~6.3k IG followers. Site is JS-rendered; no email surfaced.
+Toronto Metropolitan University,TMU MSA,Canada,Ontario,,https://exploretmu.torontomu.ca/organization/tmumsa2023,,,partial,"One of TMU's largest student groups. Facebook: facebook.com/torontometmsa. Note: IG @tmu_msa is Taipei Medical University, not this group."
+University of Ottawa,uOttawa MSA,Canada,Ontario,,,,,lead-only,Confirmed active (runs Islam Awareness Week) but no public contact found yet.
+Ontario Tech University,MSA UOIT,Canada,Ontario,,https://muslimlink.ca/directory/toronto-gta/muslim-services/Muslim-Youth/5716-muslim-students-association-ontario-tech,,,lead-only,Directory listing only.
+OCAD University,OCADU MSA,Canada,Ontario,,https://muslimlink.ca/directory/toronto-gta/muslim-services/Muslim-Youth/3732-ocadu-msa,,,lead-only,Directory listing only.
+University of Toronto Scarborough,UTSC MSA,Canada,Ontario,,https://muslimlink.ca/directory/toronto-gta/muslim-services/Muslim-Youth/3777-utsc-msa,,,lead-only,Directory listing only.
+University of Windsor,UWindsor MSA,Canada,Ontario,,https://muslimlink.ca/directory/windsor/muslim-services/Muslim-Youth/5288-university-of-windsor-muslim-students-association-msa,,,lead-only,Directory listing only.
+George Mason University,GMU MSA,USA,Virginia,gmumsa@googlegroups.com,https://mason360.gmu.edu/MSA/,https://instagram.com/gmumsa,https://discord.com/invite/qsdX6WPwGF,confirmed,Discord is their main hub — new members type /apply in #start-here. Strongest US target.
+Rensselaer Polytechnic Institute,Rensselaer MSA,USA,New York,,https://msa.union.rpi.edu,https://instagram.com/rensselaermsa,https://discord.gg/EdBXckprCC,confirmed,"Site says Discord is ""our main way of communication."" Board emails listed on site (e.g. imtiaa@rpi.edu president 2024-25 — roll over by now)."
+New Jersey Institute of Technology,NJIT MSA,USA,New Jersey,,https://www.njitmsa.com,https://instagram.com/njitmsa,https://discord.gg/jjdtUf4,confirmed,No public email; Discord and IG are the channels.
+Kennesaw State University,KSU MSA,USA,Georgia,,https://owllife.kennesaw.edu/organization/msa,,,likely,Discord linked from their Linktree (not captured directly). Worth a look.
+Mission College,Mission MSA,USA,California,,https://linktr.ee/MissionMSA,,,likely,MSA Discord listed on Linktree.
+Duke University,Duke MSA,USA,North Carolina,msaexec@duke.edu,https://www.dukemsa.com,https://instagram.com/duke.msa,,confirmed,Uses GroupMe.
+University of Maryland,UMD MSA,USA,Maryland,umcpmsa@gmail.com,https://www.umdmsa.com,https://instagram.com/umdmsa,,confirmed,
+Syracuse University,Syracuse MSA,USA,New York,msaatsu@gmail.com,https://chapel.syracuse.edu/muslim-students-association/,,,confirmed,Advisor Imam Hamza Gürsoy mhgursoy@syr.edu is a stable long-term contact.
+Georgia Institute of Technology,GT MSA,USA,Georgia,gatechmuslimstudentassociation@gmail.com,https://www.gt-msa.com,https://instagram.com/gt.msa,,confirmed,
+Virginia Commonwealth University,VCU MSA,USA,Virginia,vcumsa@gmail.com,https://ramsconnect.vcu.edu/msa/,,,confirmed,
+Rutgers University–Newark,RU Newark MSA,USA,New Jersey,runewarkmsa@gmail.com,https://raiderlink.newark.rutgers.edu/MSA/,,,confirmed,
+Rutgers NJ Medical School,NJMS MSA,USA,New Jersey,muslimstudentsassociation@njms.rutgers.edu,https://njms.rutgers.edu/education/student_affairs/student_life/so_religious.php,,,likely,
+Rutgers University–New Brunswick,Rutgers MSA,USA,New Jersey,,https://www.rutgersmsa.org,https://instagram.com/rutgersmsa,,partial,"Large chapter, no public email — they direct everything to IG DM / linktr.ee/rumsamarketing."
+Binghamton University,Binghamton MSA,USA,New York,msa@binghamtonsa.org,https://bengaged.binghamton.edu/msa/,https://instagram.com/binghamtonmsa,,confirmed,
+University of Colorado Boulder,CU Boulder MSA,USA,Colorado,cumuslims@gmail.com,https://www.colorado.edu/studentgroups/msa/,https://instagram.com/msacuboulder,,confirmed,
+Arizona State University,MSA ASU,USA,Arizona,msaasu@gmail.com,https://sundevilcentral.eoss.asu.edu/MSAASU,,,confirmed,
+University of Pennsylvania,Penn MSA,USA,Pennsylvania,board@pennmsa.com,https://www.pennmsa.com,,,confirmed,upennmsa@gmail.com also listed via Penn Clubs. Chaplain: Patricia Anton.
+University of Massachusetts Amherst,UMass Amherst MSA,USA,Massachusetts,umassmsa@gmail.com,https://websites.umass.edu/muslim/,,,likely,
+University of Massachusetts Boston,UMass Boston MSA,USA,Massachusetts,,https://umassboston-msa.carrd.co,https://instagram.com/umassbostonmsa,,partial,Full exec roster with emails on their carrd but addresses are obfuscated to scrapers — open the page manually.
+University of Connecticut,UConn MSA,USA,Connecticut,info@uconnmsa.com,https://uconntact.uconn.edu/organization/uconnmsa,,,likely,
+University of Rochester,Rochester MSA,USA,New York,uofrmsa@gmail.com,https://ccc.rochester.edu/msa/home/,,,likely,
+University of North Dakota,UND MSA,USA,North Dakota,und.msa@und.edu,https://involvement.und.edu/organization/MSA,,,likely,
+Boston University (Dental),BU GSDM MSA,USA,Massachusetts,msagsdm@bu.edu,https://www.bu.edu/dental/students/organizations/msa,,,likely,Dental school chapter specifically.
+Massachusetts Institute of Technology,MIT MSA,USA,Massachusetts,,https://msa.mit.edu,,,partial,Contact page exists at msa.mit.edu/contact (404'd on fetch — check manually).
+University of Illinois Chicago,MSA at UIC,USA,Illinois,uicmsa@gmail.com,https://msaatuic.org,https://instagram.com/msa.at.uic,,confirmed,
+University of Illinois Urbana-Champaign,MSA UIUC,USA,Illinois,msauiuc1@gmail.com,https://msauiuc.org,https://instagram.com/msauiuc,,likely,
+Loyola University Chicago,Loyola MSA,USA,Illinois,lucmsapr@gmail.com,https://www.luc.edu/campusministry/faithtraditions/muslimstudents/,https://instagram.com/loyolamsa,,likely,
+Illinois Institute of Technology,Illinois Tech MSA,USA,Illinois,msa@iit.edu,https://sites.google.com/iit.edu/iit-msa/home,https://instagram.com/iitmsa,,likely,
+DePaul University,DePaul UMMA,USA,Illinois,dpu.umma@gmail.com,https://offices.depaul.edu/mission-ministry/religious-spiritual-life/religious/Pages/muslim-life.aspx,https://instagram.com/depaulumma,,likely,
+Benedictine University,Benedictine MSA,USA,Illinois,msa.benedictine@gmail.com,https://www.ben.edu/student-life/faith-communities/islamic-faith,https://instagram.com/benumsa,,likely,
+Elmhurst University,Elmhurst MSA,USA,Illinois,elmhurstu.msa@gmail.com,,https://instagram.com/elmhurstmsa,,likely,
+University of Chicago,UChicago MSA,USA,Illinois,,https://voices.uchicago.edu/msa/,https://instagram.com/uchicagomsa,,partial,Directory lists an individual student contact rather than a role address.
+Purdue University,Purdue MSA,USA,Indiana,msapurdue@gmail.com,https://purduemsa.com,https://instagram.com/purduemsa,,likely,
+Indiana University Bloomington,IU MSA,USA,Indiana,msabloomington@gmail.com,,https://instagram.com/msa_iub,,likely,
+IUPUI,IUPUI MSA,USA,Indiana,iupuimsa13@gmail.com,https://iupuimsa.wordpress.com/,https://instagram.com/iupui_msa,,likely,
+Butler University,Butler MSA,USA,Indiana,,,https://instagram.com/msabutler,,partial,Directory lists a student contact only.
+University of Michigan,UMich MSA,USA,Michigan,msa-eboard@umich.edu,https://muslims.studentorgs.umich.edu/,https://instagram.com/michiganmuslims,,likely,"Also umichmsa.org. Related: mgsaboard@umich.edu (grad), mmsa@umich.edu (medical)."
+Michigan State University,MSU MSA,USA,Michigan,msaofmsu@gmail.com,https://msu.campuslabs.com/engage/organization/msa,https://instagram.com/spartanmuslims,,likely,
+Wayne State University,Wayne State MSA,USA,Michigan,waynestatemsa@gmail.com,,https://instagram.com/waynestatemsa,,likely,
+Western Michigan University,WMU MSA,USA,Michigan,wmumsabroncos@gmail.com,https://wmumsabroncos.weebly.com/,https://instagram.com/wmu.msa,,likely,
+Ohio State University,OSU MSA,USA,Ohio,msa.ohiostate@gmail.com,https://msaohiostate.org,https://instagram.com/muslimbuckeyes,,likely,
+Case Western Reserve University,CWRU MSA,USA,Ohio,msa-exec@case.edu,https://community.case.edu/msa/,https://instagram.com/cwrumsa,,likely,
+University of Cincinnati,UC MSA,USA,Ohio,ucincymsa@gmail.com,https://ucincymsa.wixsite.com/ucmsa,https://instagram.com/ucincymsa,,likely,
+Cleveland State University,CSU MSA,USA,Ohio,clestatemsa@gmail.com,https://clestatemsa.wixsite.com/clestatemsa,https://instagram.com/clestatemsa,,likely,
+University of Toledo,Toledo MSA,USA,Ohio,utoledomsa@gmail.com,https://utmsa.wordpress.com,https://instagram.com/utoledomsa,,likely,
+University of Wisconsin–Madison,MSA Madison,USA,Wisconsin,uwmad.msa@gmail.com,https://msamadison.com,https://instagram.com/msauwmadison,,likely,Outreach leads on site: asedik@wisc.edu / ypatrick@wisc.edu. Uses WhatsApp.
+University of Wisconsin–Milwaukee,UWM MSA,USA,Wisconsin,msauwm@outlook.com,,https://instagram.com/msauwm,,likely,
+Marquette University,Marquette MSA,USA,Wisconsin,muslimstudents.mu@gmail.com,https://muslimstudentsmu.wixsite.com/msamarquette,https://instagram.com/msamarquette,,likely,
+University of Missouri,Mizzou MSO,USA,Missouri,muslimstudents.mizzou@gmail.com,https://muslimstudentorg.com/,https://instagram.com/mso_mizzou,,likely,
+Washington University in St. Louis,WUSTL MSA,USA,Missouri,msa@su.wustl.edu,https://msa.wustl.edu,https://instagram.com/wustlmsa,,likely,
+Saint Louis University,SLU MSA,USA,Missouri,,https://www.facebook.com/SLUMSA,https://instagram.com/slumsa,,partial,
+University of Minnesota,UMN MSA,USA,Minnesota,,,https://instagram.com/msa.umn,,partial,msaumn.com no longer resolves; IG is the live channel.
+University of Iowa,Iowa MSA,USA,Iowa,,https://uimsa.org.uiowa.edu,https://instagram.com/uiowamsa,,partial,
+Hamline University,Hamline MSA,USA,Minnesota,,,https://instagram.com/hamline_msa,,partial,
+Normandale Community College,Normandale MSA,USA,Minnesota,,https://www.facebook.com/msa.normandale/,https://instagram.com/msa_normandale,,partial,
+Western Kentucky University,WKU MSA,USA,Kentucky,diwa.ahmadzai067@topper.wku.edu,,https://instagram.com/wkumsa_,,partial,Student address from a directory — likely stale.
+University of Kentucky,UK MSA,USA,Kentucky,,https://ukymsa.com,https://instagram.com/ukymsa,,partial,"Directory listed ""President@uky.edu"" — almost certainly a placeholder, do not use."
+University of Texas at Dallas,MSA UTD,USA,Texas,msa.utd@gmail.com,https://www.msautdallas.com,https://instagram.com/utdmsa,,confirmed,WhatsApp brothers/sisters group chats.
+Texas A&M University,TAMU MSA,USA,Texas,tamumsa.brotherssocial@gmail.com,https://www.tamumsa.org,https://instagram.com/tamumsa,,confirmed,Also tamumsa.sisterssocial@gmail.com. No general address published.
+University of Texas at Austin,Texas MSA,USA,Texas,,https://utexas.campuslabs.com/engage/organization/muslimstudentsassociation,,,partial,Established 1967. Contact via HornsLink.
+San Diego State University,SDSU MSA,USA,California,sdsu.msa@gmail.com,https://msasdsu.weebly.com,https://instagram.com/sdsu_msa,,likely,
+San Jose State University,SJSU MSA,USA,California,hi@sjsumsa.org,https://www.sjsumsa.org,https://instagram.com/sjsumsa,,likely,Also https://linktr.ee/SJSUMSA
+University of California Los Angeles,MSA UCLA,USA,California,,https://www.msabruins.com,https://instagram.com/msa_ucla,,partial,"Large chapter with many sub-projects, each with its own address (obfuscated on page). linktr.ee/msaucla"
+University of California Berkeley,Cal MSA,USA,California,,https://berkeleymsa.org,,,partial,Contact form only at berkeleymsa.org/contact.
+University of California Davis,MSA at UCD,USA,California,,https://www.msaatucd.org,https://instagram.com/ucdmsa,,partial,Contact form; linktr.ee/ucdMSA
+University of California San Diego,MSA UCSD,USA,California,,https://msaucsd.com,https://instagram.com/msaucsd,,partial,"Explicitly says ""DM to join chats"" — Instagram is the door."
+University of California Riverside,MSA UCR,USA,California,,https://msaucr.com,https://instagram.com/msaucr,,partial,
+University of California Santa Barbara,UCSB MSA,USA,California,,https://www.facebook.com/ucsbmsa/,https://instagram.com/ucsbmsa,,partial,
+University of California Irvine,MSU UCI,USA,California,,http://www.msuuci.com,,,partial,Called Muslim Student Union rather than MSA.
+California Institute of Technology,Caltech MSA,USA,California,,https://msa.sites.caltech.edu/contact,,,partial,
+San Francisco State University,SFSU MSA,USA,California,,https://linktr.ee/msasfsu,,,partial,
+Cal State Fullerton,CSUF MSA,USA,California,,https://www.fullerton.edu/aparc/clubs/msa.php,,,partial,
+Cal State Sacramento,Sac State MSA,USA,California,,https://csus.campusgroups.com/msa/home/,,,partial,
+University of Washington,MSA UW,USA,Washington,,https://msauw.org,,,partial,
+University of Arizona,UA MSA,USA,Arizona,,https://arizona.campusgroups.com/UAMSA/,,,partial,
+University of Nevada Las Vegas,UNLV MSA,USA,Nevada,,https://involvementcenter.unlv.edu/organization/unlvmsa,,,partial,
+Stony Brook University,Stony Brook MSA,USA,New York,,https://stonybrook.campuslabs.com/engage/organization/msa,,,partial,sbumsa.org did not resolve at time of check.
+Columbia University,Columbia MSA,USA,New York,,https://msa.studentgroups.columbia.edu/content/msa,,,partial,
+New York University,NYU MSA,USA,New York,,https://engage.nyu.edu/organization/muslim-students-association-all-university,,,partial,NYU's Islamic Center coordinates several Muslim student groups.
+Princeton University,Princeton MSA,USA,New Jersey,,https://religiouslife.princeton.edu/faith-community/chaplaincies-programs/muslim-student-association,,,partial,linktr.ee/princetonmsa
+Northwestern University,NU McSA,USA,Illinois,,https://numcsa.mystrikingly.com,,,partial,Muslim-cultural Students Association.
+Penn State University Park,Penn State MSA,USA,Pennsylvania,,https://orgcentral.psu.edu/organization/pennstatemsa,,,partial,Also pennstatemsa.wixsite.com/psu-msa
+Virginia Tech,VT MSA,USA,Virginia,,https://www.home.isnrv.org/vtmsa,,,partial,Oldest/largest Muslim org in Blacksburg.
+George Washington University,GW MSA,USA,DC,,https://gwu.campuslabs.com/engage/organization/the-muslim-students-association,,,partial,
+Johns Hopkins University,JH Graduate MSA,USA,Maryland,,https://jhgmsa.mailchimpsites.com/,,,partial,Graduate chapter.
+University of Maryland Baltimore County,UMBC MSA,USA,Maryland,,https://my3.my.umbc.edu/groups/msa,,,partial,linktr.ee/UMBCMSA
+University of Georgia,UGA MSA,USA,Georgia,,https://ugamsa.weebly.com,,,partial,
+University of South Florida,USF MSA,USA,Florida,,https://bullsconnect.usf.edu/MSASO/,,,partial,Contact form only.
+Florida International University,FIU MSA,USA,Florida,,https://fiu.campuslabs.com/engage/organization/muslim-students-association,,,partial,
+Georgia State University,GSU MSA,USA,Georgia,,https://pin.gsu.edu/organization/muslim-student-association,https://instagram.com/msaatgsu,,partial,
+University of Louisville,Louisville MSA,USA,Kentucky,,https://events.louisville.edu/group/muslim_student_association,,,partial,
+University of Alabama at Birmingham,UAB MSA,USA,Alabama,,https://calendar.uab.edu/group/muslim_students_association,,,partial,
+University of Southern Mississippi,USM MSA,USA,Mississippi,,https://usm.campusgroups.com/MSA/,,,partial,
+Bates College,Bates MSA,USA,Maine,,https://engage.bates.edu/msa,,,partial,
+MSA National,MSA National (umbrella),USA/Canada,National,,https://www.msanational.org,https://instagram.com/msa.national,,confirmed,~600 affiliated chapters. No public email — use msanational.org/contact. Worth one message: a single yes here beats fifty cold emails.
