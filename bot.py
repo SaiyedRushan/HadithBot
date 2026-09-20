@@ -33,6 +33,7 @@ from views import FlagHadithButton, build_hadith_view
 from utils import (
     Name,
     compose_flag_reply,
+    delivery_failure_message,
     getHadithFormattedMessage,
     getNameFormattedMessage,
     resolve_start_position,
@@ -51,6 +52,11 @@ class HadithBot(commands.Bot):
 
         self.names: List[Name] = []
         self.logger = logging.getLogger("HadithBot")
+        # Channels we've already warned a server about, so a channel that stays
+        # broken doesn't produce a message every single evening. Cleared as soon
+        # as delivery works again, and on restart -- a redeploy is rare enough
+        # that one repeat notice is a reminder rather than a nuisance.
+        self._alerted_channels: set[str] = set()
 
         # Setup error handling
         self.setup_error_handlers()
@@ -141,6 +147,7 @@ class HadithBot(commands.Bot):
             channel_id = channel_row["channel_id"]
             # Isolate each channel so one failure (e.g. missing permissions)
             # doesn't stop the broadcast to the remaining channels.
+            channel = None
             try:
                 last_hadith_no = channel_row["last_hadith_no"]
                 last_name_no = channel_row["last_name_no"]
@@ -161,6 +168,11 @@ class HadithBot(commands.Bot):
                         f"{channel_row.get('guild_name') or 'unknown server'} -- "
                         "deleted, or the bot lost View Channel"
                     )
+                    guild_id = channel_row.get("guild_id")
+                    if guild_id:
+                        await self.alert_delivery_failure(
+                            self.get_guild(int(guild_id)), channel_row
+                        )
                     continue
 
                 # The book/chapter we resumed from (before position resolution).
@@ -230,6 +242,7 @@ class HadithBot(commands.Bot):
                     )
 
                     delivered += 1
+                    self._alerted_channels.discard(str(channel_id))
                     self.logger.info(
                         f"Successfully sent hadith up to book {last_book_no}, chapter {last_chapter_no}, hadith {last['id_in_book']}"
                     )
@@ -237,12 +250,153 @@ class HadithBot(commands.Bot):
                     self.logger.error(
                         f"No hadith data returned for book {last_book_no}, chapter {last_chapter_no}, hadith {last_hadith_no}"
                     )
+            except discord.Forbidden as e:
+                self.logger.error(
+                    f"Failed to send daily message to channel {channel_id}: {e}",
+                    exc_info=True,
+                )
+                await self.alert_delivery_failure(
+                    getattr(channel, "guild", None), channel_row
+                )
             except Exception as e:
                 self.logger.error(
                     f"Failed to send daily message to channel {channel_id}: {e}",
                     exc_info=True,
                 )
         return delivered
+
+    def _configured_row(self, channel_id):
+        """The stored row for a channel, but only if it's still switched on.
+
+        Returns None for channels nobody asked us to post in, so a permission
+        change in an unrelated channel costs one lookup and nothing else.
+        """
+        try:
+            row = get_channel_state(str(channel_id))
+        except Exception as e:
+            self.logger.error(f"Couldn't look up channel {channel_id}: {e}")
+            return None
+        if row is None or not row.get("active", True):
+            return None
+        # A server the bot was removed from keeps its row (see mark_guild_removed)
+        # but there is nobody to tell and nothing to fix, so leave it alone.
+        if row.get("removed_at"):
+            return None
+        return row
+
+    async def on_guild_channel_update(self, before, after):
+        """Warn as soon as we lose the ability to post, not at 6pm.
+
+        Waiting for the next broadcast means an admin who breaks the channel at
+        noon hears nothing until the evening, by which point they've forgotten
+        what they changed. This catches the case where we keep View Channel but
+        lose Send Messages -- losing View Channel removes the channel from our
+        cache entirely and arrives as a delete instead.
+        """
+        me = getattr(after.guild, "me", None)
+        if me is None or not hasattr(after, "permissions_for"):
+            return
+
+        could_send = before.permissions_for(me).send_messages
+        can_send = after.permissions_for(me).send_messages
+        if could_send and not can_send:
+            row = self._configured_row(after.id)
+            if row is not None:
+                self.logger.info(f"Lost Send Messages in #{after.name}")
+                await self.alert_delivery_failure(after.guild, row)
+
+    async def on_guild_channel_delete(self, channel):
+        """A channel we post in vanished from our view.
+
+        Discord sends this both when a channel is deleted and when we lose
+        View Channel on it, which is what making a channel private does to us.
+        Only the second is worth a message -- someone who deleted a channel
+        knows they deleted it -- so ask the API which happened: 403 means it
+        still exists and we can't see it, 404 means it's really gone.
+        """
+        row = self._configured_row(channel.id)
+        if row is None:
+            return
+
+        try:
+            await self.fetch_channel(channel.id)
+            return  # Still reachable, so nothing was actually lost.
+        except discord.Forbidden:
+            self.logger.info(f"Lost access to #{channel.name}")
+            await self.alert_delivery_failure(channel.guild, row)
+        except discord.NotFound:
+            # Deliberately silent: they deleted it, they know.
+            self.logger.info(f"#{channel.name} was deleted; nothing to report")
+        except discord.HTTPException as e:
+            self.logger.error(f"Couldn't tell why #{channel.name} went away: {e}")
+
+    async def alert_delivery_failure(self, guild, channel_row) -> bool:
+        """Tell someone in the server that today's hadith couldn't be posted.
+
+        Losing access to a channel is silent from the server's side: the bot
+        logs a 403 and the hadiths simply stop arriving, so nobody knows there
+        is anything to fix. Try the owner by DM first -- they can always
+        restore the permission and a DM doesn't put the problem in front of
+        the whole server -- then fall back to any channel we can still post in.
+
+        Sends at most once per channel until delivery succeeds again. Returns
+        True if the notice reached anyone.
+        """
+        if guild is None:
+            return False
+
+        channel_id = str(channel_row["channel_id"])
+        if channel_id in self._alerted_channels:
+            return False
+
+        name = channel_row.get("channel_name")
+        label = f"#{name}" if name else f"<#{channel_id}>"
+
+        # The owner is the one person we can always identify without the
+        # members intent, and the one person who can always fix this.
+        if guild.owner_id:
+            try:
+                owner = await self.fetch_user(guild.owner_id)
+                await owner.send(delivery_failure_message(label, guild.name))
+                self._alerted_channels.add(channel_id)
+                self.logger.info(f"Told {guild.name}'s owner about {label}")
+                return True
+            except discord.HTTPException:
+                # Closed DMs are common; fall through to a channel.
+                pass
+
+        me = guild.me
+        if me is None:
+            return False
+
+        # System channel first (it already carries Discord's own server
+        # notices), then anything else we can post in.
+        candidates = []
+        if guild.system_channel is not None:
+            candidates.append(guild.system_channel)
+        candidates.extend(guild.text_channels)
+
+        seen = {int(channel_id)}
+        for target in candidates:
+            if target.id in seen:
+                continue
+            seen.add(target.id)
+            perms = target.permissions_for(me)
+            if not (perms.view_channel and perms.send_messages):
+                continue
+            try:
+                await target.send(delivery_failure_message(label))
+                self._alerted_channels.add(channel_id)
+                self.logger.info(f"Posted the {label} failure notice in #{target.name}")
+                return True
+            except discord.HTTPException:
+                continue
+
+        self.logger.error(
+            f"Couldn't reach anyone in {guild.name} about {label}: "
+            "the owner's DMs are closed and no channel is postable"
+        )
+        return False
 
     @send_daily_message.before_loop
     async def before_daily_message(self):

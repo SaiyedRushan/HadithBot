@@ -281,6 +281,14 @@ Checks every configured channel and reports what's blocking it — the first thi
 to run when messages aren't arriving. `send_test` attempts a real post and shows
 Discord's own error.
 
+You shouldn't usually need to run it unprompted. The bot speaks up on its own as
+soon as it loses access to a channel it posts in, whether that's **Send
+Messages** being denied or the channel being made private, and again if the
+daily send fails for any other reason. It DMs the server owner with the channel name, the permissions to grant and how
+to turn the messages off instead. If the owner's DMs are closed it posts the same
+notice in the system channel, or any other channel it can still write to. It
+warns once per channel and stays quiet until delivery works again.
+
 #### Hadith Commands
 
 ```

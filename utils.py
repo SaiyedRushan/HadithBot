@@ -180,3 +180,44 @@ def resolve_start_position(
     else:
         hadith = keep(None, "last_hadith_no", 1)
     return book, chapter, hadith
+
+
+def delivery_failure_message(
+    channel_label: str, guild_name: Optional[str] = None
+) -> str:
+    """What a server is told when the daily message can't be delivered.
+
+    A 403 at 6pm is invisible from inside the server: the bot logs it and the
+    hadiths just stop. Whoever reads this should not have to ask a follow-up
+    question, so it spells out the clicks, how to confirm the fix, and how to
+    turn the messages off instead.
+
+    The steps are the ones from hadithbot.app/send-daily-hadith-discord, and
+    they deliberately cover both ways this happens. When Send Messages is
+    denied the bot is already listed under Roles/Members and you flip it back;
+    when the channel is made private the bot isn't listed at all and step 2 is
+    the one that matters. Adding a role that is already there is harmless, so
+    one set of steps serves both rather than making the reader work out which
+    case they are in.
+
+    guild_name is included when this is sent as a DM, where the reader has no
+    other way to tell which of their servers it's about.
+    """
+    where = f" in **{guild_name}**" if guild_name else ""
+    return (
+        f"Assalamu alaikum. I couldn't post today's hadith in "
+        f"{channel_label}{where} because I no longer have permission to post "
+        f"there.\n\n"
+        f"To fix it:\n"
+        f"1. Right-click the channel, then **Edit Channel**, then "
+        f"**Permissions**\n"
+        f"2. Under **Roles/Members**, press **+** and add HadithBot's role\n"
+        f"3. Set **View Channel** and **Send Messages** to green\n"
+        f"4. **Save Changes**, then run `/bismillah diagnose` to check it "
+        f"worked\n\n"
+        f"If the channel is synced to its category, set it on the category "
+        f"instead. The longer version is at "
+        f"<https://hadithbot.app/send-daily-hadith-discord>\n\n"
+        f"If you'd rather I stopped posting there, run `/bismillah stop` in "
+        f"that channel and you won't hear from me again."
+    )
