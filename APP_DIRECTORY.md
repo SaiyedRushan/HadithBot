@@ -148,10 +148,10 @@ Already live and used throughout `OUTREACH.md`:
 https://discord.com/oauth2/authorize?client_id=1285370394282295359&permissions=3072&scope=bot%20applications.commands
 ```
 
-`permissions=3072` is Send Messages + Read Message History — the minimum the bot
-needs. Do not widen it for the listing. A small permission ask is a genuine
-advantage over other bots on the same page and it is the thing an admin looks at
-hardest.
+`permissions=3072` is View Channel + Send Messages, the minimum the bot needs.
+It does not ask for Read Message History. Do not widen it for the listing. A
+small permission ask is a genuine advantage over other bots on the same page and
+it is the thing an admin looks at hardest.
 
 ### Supporting links
 

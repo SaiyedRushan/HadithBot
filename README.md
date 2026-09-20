@@ -92,10 +92,10 @@ SUPABASE_KEY=your_supabase_anon_key
 2. Create a new application and bot
 3. Copy the bot token to your `.env` file
 4. Enable the following bot permissions:
+   - View Channel
    - Send Messages
-   - Use Slash Commands
-   - Read Message History
-5. Invite the bot to your Discord server with these permissions
+5. Invite the bot with the `bot` and `applications.commands` scopes. Slash
+   commands come from that second scope, not from a permission bit.
 
 ### 5. Supabase Setup
 
