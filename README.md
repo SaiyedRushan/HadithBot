@@ -16,13 +16,13 @@ A Discord bot that sends daily Islamic hadiths and the 99 beautiful names of All
 - **Discord Bot** (`bot.py`): Main bot logic with slash commands and scheduled tasks
 - **Database Layer** (`db.py`): Supabase integration for data storage and retrieval
 - **Utilities** (`utils.py`): Data models and message formatting functions
-- **Web Server** (`server.py`): Flask server for health checks and bot hosting
+- **Web Server** (`server.py`): runs the bot plus a small health check server on port 8080
 - **Data Files**: Local JSON files containing the 99 names of Allah
 
 ## Project Files
 
 - `bot.py` - Main Discord bot application
-- `server.py` - Flask web server for hosting and health checks
+- `server.py` - Production entry point: the bot plus a health check on port 8080
 - `db.py` - Database operations and Supabase integration
 - `utils.py` - Data models and utility functions
 - `test_setup.py` - Setup verification script
@@ -255,7 +255,7 @@ python bot.py
 python server.py
 ```
 
-This starts both the Discord bot and a Flask web server on port 8080 for health checks.
+This starts the Discord bot and a health check server on port 8080.
 
 ## Testing
 
@@ -375,10 +375,10 @@ SUPABASE_KEY=your_production_supabase_key
 uv sync --frozen --no-dev
 ```
 
-2. **Run with Gunicorn**:
+2. **Run it**:
 
 ```bash
-uv run gunicorn -w 1 -b 0.0.0.0:8080 server:app
+uv run python server.py
 ```
 
 3. **Set up process manager** (systemd, supervisor, etc.):
@@ -394,7 +394,7 @@ Type=simple
 User=your_user
 WorkingDirectory=/path/to/HadithBot
 Environment=PATH=/path/to/HadithBot/.venv/bin
-ExecStart=/path/to/HadithBot/.venv/bin/gunicorn -w 1 -b 0.0.0.0:8080 server:app
+ExecStart=/path/to/HadithBot/.venv/bin/python server.py
 Restart=always
 
 [Install]
@@ -462,12 +462,17 @@ git push heroku main
 
 #### Health Check Endpoint
 
-The Flask server provides a health check endpoint:
+`server.py` answers on port 8080:
 
 ```
 GET http://your-domain:8080/
 Response: "Hello. I am alive!"
+
+GET http://your-domain:8080/health
+Response: {"status":"healthy","bot":"online","latency":"34.94ms","guilds":16}
 ```
+
+`/health` returns 503 until the bot has logged in to Discord.
 
 #### Logging
 

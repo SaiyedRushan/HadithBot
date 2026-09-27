@@ -4,7 +4,7 @@ This guide hosts HadithBot 24/7 on an Oracle Cloud **Always Free** VM using Dock
 The database is Supabase (external), so the VM only runs one always-on container.
 
 > **Note:** A Discord bot makes an *outbound* websocket connection — Discord never
-> connects *to* you. So you do **not** need to open any inbound ports. The Flask
+> connects *to* you. So you do **not** need to open any inbound ports. The
 > health server on `:8080` ([server.py](server.py)) is optional on a dedicated VM;
 > see [Optional: expose the health check](#optional-expose-the-health-check).
 
@@ -179,7 +179,7 @@ WantedBy=multi-user.target
 ```
 
 > `server.py` reads `.env` via `load_dotenv()`, so no `EnvironmentFile` is
-> needed. To run the bot **without** the Flask server, point `ExecStart` at
+> needed. To run the bot **without** the health server, point `ExecStart` at
 > `.../python bot.py` instead.
 
 Enable and start:

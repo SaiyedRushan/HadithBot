@@ -13,7 +13,7 @@ git -C "$CONDUCTOR_ROOT_PATH" fetch --prune origin && git -C "$CONDUCTOR_ROOT_PA
 uv sync
 """
 
-# Run the Discord bot + Flask health server. PORT is honored by server.py.
+# Run the Discord bot + health server. PORT is honored by server.py.
 run = "PORT=$CONDUCTOR_PORT uv run python server.py"
 
 # The bot uses a single Discord token and a single shared Supabase database,
