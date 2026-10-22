@@ -18,7 +18,13 @@ import {
   shuffleCards,
   squares,
   startGame,
-  wrongGuessCount,
+  mistakeCount,
+  reveal,
+  clearReveal,
+  deselect,
+  lastEvent,
+  revealedIds,
+  isMissed,
   type GameState,
   type PairSet,
 } from './game'
@@ -60,7 +66,7 @@ describe('a clean run', () => {
     for (const p of names.pairs) s = tap(s, N(p.id), M(p.id))
     expect(isGameOver(s)).toBe(true)
     expect(allGuesses(s)).toEqual(names.pairs.map((p) => [p.id, p.id]))
-    expect(wrongGuessCount(s)).toBe(0)
+    expect(mistakeCount(s)).toBe(0)
     const result = scoreGame(s.sets, s.guesses, 48000)
     expect(result).toEqual({score: 10, total: 10, itemResults: Array(10).fill(true), durationMs: 48000})
     expect(squares(result.itemResults, s.sets)).toEqual(['🟩'.repeat(10)])
@@ -90,7 +96,7 @@ describe('a wrong guess', () => {
     expect(r.itemResults.slice(3, 5)).toEqual([false, false])
     expect(r.itemResults[0]).toBeNull()
     expect(r.score).toBe(0)
-    expect(wrongGuessCount(s)).toBe(1)
+    expect(mistakeCount(s)).toBe(1)
   })
 
   it('ignores taps while the wrong pair is showing', () => {
@@ -234,5 +240,103 @@ describe('formatClock', () => {
     expect(formatClock(42900)).toBe('00:42')
     expect(formatClock(65000)).toBe('01:05')
     expect(formatClock(3725000)).toBe('62:05')
+  })
+})
+
+describe('show one pair (reveal)', () => {
+  it("shows the selected card's pair, matched but missed, and logs ['reveal', id]", () => {
+    let s = pick(startGame([names]), M(52))
+    s = reveal(s)
+    expect(s.revealing).toEqual([N(52), M(52)])
+    expect(s.selected).toBeNull()
+    expect(isMissed(s, N(52))).toBe(true)
+    expect(allGuesses(s)).toEqual([['reveal', 52]])
+    expect(mistakeCount(s)).toBe(1)
+    const r = scoreGame(s.sets, s.guesses, null)
+    expect(r.itemResults[3]).toBe(false)
+    expect(r.score).toBe(0)
+  })
+
+  it('shows a random unmatched pair when nothing is selected', () => {
+    let s = tap(startGame([names]), N(49), M(49))
+    s = clearReveal(reveal(s, () => 0))
+    expect(allGuesses(s)).toEqual([
+      [49, 49],
+      ['reveal', 50],
+    ])
+    s = clearReveal(reveal(s, () => 0.99))
+    expect(allGuesses(s)[2]).toEqual(['reveal', 58])
+  })
+
+  it('ignores picks and other reveals while the pair is highlighted', () => {
+    const s = reveal(startGame([names]), () => 0)
+    expect(pick(s, N(51))).toBe(s)
+    expect(reveal(s)).toBe(s)
+    expect(pick(clearReveal(s), N(51)).selected).toBe(N(51))
+  })
+
+  it('counts wrong guesses and reveals together as mistakes', () => {
+    let s = tap(startGame([names]), N(49), M(50))
+    s = clearReveal(reveal(s, () => 0))
+    expect(mistakeCount(s)).toBe(2)
+  })
+
+  it('scores a revealed last pair as missed and still finishes the game', () => {
+    let s = startGame([names])
+    for (const p of names.pairs.slice(0, 9)) s = tap(s, N(p.id), M(p.id))
+    s = reveal(s)
+    expect(isGameOver(s)).toBe(true)
+    expect(scoreSoFar(s)).toEqual({score: 9, total: 10})
+    expect(squares(scoreGame(s.sets, s.guesses, 1).itemResults, s.sets)).toEqual(['🟩'.repeat(9) + '🟥'])
+  })
+
+  it('matches the server replay: reveal of a matched or unknown pair is rejected', () => {
+    expect(scoreSet(names.pairs, [['reveal', 52]])).toEqual([null, null, null, false, null, null, null, null, null, null])
+    expect(() => scoreSet(names.pairs, [[52, 52], ['reveal', 52]])).toThrow(/already matched/)
+    expect(() => scoreSet(names.pairs, [['reveal', 52], [52, 52]])).toThrow(/already matched/)
+    expect(() => scoreSet(names.pairs, [['reveal', 7]])).toThrow(/isn't in this set/)
+  })
+
+  it('a pair in an earlier wrong guess, then revealed, is still missed', () => {
+    expect(scoreSet(names.pairs, [[52, 53], ['reveal', 52], [53, 53]]).slice(3, 5)).toEqual([false, false])
+  })
+
+  it('revealedIds lists the shown pairs across sets', () => {
+    expect(revealedIds([[[1, 1], ['reveal', 2]], [['reveal', 16]]])).toEqual([2, 16])
+  })
+})
+
+describe('deselect (Escape)', () => {
+  it('clears the selection and logs nothing', () => {
+    const s = deselect(pick(startGame([names]), N(49)))
+    expect(s.selected).toBeNull()
+    expect(allGuesses(s)).toEqual([])
+  })
+})
+
+describe('lastEvent', () => {
+  it('names each kind of change', () => {
+    const s0 = startGame([names])
+    const s1 = pick(s0, N(49))
+    expect(lastEvent(s0, s1)).toEqual({kind: 'pick'})
+    const s2 = pick(s1, M(49))
+    expect(lastEvent(s1, s2)).toEqual({kind: 'match', pairId: 49, combo: 1})
+    const s3 = pick(pick(s2, N(50)), M(50))
+    expect(lastEvent(pick(s2, N(50)), s3)).toEqual({kind: 'match', pairId: 50, combo: 2})
+    const s4 = pick(pick(s3, N(51)), M(52))
+    expect(lastEvent(pick(s3, N(51)), s4)).toEqual({kind: 'wrong', pairIds: [51, 52]})
+    const s5 = reveal(clearWrong(s4), () => 0)
+    expect(lastEvent(clearWrong(s4), s5)).toEqual({kind: 'reveal', pairId: 51})
+    expect(lastEvent(s5, clearReveal(s5))).toBeNull()
+  })
+
+  it('reports setCleared and finished', () => {
+    const one = makeSet('names', [1])
+    const two = makeSet('surahs', [2])
+    const a = pick(startGame([one, two]), N(1))
+    const b = pick(a, M(1))
+    expect(lastEvent(a, b)).toEqual({kind: 'setCleared'})
+    const c = pick(advanceSet(b), N(2))
+    expect(lastEvent(c, pick(c, M(2)))).toEqual({kind: 'finished'})
   })
 })

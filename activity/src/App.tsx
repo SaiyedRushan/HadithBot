@@ -1,10 +1,11 @@
-import {useCallback, useEffect, useState} from 'react'
+import {useCallback, useEffect, useRef, useState} from 'react'
 import {ApiError, getToday, postResult, type BoardRow, type Today} from './api'
 import {OUTSIDE_DISCORD, SLOW_MS, useDiscordSession} from './discord'
-import {allGuesses, scoreGame, type Guess, type Result as GameResult} from './game'
-import {Play} from './Play'
+import {allGuesses, revealedIds, scoreGame, type Guess, type Result as GameResult} from './game'
+import {channelLabel, Play, SoundToggle} from './Play'
 import {Result, type ResultVariant} from './Result'
-import {Button, Notice, Page} from './ui'
+import {unlockAudio} from './sound'
+import {Button, Kbd, MUGUP_DISCORD_URL, Notice, Page, Panel, PoweredByMugup, useFinePointer} from './ui'
 
 type Phase =
   | {name: 'loading'}
@@ -12,7 +13,7 @@ type Phase =
   | {name: 'start'; today: Today}
   | {name: 'playing'; today: Today; startedAt: number}
   | {name: 'posting'; today: Today; guesses: Guess[]; durationMs: number; error: string | null}
-  | {name: 'result'; today: Today; result: GameResult; board: BoardRow[]; variant: ResultVariant}
+  | {name: 'result'; today: Today; result: GameResult; board: BoardRow[]; variant: ResultVariant; revealed: number[] | null}
 
 const readable = (err: unknown, fallback: string) => (err instanceof ApiError ? err.message : fallback)
 
@@ -36,7 +37,7 @@ function Connecting() {
     return () => clearTimeout(t)
   }, [])
   return (
-    <Notice>
+    <Notice busy>
       <p>Signing you in with Discord...</p>
       {slow && <p className="mt-2 text-[#98a2b3]">Still waiting for Discord to answer. In a web browser this can take up to 30 seconds.</p>}
     </Notice>
@@ -51,7 +52,7 @@ function Game({token, openExternal}: {token: string; openExternal: (url: string)
     try {
       const today = await getToday(token)
       if (today.myResult) {
-        setPhase({name: 'result', today, result: today.myResult, board: today.board, variant: 'alreadyPlayed'})
+        setPhase({name: 'result', today, result: today.myResult, board: today.board, variant: 'alreadyPlayed', revealed: null})
       } else if (!isPlayable(today)) {
         setPhase({name: 'loadError', message: "Today's match has no names in it. Close the game and press Play again later."})
       } else {
@@ -72,7 +73,9 @@ function Game({token, openExternal}: {token: string; openExternal: (url: string)
       try {
         if (!today.dayKey) throw new ApiError("This match has no date, so the score can't be posted. Close the game and press Play again.")
         const res = await postResult(token, today.dayKey, guesses, durationMs)
-        setPhase({name: 'result', today, result: res.result, board: res.board, variant: res.recorded ? 'posted' : 'alreadyPlayed'})
+        // recorded: false means an earlier run was returned, so this run's reveals don't apply to it.
+        const revealed = res.recorded ? revealedIds([guesses]) : null
+        setPhase({name: 'result', today, result: res.result, board: res.board, variant: res.recorded ? 'posted' : 'alreadyPlayed', revealed})
       } catch (err) {
         setPhase({name: 'posting', today, guesses, durationMs, error: readable(err, "The game couldn't post your score.")})
       }
@@ -88,7 +91,7 @@ function Game({token, openExternal}: {token: string; openExternal: (url: string)
 
   switch (phase.name) {
     case 'loading':
-      return <Notice>Loading today's match...</Notice>
+      return <Notice busy>Loading today's match...</Notice>
 
     case 'loadError':
       return (
@@ -98,7 +101,16 @@ function Game({token, openExternal}: {token: string; openExternal: (url: string)
       )
 
     case 'start':
-      return <Start today={phase.today} onStart={() => setPhase({name: 'playing', today: phase.today, startedAt: Date.now()})} />
+      return (
+        <Start
+          today={phase.today}
+          onStart={() => {
+            unlockAudio()
+            setPhase({name: 'playing', today: phase.today, startedAt: Date.now()})
+          }}
+          onOpenMugupDiscord={() => openMugup(MUGUP_DISCORD_URL)}
+        />
+      )
 
     case 'playing':
       return (
@@ -107,7 +119,14 @@ function Game({token, openExternal}: {token: string; openExternal: (url: string)
           startedAt={phase.startedAt}
           onFinish={(state, durationMs) => {
             if (phase.today.mode === 'practice') {
-              setPhase({name: 'result', today: phase.today, result: scoreGame(state.sets, state.guesses, durationMs), board: [], variant: 'practice'})
+              setPhase({
+                name: 'result',
+                today: phase.today,
+                result: scoreGame(state.sets, state.guesses, durationMs),
+                board: [],
+                variant: 'practice',
+                revealed: revealedIds(state.guesses),
+              })
             } else {
               void post(phase.today, allGuesses(state), durationMs)
             }
@@ -116,7 +135,7 @@ function Game({token, openExternal}: {token: string; openExternal: (url: string)
       )
 
     case 'posting':
-      if (!phase.error) return <Notice>Posting your score...</Notice>
+      if (!phase.error) return <Notice busy>Posting your score...</Notice>
       return (
         <Notice
           title="Your score wasn't posted yet"
@@ -136,38 +155,64 @@ function Game({token, openExternal}: {token: string; openExternal: (url: string)
           result={phase.result}
           board={phase.board}
           variant={phase.variant}
+          revealed={phase.revealed}
           onOpenMugup={() => openMugup(phase.today.mugupUrl)}
+          onOpenMugupDiscord={() => openMugup(MUGUP_DISCORD_URL)}
           onPracticeAgain={() => void load()}
         />
       )
   }
 }
 
-function Start({today, onStart}: {today: Today; onStart: () => void}) {
+function Start({today, onStart, onOpenMugupDiscord}: {today: Today; onStart: () => void; onOpenMugupDiscord: () => void}) {
   const practice = today.mode === 'practice'
+  const finePointer = useFinePointer()
+  const begin = useRef(onStart)
+  begin.current = onStart
+
+  // Enter starts, unless a different button has focus (the browser presses that one).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter' || e.repeat || e.metaKey || e.ctrlKey || e.altKey) return
+      if (document.activeElement instanceof HTMLButtonElement) return
+      e.preventDefault()
+      begin.current()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  const rules =
+    'Tap a name, then tap its meaning. You get a point for each name you match without a mistake. Showing a pair counts as a mistake.'
+
   return (
-    <Page>
-      <div className="px-0 py-8 text-center sm:py-12">
-        <h1 className="mb-1 text-lg font-bold text-white sm:text-2xl">{today.title}</h1>
-        {today.subtitle && <p className="mb-4 text-[#98a2b3]">{today.subtitle}</p>}
-        <p className="mx-auto mb-[22px] mt-1.5 max-w-[600px] text-[#c9d1dc]">
+    <Page place={practice ? 'Practice' : channelLabel(today)} headerRight={<SoundToggle />}>
+      <Panel className="anim-rise px-5 py-9 text-center sm:px-10 sm:py-12">
+        <h1 className="mb-1.5 text-xl font-bold tracking-tight text-white sm:text-[28px]">{today.title}</h1>
+        {today.subtitle && <p className="mx-auto mb-4 max-w-[600px] text-[#98a2b3]">{today.subtitle}</p>}
+        <div className="mx-auto mb-6 mt-3 flex max-w-[260px] items-center justify-center gap-2" aria-hidden>
+          <span className="flex-1 rounded-lg border-[1.5px] border-name-line bg-name-bg px-2 py-2 text-xs font-semibold text-[#f1f4f8]">A name</span>
+          <span className="text-[#7f8a9a]">+</span>
+          <span className="flex-1 rounded-lg border-[1.5px] border-mean-line bg-mean-bg px-2 py-2 text-xs font-semibold text-[#fbe6cf]">Its meaning</span>
+        </div>
+        <p className="mx-auto mb-7 max-w-[600px] text-[#c9d1dc]">
           {practice ? (
             <>
               There's no daily match in this channel, so this round isn't scored or posted anywhere. Daily matches come with the hadith in channels where a
-              server admin has set up HadithBot.
+              server admin has set up HadithBot. {rules}
             </>
           ) : (
             <>
-              Tap a name, then tap its meaning. You get a point for each name you match without a wrong guess. You have one try today. If two people get the
-              same score, the faster time ranks higher.
+              {rules} You have one try today. If two people get the same score, the faster time ranks higher.
             </>
           )}
         </p>
-        <Button variant="primary" className="px-[22px] py-3 text-base" onClick={onStart}>
+        <Button variant="primary" className="px-6 py-3 text-base" onClick={onStart}>
           {practice ? 'Start a practice round' : 'Start the timer and play'}
+          {finePointer && <Kbd>Enter</Kbd>}
         </Button>
-      </div>
+      </Panel>
+      <PoweredByMugup onOpen={onOpenMugupDiscord} />
     </Page>
   )
 }
-

@@ -22,7 +22,7 @@ MAX_BOARD_ROWS = 10
 EMBED_COLOR = 0xC8883A  # the site's accent colour
 MUGUP_NAMES_URL = "https://mugup.app/decks/101"
 MUGUP_CREDIT = "The matching game comes from MugUp, mugup.app"
-LEGEND = "🟩 right on the first try · 🟥 took more than one try · ⬜ stopped before matching it"
+LEGEND = "🟩 right on the first try · 🟥 took more than one try or was shown · ⬜ stopped before matching it"
 
 # The daily broadcast runs at 6 PM Toronto time for every channel, so a match
 # "day" is the Toronto date of the broadcast that posted it. It stays open

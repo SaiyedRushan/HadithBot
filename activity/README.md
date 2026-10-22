@@ -4,12 +4,22 @@ The game that opens when someone presses **Play today's match** under HadithBot'
 
 It's a static Vite + React app. Everything it knows comes from the bot's API: `POST /api/token`, `GET /api/today` and `POST /api/result`, all relative URLs with a bearer token. The bot recomputes the score from the list of guesses, so the rules in `src/game.ts` have to agree with `score_guesses` in the bot.
 
+The guess log is a list of `[nameId, meaningId]` (one per name and meaning picked together) and `["reveal", pairId]` (one per press of "Show one pair", which matches that pair and counts it as a mistake).
+
 ## Files
 
-- `src/game.ts`: the game rules as pure functions (cards, picks, the guess log, scoring, squares, time formats). Tested in `src/game.test.ts`.
+- `src/game.ts`: the game rules as pure functions (cards, picks, reveals, the guess log, scoring, squares, time formats). Tested in `src/game.test.ts`.
+- `src/nav.ts`: arrow-key movement on the grid and on the two phone columns. Tested in `src/nav.test.ts`.
+- `src/sound.ts`: short sounds made with Web Audio (no audio files). The "Sound: on" setting is kept in localStorage.
+- `src/confetti.ts`: confetti on a finished run, skipped for reduced motion (the system setting or Discord's `reduced_motion=true`).
 - `src/discord.ts`: the Discord sign-in (`ready`, `authorize`, then `POST /api/token`).
 - `src/api.ts`: the API types and calls. Errors come back as `{"error": "..."}` and that sentence is shown to the player.
 - `src/App.tsx`, `src/Play.tsx`, `src/Result.tsx`: the screens. Wording follows `plans/name-match-mockup.html`.
+- `public/`: the HadithBot mark and the MugUp logo, served from the same origin.
+
+## Keyboard
+
+Arrow keys move around the cards, Enter or Space picks, Esc clears the selection, S shuffles, H shows one pair, and Enter on the start screen starts. The hints only show on devices with a mouse or trackpad.
 
 ## Checks
 
