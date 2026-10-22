@@ -113,7 +113,9 @@ def score_guesses(items: dict, guesses: Iterable) -> tuple[int, list[Optional[bo
 
     A guess is ``[name_id, meaning_id]``. The same id is a match. Different ids
     mark both pairs as missed, so neither can score even once matched (MugUp's
-    rule). A pair scores when it was matched and never in a wrong guess.
+    rule). ``["reveal", pair_id]`` is the game's "Show one pair" button: the
+    pair is matched for the player and counts as missed. A pair scores when it
+    was matched and never in a wrong guess or revealed.
 
     Returns ``(score, item_results)`` with one entry per pair in order: True
     (matched, no miss), False (matched after a miss), None (never matched).
@@ -128,6 +130,18 @@ def score_guesses(items: dict, guesses: Iterable) -> tuple[int, list[Optional[bo
         count += 1
         if count > 1000:
             raise InvalidRun("too many guesses")
+        if isinstance(guess, list) and len(guess) == 2 and guess[0] == "reveal":
+            try:
+                pid = int(guess[1])
+            except (TypeError, ValueError):
+                raise InvalidRun(f"malformed reveal {guess!r}") from None
+            if pid not in ids:
+                raise InvalidRun(f"reveal {guess!r} names a pair that isn't in this match")
+            if pid in matched:
+                raise InvalidRun(f"reveal {guess!r} is for a pair already matched")
+            matched.add(pid)
+            missed.add(pid)
+            continue
         try:
             a, b = guess
             a, b = int(a), int(b)

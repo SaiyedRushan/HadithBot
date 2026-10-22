@@ -67,6 +67,19 @@ def test_stopping_early_leaves_unmatched_pairs_empty():
     assert results == [True] + [None] * 9
 
 
+def test_showing_a_pair_matches_it_and_costs_it():
+    items = items_for(58)
+    guesses = [["reveal", 52]] + [[i, i] for i in range(49, 59) if i != 52]
+    score, results = nm.score_guesses(items, guesses)
+    assert score == 9 and results[52 - 49] is False
+
+
+def test_showing_a_matched_pair_or_a_stranger_is_rejected():
+    for bad in ([[49, 49], ["reveal", 49]], [["reveal", 1]], [["reveal", "x"]]):
+        with pytest.raises(nm.InvalidRun):
+            nm.score_guesses(items_for(58), bad)
+
+
 def test_a_matched_card_cannot_be_guessed_again():
     with pytest.raises(nm.InvalidRun):
         nm.score_guesses(items_for(58), [[49, 49], [49, 50]])
