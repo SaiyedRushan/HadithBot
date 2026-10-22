@@ -310,6 +310,18 @@ def get_random_hadith():
     return res.data[0] if res.data else None
 
 
+def get_hadith_by_id(hadith_id: int) -> Optional[dict]:
+    """One hadith with its book and chapter, for buttons on already-sent messages."""
+    res = (
+        supabase.table("hadiths")
+        .select("*, chapters(*), books_metadata(*)")
+        .eq("id", hadith_id)
+        .limit(1)
+        .execute()
+    )
+    return cast(dict, res.data[0]) if res.data else None
+
+
 def get_hadith_in_same_chapter_and_book(
     hadith_no: int, book_no: int, chapter_no: int, count: int = 1
 ):

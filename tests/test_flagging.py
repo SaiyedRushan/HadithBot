@@ -43,8 +43,8 @@ def test_view_has_lookup_and_flag_buttons():
     view = build_hadith_view(make_hadith())
     assert view is not None
     labels = [b.label for b in buttons(view)]
-    assert "🔎 Look up on Sunnah.com" in labels
-    assert "Flag an issue" in labels
+    assert "Sunnah.com" in labels
+    assert "Report" in labels
 
 
 def test_flag_button_carries_the_hadith_id():
@@ -67,7 +67,7 @@ def test_flag_button_present_even_without_a_lookup_url():
     view = build_hadith_view(hadith)
     assert view is not None
     ids = [b.custom_id for b in buttons(view) if b.custom_id]
-    assert ids == ["flag_hadith:1234"]
+    assert "flag_hadith:1234" in ids
 
 
 def test_no_view_when_there_is_nothing_to_attach():

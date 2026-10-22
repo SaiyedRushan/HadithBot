@@ -1,4 +1,4 @@
-"""Discord message components for hadith messages: the lookup link and flag button.
+"""Discord message components for hadith messages: lookup link, explain and flag buttons.
 
 Kept out of bot.py so the pieces worth testing can be imported without a database.
 ``db`` raises at import time when SUPABASE_URL is unset, and bot.py imports it at
@@ -12,7 +12,7 @@ from typing import Optional
 
 import discord
 
-from utils import sunnah_url
+from utils import compose_explain_reply, sunnah_url
 
 logger = logging.getLogger("HadithBot")
 
@@ -83,7 +83,7 @@ class FlagHadithButton(
         self.hadith_id = hadith_id
         super().__init__(
             discord.ui.Button(
-                label="Flag an issue",
+                label="Report",
                 emoji="🚩",
                 style=discord.ButtonStyle.secondary,
                 custom_id=f"flag_hadith:{hadith_id}",
@@ -98,12 +98,60 @@ class FlagHadithButton(
         await interaction.response.send_modal(FlagReasonModal(self.hadith_id))
 
 
-def build_hadith_view(hadith: dict) -> Optional[discord.ui.View]:
-    """The buttons under a hadith: look it up, and flag it if it looks wrong.
+class ExplainHadithButton(
+    discord.ui.DynamicItem[discord.ui.Button],
+    template=r"explain_hadith:(?P<hadith_id>\d+)",
+):
+    """The 💬 Ask ChatGPT button: replies privately with a ChatGPT link that has the whole hadith typed in.
 
-    timeout=None keeps the view alive indefinitely; the flag button carries its
-    hadith id in the custom_id so clicks still resolve after a restart (see
-    FlagHadithButton). The link button never dispatches an interaction at all,
+    Not a link button: Discord caps a button's URL at 512 chars, which fits only
+    ~400 chars of hadith. A link inside an embed can be ~4000. The hadith is
+    re-read from the database by id so clicks on old messages still work.
+    """
+
+    def __init__(self, hadith_id: int):
+        self.hadith_id = hadith_id
+        super().__init__(
+            discord.ui.Button(
+                label="Ask ChatGPT",
+                emoji="💬",
+                style=discord.ButtonStyle.secondary,
+                custom_id=f"explain_hadith:{hadith_id}",
+            )
+        )
+
+    @classmethod
+    async def from_custom_id(cls, interaction: discord.Interaction, item, match, /):
+        return cls(int(match["hadith_id"]))
+
+    async def callback(self, interaction: discord.Interaction):
+        from db import get_hadith_by_id  # imported here: see module docstring
+
+        try:
+            hadith = get_hadith_by_id(self.hadith_id)
+        except Exception:
+            logger.error(
+                f"Failed to load hadith {self.hadith_id} to explain", exc_info=True
+            )
+            hadith = None
+        if not hadith:
+            await interaction.response.send_message(
+                "Couldn't load this hadith just now. Please try again in a minute.",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.send_message(
+            embed=discord.Embed(description=compose_explain_reply(hadith)),
+            ephemeral=True,
+        )
+
+
+def build_hadith_view(hadith: dict) -> Optional[discord.ui.View]:
+    """The buttons under a hadith: look it up, ask ChatGPT about it, flag it.
+
+    timeout=None keeps the view alive indefinitely; the explain and flag buttons
+    carry the hadith id in their custom_id so clicks still resolve after a
+    restart (see FlagHadithButton). The link button never dispatches an interaction at all,
     so it needs no handling either way.
 
     Returns None only when there is nothing to attach -- a hadith with no usable
@@ -117,11 +165,13 @@ def build_hadith_view(hadith: dict) -> Optional[discord.ui.View]:
     if url:
         view.add_item(
             discord.ui.Button(
-                label="🔎 Look up on Sunnah.com",
+                label="Sunnah.com",
+                emoji="🔎",
                 style=discord.ButtonStyle.link,
                 url=url,
             )
         )
     if hadith_id is not None:
+        view.add_item(ExplainHadithButton(int(hadith_id)))
         view.add_item(FlagHadithButton(int(hadith_id)))
     return view

@@ -1,6 +1,6 @@
 from typing import Dict, Optional
 from dataclasses import dataclass
-from urllib.parse import quote
+from urllib.parse import quote, urlencode
 import re
 
 _SUNNAH_SEARCH = "https://sunnah.com/search?q="
@@ -50,6 +50,68 @@ def sunnah_url(hadith) -> Optional[str]:
     if not query:
         return None
     return f"{_SUNNAH_SEARCH}{quote(query)}"
+
+
+_CHATGPT = "https://chatgpt.com/?"
+# The explain link goes in an embed description (4096 chars), not on a link
+# button: a button URL caps at 512, which fits barely 400 chars of hadith.
+# This leaves room for the sentences around the link.
+_EXPLAIN_URL_BUDGET = 3700
+
+
+def chatgpt_explain_url(hadith: dict) -> tuple[str, bool]:
+    """A chatgpt.com link with a request to explain this hadith already typed in.
+
+    Returns the URL and whether the hadith text had to be cut short to fit. The
+    book and chapter go in the prompt because ChatGPT can't look the hadith up by
+    number (``id_in_book`` doesn't match published numbering, see sunnah_url).
+    """
+    book = (hadith.get("books_metadata") or {}).get("english_title") or ""
+    chapter = (hadith.get("chapters") or {}).get("english") or ""
+    source = f" from {book}" if book else ""
+    if chapter:
+        source += f', chapter "{chapter}"'
+    head = (
+        f"Please explain this hadith{source}. What does it mean, and what "
+        "lessons do scholars take from it?\n\n"
+    )
+    body = " ".join(
+        f"{hadith.get('english_narrator') or ''} {hadith.get('english_text') or ''}".split()
+    )
+
+    def build(text: str) -> str:
+        return _CHATGPT + urlencode({"q": head + text})
+
+    url = build(body)
+    if len(url) <= _EXPLAIN_URL_BUDGET:
+        return url, False
+    # Too long: drop whole words from the end until it fits.
+    words = body.split(" ")
+    lo, hi = 0, len(words)
+    while lo < hi:
+        mid = (lo + hi + 1) // 2
+        if len(build(" ".join(words[:mid]) + " …")) <= _EXPLAIN_URL_BUDGET:
+            lo = mid
+        else:
+            hi = mid - 1
+    return build(" ".join(words[:lo]) + " …"), True
+
+
+def compose_explain_reply(hadith: dict) -> str:
+    """The private reply to "Ask ChatGPT to explain": a link plus what to expect."""
+    url, cut = chatgpt_explain_url(hadith)
+    lines = [f"**[Open ChatGPT with this hadith]({url})**"]
+    lines.append("It opens in your browser with the question already typed in.")
+    if cut:
+        lines.append(
+            "This hadith is too long to fit in one link, so ChatGPT gets the "
+            "first part of it."
+        )
+    lines.append(
+        "ChatGPT is not a scholar and can get things wrong. Check anything "
+        "important with someone knowledgeable."
+    )
+    return "\n".join(lines)
 
 
 _DM_LIMIT = 2000  # Discord's per-message character cap

@@ -29,7 +29,7 @@ from db import (
     resolve_hadith_flags,
     save_channel_state,
 )
-from views import FlagHadithButton, build_hadith_view
+from views import ExplainHadithButton, FlagHadithButton, build_hadith_view
 from utils import (
     Name,
     compose_flag_reply,
@@ -64,9 +64,9 @@ class HadithBot(commands.Bot):
     async def setup_hook(self):
         """Initialize bot data and sync commands"""
         await self.load_data()
-        # Registered before anything is sent so flag clicks on messages from a
+        # Registered before anything is sent so button clicks on messages from a
         # previous run are still routed to a handler after a restart.
-        self.add_dynamic_items(FlagHadithButton)
+        self.add_dynamic_items(ExplainHadithButton, FlagHadithButton)
         await self.tree.sync()
         self.send_daily_message.start()
 
