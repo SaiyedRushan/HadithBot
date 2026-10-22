@@ -1892,6 +1892,170 @@
         transform: scale(0.94);
       }
 
+      /* ---------- the daily name match ---------- */
+      .match-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+        gap: 44px;
+        align-items: center;
+      }
+      @media (max-width: 880px) {
+        .match-layout {
+          grid-template-columns: 1fr;
+          gap: 30px;
+        }
+      }
+      .match-points {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 22px;
+      }
+      .match-points li {
+        position: relative;
+        padding-left: 30px;
+        margin-bottom: 12px;
+      }
+      .match-points li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.45em;
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+        background: #2f9e63;
+      }
+      .match-points li:nth-child(2)::before {
+        background: #c46a2b;
+      }
+      .match-points li:nth-child(3)::before {
+        background: #2f6aa8;
+      }
+      .match-note {
+        font-size: 0.95rem;
+        color: var(--ink-soft);
+        border-left: 3px solid var(--accent);
+        padding: 4px 0 4px 14px;
+        margin: 0 0 18px;
+      }
+      .match-mugup {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        background: var(--cream-card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 16px 18px;
+        box-shadow: var(--shadow);
+      }
+      .match-mugup img {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        flex: none;
+      }
+      .match-mugup p {
+        margin: 0 0 6px;
+        font-size: 0.95rem;
+      }
+      .match-mugup a {
+        color: var(--accent-ink);
+        font-weight: 600;
+      }
+      /* The Discord card and a corner of the game, drawn in HTML so it stays
+         sharp and needs no screenshot kept in sync with the real thing. */
+      .match-demo {
+        background: #313338;
+        color: #dbdee1;
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.55);
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+      .match-embed {
+        background: #2b2d31;
+        border-left: 4px solid #c8883a;
+        border-radius: 4px;
+        padding: 12px 14px;
+      }
+      .match-embed b {
+        color: #f2f3f5;
+      }
+      .match-embed .t {
+        font-weight: 700;
+        color: #f2f3f5;
+        margin-bottom: 6px;
+      }
+      .match-embed .sq {
+        letter-spacing: 1px;
+        font-size: 0.95rem;
+      }
+      .match-embed .row {
+        margin-top: 10px;
+      }
+      .match-embed .ment {
+        background: rgba(88, 101, 242, 0.3);
+        color: #c9cdfb;
+        border-radius: 3px;
+        padding: 0 2px;
+      }
+      .match-btns {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+      }
+      .match-btns span {
+        background: #5865f2;
+        color: #fff;
+        border-radius: 4px;
+        padding: 6px 12px;
+        font-weight: 500;
+        font-size: 0.82rem;
+      }
+      .match-btns span.grey {
+        background: #4e5058;
+      }
+      .match-cards {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-top: 14px;
+        background: #0d131c;
+        border-radius: 10px;
+        padding: 12px;
+      }
+      .match-cards div {
+        border: 1.5px solid #2f6aa8;
+        background: #0f1e30;
+        color: #f1f4f8;
+        border-radius: 8px;
+        min-height: 52px;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        padding: 6px;
+        font-size: 0.74rem;
+        font-weight: 600;
+      }
+      .match-cards .m {
+        border-color: #c46a2b;
+        background: #26190f;
+        color: #fbe6cf;
+      }
+      .match-cards .ok {
+        border-color: #2f9e63;
+        background: #0f2a1d;
+        color: #9be3bb;
+      }
+      .match-cards .ar {
+        display: block;
+        font-weight: 500;
+        font-size: 0.85rem;
+        font-family: "Geeza Pro", "Noto Naskh Arabic", serif;
+      }
+
       /* ---------- scroll reveal ---------- */
       /* Hidden up front only when JS is running (html.js), so the page still
          reads fine if the reveal script never gets to run. */
@@ -2363,12 +2527,101 @@
         </div>
       </section>
 
+      <!-- DAILY NAME MATCH -->
+      <!-- The game itself lives in activity/ and runs inside Discord. Its
+           claims about MugUp come from MugUp's product-facts.md: keep them in
+           step with that file, not with what sounds good. -->
+      <section id="name-match" class="alt">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="kicker">New: a daily game</span>
+            <h2>Match the names, then see how your server did</h2>
+            <p>
+              The last message of each day's batch has a Play button. It opens a
+              short game right inside Discord: match 10 names of Allah to their
+              meanings.
+            </p>
+          </div>
+          <div class="match-layout">
+            <div>
+              <ul class="match-points">
+                <li>
+                  You get today's name and the 9 before it, so the game goes
+                  over what your channel has already been sent.
+                </li>
+                <li>
+                  Everyone in the server gets the same 10 and one try a day. A
+                  name matched without a mistake is worth a point, and if two
+                  people tie, the faster time ranks higher.
+                </li>
+                <li>
+                  Scores appear on the message as people finish. When the next
+                  day's batch goes out, yesterday's message shows the final
+                  results with medals.
+                </li>
+              </ul>
+              <p class="match-note">
+                It's on by default. To turn it off in a channel, run
+                <span class="inline-code">/bismillah setup name_match:False</span>.
+              </p>
+              <div class="match-mugup">
+                <img src="img/mugup-logo.png" alt="MugUp logo" width="44" height="44" loading="lazy" />
+                <div>
+                  <p>
+                    <b>The game is built on MugUp.</b> MugUp's own Discord app can
+                    run a daily challenge in any channel from any public deck, with
+                    a leaderboard. Link a free MugUp account and your runs go on a
+                    spaced review schedule, so what you get wrong comes back sooner.
+                  </p>
+                  <a href="https://mugup.app/discord" target="_blank" rel="noopener">See MugUp on Discord →</a>
+                </div>
+              </div>
+            </div>
+
+            <figure class="shot" style="margin: 0">
+              <div class="match-demo" role="img" aria-label="HadithBot's name match message in Discord, with two scores and a Play button, and part of the game's grid of name and meaning cards.">
+                <div class="match-embed">
+                  <div class="t">Today's name match: 10 names of Allah</div>
+                  <div>
+                    Match today's name, Al-Mubdi, and the 9 names before it to
+                    their meanings.
+                  </div>
+                  <div class="row"><b>Rushan</b> and <b>Saif</b> played</div>
+                  <div class="row">
+                    <b>10/10</b> · 48s · <span class="ment">@Rushan</span><br />
+                    <span class="sq">🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩</span>
+                  </div>
+                  <div class="row">
+                    <b>9/10</b> · 1m 05s · <span class="ment">@Saif</span><br />
+                    <span class="sq">🟩🟩🟩🟥🟩🟩🟩🟩🟩🟩</span>
+                  </div>
+                </div>
+                <div class="match-btns">
+                  <span>Play today's match</span>
+                  <span class="grey">All 99 names on MugUp ↗</span>
+                </div>
+                <div class="match-cards" aria-hidden="true">
+                  <div>58. Al-Mubdi<span class="ar">الْمُبْدِئُ</span></div>
+                  <div class="ok">The Witness</div>
+                  <div class="m">The Originator</div>
+                  <div>52. Al-Wakeel<span class="ar">الْوَكِيلُ</span></div>
+                  <div class="m">The All-Strong</div>
+                  <div class="ok">50. Ash-Shaheed</div>
+                  <div>53. Al-Qawiyy<span class="ar">الْقَوِيُّ</span></div>
+                  <div class="m">The Trustee and Disposer of Affairs</div>
+                </div>
+              </div>
+            </figure>
+          </div>
+        </div>
+      </section>
+
       <!-- COMMUNITIES -->
       <!-- The two blocks below are generated by update_site.py: the counts from
            the live database, the wall from docs/data/communities.json. Edit
            those, then run `make site` -- anything typed between the markers is
            overwritten. -->
-      <section id="communities" class="alt">
+      <section id="communities">
         <div class="wrap">
           <div class="section-head">
             <span class="kicker">Where it's running</span>
@@ -2421,7 +2674,7 @@
       </section>
 
       <!-- ADD IT -->
-      <section id="add">
+      <section id="add" class="alt">
         <div class="wrap">
           <div class="section-head">
             <span class="kicker">Get started</span>
@@ -2471,7 +2724,7 @@
       </section>
 
       <!-- CONFIGURE -->
-      <section id="configure" class="alt">
+      <section id="configure">
         <div class="wrap">
           <div class="section-head">
             <span class="kicker">Make it yours</span>
@@ -2524,6 +2777,10 @@
                 <li>
                   <b>start_name</b>: begin the names from a specific number
                 </li>
+                <li>
+                  <b>name_match</b>: the daily game after the hadith, on by
+                  default (<a href="#name-match">what it is</a>)
+                </li>
               </ul>
             </div>
 
@@ -2567,7 +2824,7 @@
       </section>
 
       <!-- COMMANDS -->
-      <section id="commands">
+      <section id="commands" class="alt">
         <div class="wrap">
           <div class="section-head">
             <span class="kicker">Reference</span>
@@ -2664,7 +2921,7 @@
       </section>
 
       <!-- FAQ -->
-      <section id="faq" class="alt">
+      <section id="faq">
         <div class="wrap">
           <div class="section-head">
             <span class="kicker">Good to know</span>
@@ -2735,7 +2992,7 @@
       </section>
 
       <!-- SISTER APPS -->
-      <section id="more-apps">
+      <section id="more-apps" class="alt">
         <div class="wrap">
           <div class="section-head">
             <span class="kicker">More apps</span>
@@ -2855,7 +3112,7 @@
            privacy policy says so — a hosted form would make both untrue. The
            address is assembled in JS below so it isn't sitting in the markup
            for scrapers. -->
-      <section id="contact" class="alt">
+      <section id="contact">
         <div class="wrap">
           <div class="section-head">
             <span class="kicker">Get in touch</span>
