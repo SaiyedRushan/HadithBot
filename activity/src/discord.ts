@@ -50,6 +50,7 @@ function report(reason: string, error?: unknown) {
     platform: params.get('platform'),
     referrer: document.referrer ? new URL(document.referrer).origin : '',
     framed: window.parent !== window,
+    parentOrigin: parentOrigin(),
     opener: Boolean(window.parent.opener),
     origins: [...seenOrigins].join(','),
     ua: navigator.userAgent.slice(0, 160),
@@ -65,6 +66,32 @@ function report(reason: string, error?: unknown) {
 }
 
 export const OUTSIDE_DISCORD = "Open this from the Play button under HadithBot's daily name match in Discord."
+
+/** The origin of the window around the game, or null when the browser won't say (Discord itself). */
+function parentOrigin(): string | null {
+  try {
+    return window.parent !== window ? window.parent.location.origin : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Discord in a web browser now wraps the game in a page of its own on the game's address
+ * (`<app id>.discordsays.com`, with `discord_shim` in the URL), which passes messages on to
+ * discord.com. The SDK aims its first message at `document.referrer`, which is still
+ * discord.com, so the browser drops it at the wrapper and Discord never answers. When the
+ * window around us is on our own origin, aim at that instead and send the first message again.
+ * The desktop and phone apps have no wrapper, so this does nothing there.
+ */
+function aimAtWrapper(sdk: DiscordSDK) {
+  const origin = parentOrigin()
+  if (origin === null || origin !== window.location.origin) return
+  const raw = sdk as unknown as {sourceOrigin: string; handshake: () => void}
+  if (raw.sourceOrigin === origin) return
+  raw.sourceOrigin = origin
+  raw.handshake()
+}
 
 class OutsideDiscord extends Error {
   constructor() {
@@ -86,6 +113,7 @@ async function connect(): Promise<Session> {
     report('no-launch-params', err)
     return {status: 'outside'}
   }
+  aimAtWrapper(sdk)
 
   try {
     await Promise.race([
