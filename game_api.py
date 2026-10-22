@@ -167,6 +167,7 @@ class GameApi:
         # Every sign-in arrives from Discord's proxy by way of Vercel, so there's
         # no per-person address to limit by. This only caps a flood.
         self.signin_limit = RateLimit(300, 60)
+        self.log_limit = RateLimit(60, 60)
         self._pending_edits: set[tuple[str, str]] = set()
 
     def routes(self) -> list[web.RouteDef]:
@@ -174,6 +175,7 @@ class GameApi:
             web.post("/api/token", self.token),
             web.get("/api/today", self.today),
             web.post("/api/result", self.result),
+            web.post("/api/client-log", self.client_log),
         ]
 
     # --- helpers ---------------------------------------------------------
@@ -274,6 +276,20 @@ class GameApi:
         return web.json_response(
             {"token": token, "player": {"id": claims["uid"], "displayName": claims["name"]}}
         )
+
+    async def client_log(self, request: web.Request) -> web.Response:
+        """Why a game couldn't start on someone's screen (activity/src/discord.ts).
+
+        Unauthenticated, because it reports failures from before sign-in, so it
+        only ever writes a short line to the log.
+        """
+        if self.log_limit.allow("all"):
+            try:
+                text = (await request.text())[:600]
+            except Exception:
+                text = "<unreadable>"
+            logger.warning(f"Name match game couldn't start: {text}")
+        return web.Response(status=204)
 
     async def today(self, request: web.Request) -> web.Response:
         claims = self._claims(request)

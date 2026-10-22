@@ -266,3 +266,14 @@ def test_name_match_channels_gate(monkeypatch):
     monkeypatch.setenv("NAME_MATCH_CHANNELS", "*")
     assert game_api.name_match_on({"channel_id": "3"})
     assert not game_api.name_match_on({"channel_id": "3", "name_match_enabled": False})
+
+
+def test_client_log_accepts_a_report_without_sign_in(caplog):
+    async def scenario(client):
+        r = await client.post("/api/client-log", data='{"reason":"ready-timeout"}')
+        return r.status
+
+    with caplog.at_level("WARNING", logger="HadithBot"):
+        status, _ = serve(FakeStore(), scenario)
+    assert status == 204
+    assert "ready-timeout" in caplog.text

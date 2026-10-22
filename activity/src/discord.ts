@@ -24,13 +24,53 @@ export type Session =
 
 /**
  * Opened in a normal browser tab, ready() posts to a parent window that isn't there and never
- * settles. Five seconds is plenty inside Discord.
+ * settles. The Discord desktop app answers in well under a second, but Discord in a web browser
+ * can take longer, so the game waits this long before giving up. The screen says it's still
+ * waiting after SLOW_MS.
  */
-const READY_TIMEOUT_MS = 5_000
+const READY_TIMEOUT_MS = 30_000
+export const SLOW_MS = 5_000
+
+/** Origins of the window messages the page received, for the failure report. */
+const seenOrigins = new Set<string>()
+window.addEventListener('message', (e) => {
+  if (seenOrigins.size < 8) seenOrigins.add(e.origin)
+})
+
+/**
+ * Tell the bot why the game couldn't start, so a failure on someone else's screen shows up in
+ * the bot's logs. Best effort: nothing on screen depends on it.
+ */
+function report(reason: string, error?: unknown) {
+  const params = new URLSearchParams(window.location.search)
+  const detail = {
+    reason,
+    error: error instanceof Error ? error.message : error ? String(error) : null,
+    params: [...params.keys()].join(','),
+    platform: params.get('platform'),
+    referrer: document.referrer ? new URL(document.referrer).origin : '',
+    framed: window.parent !== window,
+    opener: Boolean(window.parent.opener),
+    origins: [...seenOrigins].join(','),
+    ua: navigator.userAgent.slice(0, 160),
+  }
+  try {
+    const body = JSON.stringify(detail)
+    if (!navigator.sendBeacon?.('/api/client-log', new Blob([body], {type: 'application/json'}))) {
+      void fetch('/api/client-log', {method: 'POST', body, headers: {'Content-Type': 'application/json'}, keepalive: true})
+    }
+  } catch {
+    // reporting must never break the screen
+  }
+}
 
 export const OUTSIDE_DISCORD = "Open this from the Play button under HadithBot's daily name match in Discord."
 
-class OutsideDiscord extends Error {}
+class OutsideDiscord extends Error {
+  constructor() {
+    super(`no answer from Discord after ${READY_TIMEOUT_MS / 1000}s`)
+  }
+}
 
 async function connect(): Promise<Session> {
   const clientId = import.meta.env.VITE_DISCORD_CLIENT_ID as string | undefined
@@ -42,7 +82,8 @@ async function connect(): Promise<Session> {
   try {
     // Throws straight away when the page wasn't opened by Discord (no frame_id in the URL).
     sdk = new DiscordSDK(clientId)
-  } catch {
+  } catch (err) {
+    report('no-launch-params', err)
     return {status: 'outside'}
   }
 
@@ -51,8 +92,12 @@ async function connect(): Promise<Session> {
       sdk.ready(),
       new Promise((_resolve, reject) => setTimeout(() => reject(new OutsideDiscord()), READY_TIMEOUT_MS)),
     ])
-  } catch {
-    return {status: 'outside'}
+  } catch (err) {
+    report('ready-timeout', err)
+    return {
+      status: 'error',
+      message: "Discord didn't answer the game. Close the game and press Play again. If it keeps happening in a web browser, try the Discord app.",
+    }
   }
 
   let code: string
@@ -64,7 +109,8 @@ async function connect(): Promise<Session> {
       prompt: 'none',
       scope: ['identify'],
     }))
-  } catch {
+  } catch (err) {
+    report('authorize-failed', err)
     return {
       status: 'error',
       message: "Discord didn't sign you in, so the game can't tell who's playing. Close the game, press Play again, and choose Authorize when Discord asks.",

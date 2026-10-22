@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useState} from 'react'
 import {ApiError, getToday, postResult, type BoardRow, type Today} from './api'
-import {OUTSIDE_DISCORD, useDiscordSession} from './discord'
+import {OUTSIDE_DISCORD, SLOW_MS, useDiscordSession} from './discord'
 import {allGuesses, scoreGame, type Guess, type Result as GameResult} from './game'
 import {Play} from './Play'
 import {Result, type ResultVariant} from './Result'
@@ -23,10 +23,24 @@ function isPlayable(today: Today) {
 export default function App() {
   const session = useDiscordSession()
 
-  if (session.status === 'connecting') return <Notice>Signing you in with Discord...</Notice>
+  if (session.status === 'connecting') return <Connecting />
   if (session.status === 'outside') return <Notice title="HadithBot name match">{OUTSIDE_DISCORD}</Notice>
   if (session.status === 'error') return <Notice title="The game couldn't start">{session.message}</Notice>
   return <Game token={session.token} openExternal={session.openExternal} />
+}
+
+function Connecting() {
+  const [slow, setSlow] = useState(false)
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), SLOW_MS)
+    return () => clearTimeout(t)
+  }, [])
+  return (
+    <Notice>
+      <p>Signing you in with Discord...</p>
+      {slow && <p className="mt-2 text-[#98a2b3]">Still waiting for Discord to answer. In a web browser this can take up to 30 seconds.</p>}
+    </Notice>
+  )
 }
 
 function Game({token, openExternal}: {token: string; openExternal: (url: string) => Promise<void>}) {
