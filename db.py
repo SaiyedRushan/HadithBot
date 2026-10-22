@@ -34,6 +34,7 @@ def save_channel_state(
     guild_name: Optional[str] = None,
     guild_member_count: Optional[int] = None,
     mark_sent: bool = False,
+    name_match_enabled: Optional[bool] = None,
 ):
     record = {
         "channel_id": channel_id,
@@ -50,6 +51,8 @@ def save_channel_state(
         record["hadiths_per_day"] = hadiths_per_day
     if names_per_day is not None:
         record["names_per_day"] = names_per_day
+    if name_match_enabled is not None:
+        record["name_match_enabled"] = name_match_enabled
     # Human-readable labels so rows are identifiable at a glance. Refreshed on
     # every save (server/channel renames happen), hence not gated behind "new only".
     if channel_name is not None:
@@ -476,3 +479,156 @@ def find_valid_hadith_position(hadith_no: int, book_no: int, chapter_no: int):
     hadith_no = 1
 
     return hadith_no, book_no, chapter_no
+
+
+# --- daily name match (see name_match.py) ------------------------------------
+
+
+def upsert_game_day(
+    channel_id: str, day_key: str, guild_id: Optional[str], items: dict
+) -> dict:
+    """Today's match for a channel, created once.
+
+    A second broadcast on the same day (/bismillah send-now) keeps the match
+    people may already have played rather than replacing it.
+    """
+    existing = get_game_day(channel_id, day_key)
+    if existing:
+        return existing
+    res = (
+        supabase.table("game_days")
+        .insert(
+            {
+                "channel_id": channel_id,
+                "day_key": day_key,
+                "guild_id": guild_id,
+                "items": items,
+            }
+        )
+        .execute()
+    )
+    return cast(dict, res.data[0])
+
+
+def get_game_day(channel_id: str, day_key: str) -> Optional[dict]:
+    res = (
+        supabase.table("game_days")
+        .select("*")
+        .eq("channel_id", channel_id)
+        .eq("day_key", day_key)
+        .limit(1)
+        .execute()
+    )
+    return cast(dict, res.data[0]) if res.data else None
+
+
+def get_open_game_day(channel_id: str) -> Optional[dict]:
+    """The newest match in a channel that hasn't been closed yet."""
+    res = (
+        supabase.table("game_days")
+        .select("*")
+        .eq("channel_id", channel_id)
+        .is_("closed_at", "null")
+        .order("day_key", desc=True)
+        .limit(1)
+        .execute()
+    )
+    return cast(dict, res.data[0]) if res.data else None
+
+
+def get_open_game_days_before(channel_id: str, day_key: str) -> list[dict]:
+    """Earlier matches in a channel that still need their final board."""
+    return cast(
+        list[dict],
+        supabase.table("game_days")
+        .select("*")
+        .eq("channel_id", channel_id)
+        .lt("day_key", day_key)
+        .is_("closed_at", "null")
+        .execute()
+        .data,
+    )
+
+
+def set_game_day_message(channel_id: str, day_key: str, message_id: str) -> None:
+    supabase.table("game_days").update({"message_id": message_id}).eq(
+        "channel_id", channel_id
+    ).eq("day_key", day_key).execute()
+
+
+def close_game_day(channel_id: str, day_key: str) -> None:
+    supabase.table("game_days").update(
+        {"closed_at": datetime.now(timezone.utc).isoformat()}
+    ).eq("channel_id", channel_id).eq("day_key", day_key).execute()
+
+
+def get_game_results(channel_id: str, day_key: str) -> list[dict]:
+    return cast(
+        list[dict],
+        supabase.table("game_results")
+        .select(
+            "discord_user_id,display_name,score,total,item_results,duration_ms,created_at"
+        )
+        .eq("channel_id", channel_id)
+        .eq("day_key", day_key)
+        .execute()
+        .data,
+    )
+
+
+def get_game_result(channel_id: str, day_key: str, user_id: str) -> Optional[dict]:
+    res = (
+        supabase.table("game_results")
+        .select(
+            "discord_user_id,display_name,score,total,item_results,duration_ms,created_at"
+        )
+        .eq("channel_id", channel_id)
+        .eq("day_key", day_key)
+        .eq("discord_user_id", user_id)
+        .limit(1)
+        .execute()
+    )
+    return cast(dict, res.data[0]) if res.data else None
+
+
+def insert_game_result(record: dict) -> tuple[dict, bool]:
+    """Save a run. Returns (row, recorded); recorded is False when this player
+    had already played this match, and the row is their first run."""
+    try:
+        res = supabase.table("game_results").insert(record).execute()
+        return cast(dict, res.data[0]), True
+    except Exception as e:
+        # 23505: the unique (channel, day, player) constraint. One try each.
+        if "23505" not in str(e) and "duplicate key" not in str(e):
+            raise
+    existing = get_game_result(
+        record["channel_id"], record["day_key"], record["discord_user_id"]
+    )
+    if existing is None:
+        raise RuntimeError("duplicate result reported but none found")
+    return existing, False
+
+
+def mark_game_day_played(channel_id: str, day_key: str) -> None:
+    supabase.table("game_days").update({"played": True}).eq(
+        "channel_id", channel_id
+    ).eq("day_key", day_key).execute()
+
+
+def get_played_day_keys(channel_id: str, limit: int = 400) -> list[str]:
+    """Day keys on which anybody in this channel played, newest first.
+
+    Read from game_days.played rather than the results, so a busy day with 40
+    players counts once and the window still reaches back far enough for the
+    streak."""
+    rows = (
+        supabase.table("game_days")
+        .select("day_key")
+        .eq("channel_id", channel_id)
+        .eq("played", True)
+        .order("day_key", desc=True)
+        .limit(limit)
+        .execute()
+        .data
+    )
+    return [str(r["day_key"]) for r in cast(list[dict], rows)]

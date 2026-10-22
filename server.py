@@ -63,6 +63,10 @@ def make_app(bot: discord.Client) -> web.Application:
     app[BOT_KEY] = bot
     app.router.add_get("/", home)
     app.router.add_get("/health", health)
+    # The name match game's API, when its secrets are set (see game_api.py).
+    from game_api import game_routes_from_env
+
+    app.add_routes(game_routes_from_env(bot))
     return app
 
 

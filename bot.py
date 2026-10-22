@@ -29,7 +29,17 @@ from db import (
     resolve_hadith_flags,
     save_channel_state,
 )
-from views import ExplainHadithButton, FlagHadithButton, build_hadith_view
+from views import (
+    ExplainHadithButton,
+    FlagHadithButton,
+    PlayNameMatchButton,
+    build_hadith_view,
+    build_name_match_view,
+)
+import db
+import name_match
+from command_sync import sync_commands
+from game_api import edit_card, name_match_on
 from utils import (
     Name,
     compose_flag_reply,
@@ -71,8 +81,10 @@ class HadithBot(commands.Bot):
         await self.load_data()
         # Registered before anything is sent so button clicks on messages from a
         # previous run are still routed to a handler after a restart.
-        self.add_dynamic_items(ExplainHadithButton, FlagHadithButton)
-        await self.tree.sync()
+        self.add_dynamic_items(ExplainHadithButton, FlagHadithButton, PlayNameMatchButton)
+        # Not tree.sync(): that would delete the Activity's Entry Point command,
+        # which Discord refuses, and the bot would fail to start. See command_sync.
+        await sync_commands(self)
         self.send_daily_message.start()
 
     async def load_data(self):
@@ -252,6 +264,17 @@ class HadithBot(commands.Bot):
 
                     delivered += 1
                     self._alerted_channels.discard(str(channel_id))
+
+                    if name_match_on(channel_row) and names:
+                        # Its own try: the hadith is already out and saved, so a
+                        # failed card must not count as a failed delivery.
+                        try:
+                            await self.post_name_match(channel, names)
+                        except Exception:
+                            self.logger.error(
+                                f"Failed to post the name match in {channel_id}",
+                                exc_info=True,
+                            )
                     self.logger.info(
                         f"Successfully sent hadith up to book {last_book_no}, chapter {last_chapter_no}, hadith {last['id_in_book']}"
                     )
@@ -489,6 +512,32 @@ class HadithBot(commands.Bot):
         except Exception:
             self.logger.error("Guild reconcile failed", exc_info=True)
 
+    async def post_name_match(self, channel: discord.TextChannel, names: List[Name]):
+        """Close the channel's earlier match cards, then post today's.
+
+        Closing happens here rather than on a timer: every channel's day ends
+        when its next batch goes out, so the broadcast is the one place that
+        knows a match is over.
+        """
+        channel_id = str(channel.id)
+        today = name_match.day_key()
+        for old in db.get_open_game_days_before(channel_id, today):
+            await edit_card(self, db, old, final=True)
+            db.close_game_day(channel_id, str(old["day_key"]))
+
+        numbers = name_match.pick_names(names[-1].number, len(self.names))
+        items = name_match.build_items(self.names, numbers, [n.number for n in names])
+        guild = getattr(channel, "guild", None)
+        day = db.upsert_game_day(channel_id, today, str(guild.id) if guild else None, items)
+        day["day_key"] = str(day["day_key"])
+        embed = name_match.card_embed(
+            day,
+            db.get_game_results(channel_id, today),
+            played_keys=db.get_played_day_keys(channel_id),
+        )
+        message = await channel.send(embed=embed, view=build_name_match_view())
+        db.set_game_day_message(channel_id, today, str(message.id))
+
     def get_names(self, number: int, count: int = 1) -> Optional[List[Name]]:
         """Get name by number with validation"""
         if 1 <= number <= len(self.names):
@@ -657,6 +706,7 @@ class HadithCommands(app_commands.Group):
         start_chapter_id="Chapter id to start from — see /bismillah chapters (blank keeps current)",
         start_hadith_id="Hadith id to start from (blank uses the chapter's first hadith, or keeps current)",
         start_name="Name number to start from (blank keeps current)",
+        name_match="Post a daily game after the hadith: match 10 names of Allah to their meanings. Blank keeps the current setting.",
     )
     async def setup(
         self,
@@ -668,6 +718,7 @@ class HadithCommands(app_commands.Group):
         start_chapter_id: Optional[int] = None,
         start_hadith_id: Optional[int] = None,
         start_name: Optional[int] = None,
+        name_match: Optional[bool] = None,
     ):
         await interaction.response.defer(ephemeral=True)
         target = channel or interaction.channel
@@ -749,11 +800,16 @@ class HadithCommands(app_commands.Group):
             guild_id=str(target.guild.id),
             guild_name=target.guild.name,
             guild_member_count=target.guild.member_count,
+            name_match_enabled=name_match,
         )
         verb = "updated for" if existing else "set up for"
-        await interaction.followup.send(
-            setup_reply(target.mention, verb, hpd, npd), ephemeral=True
-        )
+        reply = setup_reply(target.mention, verb, hpd, npd)
+        if name_match is not None:
+            reply += (
+                f"\nThe daily name match game is now **{'on' if name_match else 'off'}** "
+                f"in {target.mention}."
+            )
+        await interaction.followup.send(reply, ephemeral=True)
 
     @app_commands.command(name="stop")
     @app_commands.checks.has_permissions(manage_channels=True)

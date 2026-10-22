@@ -1,0 +1,26 @@
+@import 'tailwindcss';
+/* Self-hosted: Discord's proxy blocks fonts from other hosts. Arabic glyphs only, weight 500. */
+@import '@fontsource/noto-naskh-arabic/arabic-500.css';
+
+@theme {
+  --color-game-bg: #0d131c;
+  --color-game-panel: #141b26;
+  --color-line: #2c3746;
+  --color-name-bg: #0f1e30;
+  --color-name-line: #2f6aa8;
+  --color-mean-bg: #26190f;
+  --color-mean-line: #c46a2b;
+  --color-ok-bg: #0f2a1d;
+  --color-ok-line: #2f9e63;
+  --color-bad-bg: #2d1216;
+  --color-bad-line: #d2475a;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-arabic: 'Noto Naskh Arabic', 'Geeza Pro', serif;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--color-game-bg);
+  color-scheme: dark;
+}

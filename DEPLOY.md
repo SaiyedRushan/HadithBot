@@ -190,3 +190,30 @@ sudo systemctl enable --now hadithbot
 sudo systemctl status hadithbot      # check it's running
 journalctl -u hadithbot -f           # tail logs
 ```
+
+---
+
+## The name match game's API (api.hadithbot.app)
+
+The game in `activity/` (hosted on Vercel at play.hadithbot.app) calls the bot's
+own aiohttp server under `/api`. Caddy on the VM gives that HTTPS:
+
+- Porkbun DNS: `A api.hadithbot.app → <VM public IP>`, `CNAME play.hadithbot.app → cname.vercel-dns.com`.
+- Oracle security list and iptables: TCP 80 and 443 open (Caddy needs 80 for the certificate).
+- `/etc/caddy/Caddyfile`:
+
+  ```
+  api.hadithbot.app {
+  	request_body {
+  		max_size 64KB
+  	}
+  	handle /api/* {
+  		reverse_proxy localhost:8080
+  	}
+  	respond 404
+  }
+  ```
+
+- `.env` on the VM: `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `ACTIVITY_TOKEN_SECRET`
+  and `NAME_MATCH_CHANNELS` (see `.env.example`). Without the first three the API
+  routes aren't mounted; with `NAME_MATCH_CHANNELS` empty no card is posted.

@@ -1,4 +1,4 @@
-"""Discord message components for hadith messages: lookup link, explain and flag buttons.
+"""Discord message components: the hadith buttons (lookup, explain, flag) and the name match Play button.
 
 Kept out of bot.py so the pieces worth testing can be imported without a database.
 ``db`` raises at import time when SUPABASE_URL is unset, and bot.py imports it at
@@ -174,4 +174,63 @@ def build_hadith_view(hadith: dict) -> Optional[discord.ui.View]:
     if hadith_id is not None:
         view.add_item(ExplainHadithButton(int(hadith_id)))
         view.add_item(FlagHadithButton(int(hadith_id)))
+    return view
+
+
+class PlayNameMatchButton(
+    discord.ui.DynamicItem[discord.ui.Button],
+    template=r"play_name_match",
+):
+    """The Play button on the daily name match card: opens the game in Discord.
+
+    The game finds today's match from the channel it was opened in, so the
+    button carries nothing but its name, and every day's card can share it.
+    """
+
+    def __init__(self):
+        super().__init__(
+            discord.ui.Button(
+                label="Play today's match",
+                style=discord.ButtonStyle.primary,
+                custom_id="play_name_match",
+            )
+        )
+
+    @classmethod
+    async def from_custom_id(cls, interaction: discord.Interaction, item, match, /):
+        return cls()
+
+    async def callback(self, interaction: discord.Interaction):
+        try:
+            await interaction.response.launch_activity()
+        except discord.HTTPException as e:
+            logger.warning(f"Couldn't launch the name match: {e}")
+            if interaction.response.is_done():
+                return
+            await interaction.response.send_message(
+                "Couldn't open the game. To play, you need the \"Use Activities\" "
+                "permission in this channel, which a server admin can turn on in the "
+                "channel's settings.",
+                ephemeral=True,
+            )
+
+
+def build_name_match_view(final: bool = False) -> discord.ui.View:
+    """The buttons under the name match card.
+
+    A finished day keeps only the MugUp link, so nobody opens a closed match
+    from an old card.
+    """
+    from name_match import MUGUP_NAMES_URL
+
+    view = discord.ui.View(timeout=None)
+    if not final:
+        view.add_item(PlayNameMatchButton())
+    view.add_item(
+        discord.ui.Button(
+            label="All 99 names on MugUp",
+            style=discord.ButtonStyle.link,
+            url=MUGUP_NAMES_URL,
+        )
+    )
     return view

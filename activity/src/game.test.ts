@@ -1,0 +1,238 @@
+import {describe, expect, it} from 'vitest'
+import {
+  advanceSet,
+  allGuesses,
+  buildLayout,
+  cardKey,
+  clearWrong,
+  formatClock,
+  formatDuration,
+  isGameOver,
+  isSetCleared,
+  pairsWithResult,
+  pick,
+  reshuffleUnmatched,
+  scoreGame,
+  scoreSet,
+  scoreSoFar,
+  shuffleCards,
+  squares,
+  startGame,
+  wrongGuessCount,
+  type GameState,
+  type PairSet,
+} from './game'
+
+const makeSet = (kind: string, ids: number[]): PairSet => ({
+  kind,
+  title: `Match each ${kind}`,
+  pairs: ids.map((id) => ({id, left: `${id}. Left`, leftAr: null, right: `Meaning ${id}`})),
+})
+
+const names = makeSet('names', [49, 50, 51, 52, 53, 54, 55, 56, 57, 58])
+const N = (id: number) => cardKey('name', id)
+const M = (id: number) => cardKey('meaning', id)
+
+/** A fixed sequence, so layouts are reproducible. */
+function seeded(seed = 1) {
+  let s = seed
+  return () => {
+    s = (s * 16807) % 2147483647
+    return (s - 1) / 2147483646
+  }
+}
+
+const tap = (state: GameState, ...keys: string[]) => keys.reduce((s, k) => clearWrong(pick(s, k)), state)
+
+describe('buildLayout', () => {
+  it('puts all 20 cards in the mixed grid and 10 in each phone column', () => {
+    const layout = buildLayout(names, seeded())
+    expect(layout.mixed).toHaveLength(20)
+    expect(new Set(layout.mixed).size).toBe(20)
+    expect([...layout.names].sort()).toEqual(names.pairs.map((p) => N(p.id)).sort())
+    expect([...layout.meanings].sort()).toEqual(names.pairs.map((p) => M(p.id)).sort())
+  })
+})
+
+describe('a clean run', () => {
+  it('scores every pair and logs one guess per pair', () => {
+    let s = startGame([names], seeded())
+    for (const p of names.pairs) s = tap(s, N(p.id), M(p.id))
+    expect(isGameOver(s)).toBe(true)
+    expect(allGuesses(s)).toEqual(names.pairs.map((p) => [p.id, p.id]))
+    expect(wrongGuessCount(s)).toBe(0)
+    const result = scoreGame(s.sets, s.guesses, 48000)
+    expect(result).toEqual({score: 10, total: 10, itemResults: Array(10).fill(true), durationMs: 48000})
+    expect(squares(result.itemResults, s.sets)).toEqual(['🟩'.repeat(10)])
+  })
+
+  it('logs [name, meaning] even when the meaning is tapped first', () => {
+    const s = tap(startGame([names]), M(52), N(52))
+    expect(allGuesses(s)).toEqual([[52, 52]])
+  })
+})
+
+describe('a wrong guess', () => {
+  it('marks both pairs as missed, even after they are matched', () => {
+    let s = startGame([names])
+    s = pick(s, N(52))
+    s = pick(s, M(53))
+    expect(s.wrongPair).toEqual([N(52), M(53)])
+    expect(s.selected).toBeNull()
+    s = clearWrong(s)
+    s = tap(s, N(52), M(52), N(53), M(53))
+    expect(allGuesses(s)).toEqual([
+      [52, 53],
+      [52, 52],
+      [53, 53],
+    ])
+    const r = scoreGame(s.sets, s.guesses, null)
+    expect(r.itemResults.slice(3, 5)).toEqual([false, false])
+    expect(r.itemResults[0]).toBeNull()
+    expect(r.score).toBe(0)
+    expect(wrongGuessCount(s)).toBe(1)
+  })
+
+  it('ignores taps while the wrong pair is showing', () => {
+    let s = pick(pick(startGame([names]), N(52)), M(53))
+    const during = pick(s, N(49))
+    expect(during).toBe(s)
+    s = pick(clearWrong(s), N(49))
+    expect(s.selected).toBe(N(49))
+  })
+})
+
+describe('matched cards', () => {
+  it('cannot be picked or guessed again', () => {
+    let s = tap(startGame([names]), N(50), M(50))
+    const before = s
+    s = pick(s, N(50))
+    expect(s).toBe(before)
+    s = pick(s, M(51))
+    s = pick(s, N(50))
+    expect(s.selected).toBe(M(51))
+    expect(allGuesses(s)).toEqual([[50, 50]])
+  })
+
+  it('makes the server-side replay reject a log that reuses one', () => {
+    expect(() => scoreSet(names.pairs, [[50, 50], [50, 51]])).toThrow(/already matched/)
+    expect(() => scoreSet(names.pairs, [[1, 50]])).toThrow(/isn't in this set/)
+  })
+})
+
+describe('selection', () => {
+  it('replaces the selection when the second card is the same type, with no guess', () => {
+    let s = pick(startGame([names]), N(49))
+    s = pick(s, N(50))
+    expect(s.selected).toBe(N(50))
+    s = pick(s, M(51))
+    s = pick(s, M(52))
+    expect(allGuesses(s)).toEqual([[50, 51]])
+  })
+
+  it('deselects when the selected card is tapped again', () => {
+    let s = pick(startGame([names]), M(49))
+    s = pick(s, M(49))
+    expect(s.selected).toBeNull()
+    expect(allGuesses(s)).toEqual([])
+  })
+})
+
+describe('stopping early', () => {
+  it('leaves unmatched pairs null, even one that was in a wrong guess, and counts only first-try matches', () => {
+    let s = startGame([names])
+    s = tap(s, N(49), M(49), N(50), M(51), N(50), M(50))
+    expect(scoreSoFar(s)).toEqual({score: 1, total: 10})
+    const r = scoreGame(s.sets, s.guesses, 40000)
+    expect(squares(r.itemResults, s.sets)).toEqual(['🟩🟥⬜⬜⬜⬜⬜⬜⬜⬜'])
+    expect(pairsWithResult(s.sets, r.itemResults, false).map((p) => p.id)).toEqual([50])
+    expect(pairsWithResult(s.sets, r.itemResults, null).map((p) => p.id)).toEqual([51, 52, 53, 54, 55, 56, 57, 58])
+  })
+})
+
+describe('shuffle', () => {
+  it('keeps matched cards in place and clears the selection', () => {
+    let s = tap(startGame([names], seeded(3)), N(49), M(49), N(55), M(55))
+    s = pick(s, N(50))
+    const before = s.layout
+    s = shuffleCards(s, seeded(7))
+    expect(s.selected).toBeNull()
+    for (const key of [N(49), M(49), N(55), M(55)]) {
+      expect(s.layout.mixed.indexOf(key)).toBe(before.mixed.indexOf(key))
+    }
+    expect([...s.layout.mixed].sort()).toEqual([...before.mixed].sort())
+  })
+
+  it('reshuffleUnmatched moves only the open cards', () => {
+    const order = [N(1), M(1), N(2), M(2), N(3), M(3)]
+    const out = reshuffleUnmatched(order, [2], seeded(5))
+    expect(out[2]).toBe(N(2))
+    expect(out[3]).toBe(M(2))
+    expect([...out].sort()).toEqual([...order].sort())
+  })
+})
+
+describe('two sets', () => {
+  const surahs = makeSet('surahs', [11, 16, 44])
+  const small = makeSet('names', [1, 2])
+
+  it('moves to the next set only once the first is cleared', () => {
+    let s = startGame([small, surahs])
+    s = tap(s, N(1), M(1))
+    expect(advanceSet(s)).toBe(s)
+    s = tap(s, N(2), M(2))
+    expect(isSetCleared(s)).toBe(true)
+    expect(isGameOver(s)).toBe(false)
+    expect(pick(s, N(1))).toBe(s)
+    s = advanceSet(s)
+    expect(s.setIndex).toBe(1)
+    expect(s.layout.mixed).toHaveLength(6)
+  })
+
+  it('flattens itemResults in set order and draws one row of squares per set', () => {
+    let s = startGame([small, surahs])
+    s = tap(s, N(1), M(2), N(1), M(1), N(2), M(2))
+    s = advanceSet(s)
+    s = tap(s, N(11), M(11), N(16), M(16))
+    expect(allGuesses(s)).toEqual([
+      [1, 2],
+      [1, 1],
+      [2, 2],
+      [11, 11],
+      [16, 16],
+    ])
+    const r = scoreGame(s.sets, s.guesses, 70000)
+    expect(r.itemResults).toEqual([false, false, true, true, null])
+    expect(r.score).toBe(2)
+    expect(r.total).toBe(5)
+    expect(squares(r.itemResults, s.sets)).toEqual(['🟥🟥', '🟩🟩⬜'])
+  })
+
+  it('ends the game when the last pair of the last set is matched', () => {
+    let s = startGame([small, surahs])
+    s = advanceSet(tap(s, N(1), M(1), N(2), M(2)))
+    s = tap(s, N(11), M(11), N(16), M(16), N(44), M(44))
+    expect(isGameOver(s)).toBe(true)
+    expect(scoreSoFar(s)).toEqual({score: 5, total: 5})
+  })
+})
+
+describe('formatDuration', () => {
+  it('matches the bot and MugUp formats', () => {
+    expect(formatDuration(48000)).toBe('48s')
+    expect(formatDuration(65000)).toBe('1m 05s')
+    expect(formatDuration(3780000)).toBe('1h 03m')
+    expect(formatDuration(400)).toBe('1s')
+    expect(formatDuration(0)).toBe('')
+    expect(formatDuration(null)).toBe('')
+  })
+})
+
+describe('formatClock', () => {
+  it('shows mm:ss', () => {
+    expect(formatClock(0)).toBe('00:00')
+    expect(formatClock(42900)).toBe('00:42')
+    expect(formatClock(65000)).toBe('01:05')
+    expect(formatClock(3725000)).toBe('62:05')
+  })
+})
