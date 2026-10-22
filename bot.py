@@ -33,10 +33,15 @@ from views import ExplainHadithButton, FlagHadithButton, build_hadith_view
 from utils import (
     Name,
     compose_flag_reply,
+    ABSOLUTE_MAX_PER_DAY,
+    channel_max,
+    daily_count,
     delivery_failure_message,
     getHadithFormattedMessage,
     getNameFormattedMessage,
+    load_custom_limits,
     resolve_start_position,
+    setup_reply,
 )
 
 # Tail of the /bismillah books and /bismillah chapters replies. Both lists run
@@ -143,6 +148,7 @@ class HadithBot(commands.Bot):
             ]
 
         delivered = 0
+        custom_limits = load_custom_limits()
         for channel_row in channels:
             channel_id = channel_row["channel_id"]
             # Isolate each channel so one failure (e.g. missing permissions)
@@ -153,9 +159,12 @@ class HadithBot(commands.Bot):
                 last_name_no = channel_row["last_name_no"]
                 last_book_no = channel_row["last_book_id"]
                 last_chapter_no = channel_row["last_chapter_id"]
-                # Per-channel daily counts (default 3 for rows set before this was configurable)
-                hadiths_per_day = channel_row.get("hadiths_per_day", 3)
-                names_per_day = channel_row.get("names_per_day", 3)
+                # Per-channel daily counts, held to the cap (3, unless the
+                # channel was given more on request) even for rows saved back
+                # when up to 10 was allowed.
+                cap = channel_max(channel_id, custom_limits)
+                hadiths_per_day = daily_count(channel_row.get("hadiths_per_day"), cap)
+                names_per_day = daily_count(channel_row.get("names_per_day"), cap)
 
                 channel = self.get_channel(int(channel_id))
                 if not channel:
@@ -642,8 +651,8 @@ class HadithCommands(app_commands.Group):
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.describe(
         channel="Channel to send daily messages to (defaults to this channel)",
-        hadiths_per_day="How many hadiths to send each day, 1-10 (default 3; kept if blank)",
-        names_per_day="How many of Allah's names to send each day, 1-10 (default 3; kept if blank)",
+        hadiths_per_day="Hadiths a day, 1 to 3. We recommend 1. Blank keeps the current number.",
+        names_per_day="Names of Allah a day, 1 to 3. We recommend 1. Blank keeps the current number.",
         start_book_id="Book id to start from — see /bismillah books (blank keeps current, or starts at the beginning)",
         start_chapter_id="Chapter id to start from — see /bismillah chapters (blank keeps current)",
         start_hadith_id="Hadith id to start from (blank uses the chapter's first hadith, or keeps current)",
@@ -653,8 +662,8 @@ class HadithCommands(app_commands.Group):
         self,
         interaction: discord.Interaction,
         channel: Optional[discord.TextChannel] = None,
-        hadiths_per_day: Optional[int] = None,
-        names_per_day: Optional[int] = None,
+        hadiths_per_day: Optional[app_commands.Range[int, 1, ABSOLUTE_MAX_PER_DAY]] = None,
+        names_per_day: Optional[app_commands.Range[int, 1, ABSOLUTE_MAX_PER_DAY]] = None,
         start_book_id: Optional[int] = None,
         start_chapter_id: Optional[int] = None,
         start_hadith_id: Optional[int] = None,
@@ -706,14 +715,20 @@ class HadithCommands(app_commands.Group):
                 return existing.get(key, default)
             return default
 
-        hpd = pick(hadiths_per_day, "hadiths_per_day", 3)
-        npd = pick(names_per_day, "names_per_day", 3)
-        if not (1 <= hpd <= 10) or not (1 <= npd <= 10):
+        # Discord lets anyone type up to 10 (the Range above) so that channels
+        # given a higher limit on request can use it; everyone else gets 3.
+        cap = channel_max(target.id)
+        if max(hadiths_per_day or 0, names_per_day or 0) > cap:
             await interaction.followup.send(
-                "Please choose between 1 and 10 for the per-day counts.",
+                f"You can choose 1 to {cap} hadiths and 1 to {cap} names a day. "
+                f"To go higher in {target.mention}, email support@hadithbot.app "
+                "with your server's name. Nothing has been saved.",
                 ephemeral=True,
             )
             return
+        # daily_count also brings a kept value from before the cap down to it.
+        hpd = daily_count(pick(hadiths_per_day, "hadiths_per_day", None), cap)
+        npd = daily_count(pick(names_per_day, "names_per_day", None), cap)
 
         # Book/chapter/hadith are resolved together so that changing the book or
         # chapter (without naming a hadith) starts at that chapter's first hadith
@@ -737,9 +752,7 @@ class HadithCommands(app_commands.Group):
         )
         verb = "updated for" if existing else "set up for"
         await interaction.followup.send(
-            f"Daily messages {verb} {target.mention} — "
-            f"{hpd} hadith and {npd} name(s) per day.",
-            ephemeral=True,
+            setup_reply(target.mention, verb, hpd, npd), ephemeral=True
         )
 
     @app_commands.command(name="stop")
@@ -782,6 +795,7 @@ class HadithCommands(app_commands.Group):
             return
 
         guild = interaction.guild
+        limits = load_custom_limits()
         lines: List[str] = []
         for row in rows:
             # Resolve against this guild so only channels in *this* server show.
@@ -792,7 +806,8 @@ class HadithCommands(app_commands.Group):
             state = "🟢 active" if row.get("active", True) else "⏸️ paused"
             lines.append(
                 f"{channel.mention} — {state} — "
-                f"{row.get('hadiths_per_day', 3)} hadith/{row.get('names_per_day', 3)} name(s) per day "
+                f"{daily_count(row.get('hadiths_per_day'), channel_max(row['channel_id'], limits))} hadith/"
+                f"{daily_count(row.get('names_per_day'), channel_max(row['channel_id'], limits))} name(s) per day "
                 f"(next: book {row['last_book_id']}, chapter {row['last_chapter_id']}, "
                 f"hadith {row['last_hadith_no']}, name #{row['last_name_no']})"
             )

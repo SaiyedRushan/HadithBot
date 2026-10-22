@@ -1,5 +1,8 @@
 from typing import Dict, Optional
 from dataclasses import dataclass
+from pathlib import Path
+import json
+import logging
 from urllib.parse import quote, urlencode
 import re
 
@@ -112,6 +115,78 @@ def compose_explain_reply(hadith: dict) -> str:
         "important with someone knowledgeable."
     )
     return "\n".join(lines)
+
+
+# Daily counts per channel. Capped at 3 because servers that picked a large
+# number tended to get overwhelmed and remove the bot; 1 is the default and
+# what the setup reply recommends.
+DEFAULT_PER_DAY = 1
+MAX_PER_DAY = 3
+# Ceiling for channels given a higher limit on request (see custom_limits.json).
+ABSOLUTE_MAX_PER_DAY = 10
+CUSTOM_LIMITS_FILE = Path(__file__).resolve().parent / "data" / "custom_limits.json"
+
+
+def load_custom_limits(path: Path = CUSTOM_LIMITS_FILE) -> dict[str, int]:
+    """Channels allowed more than MAX_PER_DAY, as {channel_id: their max}.
+
+    Servers ask for this by email (the update message and the setup error point
+    them to support@hadithbot.app). Add an entry like
+    ``"123456789": {"max_per_day": 5, "note": "Server name, emailed 2026-10-22"}``;
+    keys starting with "_" are notes and ignored. Read fresh each broadcast, so
+    a change applies from the next daily send.
+    """
+    try:
+        raw = json.loads(path.read_text())
+    except FileNotFoundError:
+        return {}
+    except (OSError, ValueError):
+        logging.getLogger("HadithBot").error(
+            f"Couldn't read {path.name}; every channel gets the default cap",
+            exc_info=True,
+        )
+        return {}
+    return {
+        str(channel_id): max(1, min(int(entry["max_per_day"]), ABSOLUTE_MAX_PER_DAY))
+        for channel_id, entry in raw.items()
+        if not str(channel_id).startswith("_")
+    }
+
+
+def channel_max(channel_id, limits: Optional[dict[str, int]] = None) -> int:
+    """Most hadiths (or names) a day this channel may get."""
+    if limits is None:
+        limits = load_custom_limits()
+    return limits.get(str(channel_id), MAX_PER_DAY)
+
+
+def daily_count(value: Optional[int], cap: int = MAX_PER_DAY) -> int:
+    """A stored hadiths/names-per-day value, held to 1..cap.
+
+    Channels set up before the cap may still have up to 10 saved; this is what
+    keeps them at 3 without rewriting their rows.
+    """
+    if value is None:
+        return DEFAULT_PER_DAY
+    return max(1, min(int(value), cap))
+
+
+def setup_reply(target_mention: str, verb: str, hadiths: int, names: int) -> str:
+    """What /bismillah setup says once it has saved, with a nudge toward 1 and 1."""
+    hadith_word = "hadith" if hadiths == 1 else "hadiths"
+    name_word = "name" if names == 1 else "names"
+    reply = (
+        f"Daily messages {verb} {target_mention}: "
+        f"{hadiths} {hadith_word} and {names} {name_word} a day."
+    )
+    if hadiths > 1 or names > 1:
+        reply += (
+            "\n\nWe recommend 1 hadith and 1 name a day. A lot of messages "
+            "every day can start to feel like too much, and a short reading is "
+            "easier to keep up with. You can change it any time with "
+            "`/bismillah setup`."
+        )
+    return reply
 
 
 _DM_LIMIT = 2000  # Discord's per-message character cap

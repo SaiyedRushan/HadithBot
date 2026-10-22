@@ -2307,7 +2307,7 @@
               <h3>You set the amount</h3>
               <p>
                 Choose how many hadiths and how many of the 99 names go out each
-                day, from 1 to 10 — different for every channel.
+                day, from 1 to 3. Each channel can have its own numbers.
               </p>
             </div>
             <div class="card">
@@ -2494,47 +2494,53 @@
                 ><span class="code-text">/bismillah setup</span>
               </div>
               <p>
-                That's it — it starts from the very beginning with 3 hadiths and
-                3 names each day. Want to customize? Add any of these options:
+                That's it. It starts from the very beginning with 1 hadith and
+                1 name each day.
               </p>
+              <p>
+                We recommend keeping it at 1 and 1. A lot of messages every day
+                can start to feel like too much, and a short reading is easier to
+                keep up with. You can always raise it later.
+              </p>
+              <p>Want to change something? Add any of these options:</p>
               <ul class="opt-list">
                 <li>
-                  <b>hadiths_per_day</b> — how many hadiths to send daily (1–10,
-                  default 3)
+                  <b>hadiths_per_day</b>: how many hadiths to send daily (1 to 3,
+                  default 1)
                 </li>
                 <li>
-                  <b>names_per_day</b> — how many of Allah's names to send daily
-                  (1–10, default 3)
+                  <b>names_per_day</b>: how many of Allah's names to send daily
+                  (1 to 3, default 1)
                 </li>
                 <li>
-                  <b>channel</b> — target a different channel (defaults to the
+                  <b>channel</b>: target a different channel (defaults to the
                   one you're in)
                 </li>
                 <li>
-                  <b>start_book_id / start_chapter_id / start_hadith_id</b> —
+                  <b>start_book_id / start_chapter_id / start_hadith_id</b>:
                   begin from a specific place
                   (<a href="books.html">all the ids are here</a>)
                 </li>
                 <li>
-                  <b>start_name</b> — begin the names from a specific number
+                  <b>start_name</b>: begin the names from a specific number
                 </li>
               </ul>
             </div>
 
             <div class="config-block">
               <h3>Examples</h3>
-              <p>Send 5 hadiths and 2 names every day:</p>
+              <p>Send 2 hadiths and 1 name every day:</p>
               <div class="snippet">
                 <button class="copy">Copy</button
                 ><span class="code-text"
-                  >/bismillah setup hadiths_per_day:5 names_per_day:2</span
+                  >/bismillah setup hadiths_per_day:2 names_per_day:1</span
                 >
               </div>
 
-              <p>Change just the count — keeps the channel's place:</p>
+              <p>Change just the count. The channel keeps its place:</p>
               <div class="snippet">
                 <button class="copy">Copy</button
-                ><span class="code-text">/bismillah setup hadiths_per_day:1</span
+                ><span class="code-text">/bismillah setup hadiths_per_day:2</span
                 >
               </div>
 

@@ -502,19 +502,19 @@
             <tbody>
               <tr>
                 <td><span class="inline-code">/bismillah setup</span></td>
-                <td>Starts daily messages in the current channel, with the defaults: three hadiths and three names a day.</td>
+                <td>Starts daily messages in the current channel, with the defaults: one hadith and one name a day. We recommend keeping it there, since a short reading is easier to keep up with every day.</td>
               </tr>
               <tr>
                 <td><span class="inline-code">/bismillah setup channel:#reminders</span></td>
                 <td>Sets it up for a different channel without leaving the one you're in.</td>
               </tr>
               <tr>
-                <td><span class="inline-code">/bismillah setup hadiths_per_day:1</span></td>
-                <td>One hadith a day instead of three. Any number from 1 to 10.</td>
+                <td><span class="inline-code">/bismillah setup hadiths_per_day:2</span></td>
+                <td>Two hadiths a day instead of one. Any number from 1 to 3.</td>
               </tr>
               <tr>
-                <td><span class="inline-code">/bismillah setup names_per_day:1</span></td>
-                <td>One of Allah's names a day. Both counts accept 1 to 10 — there's no way to switch either off entirely short of stopping the channel.</td>
+                <td><span class="inline-code">/bismillah setup names_per_day:2</span></td>
+                <td>Two of Allah's names a day. Both counts accept 1 to 3. You can't switch either one off without stopping the channel.</td>
               </tr>
             </tbody>
           </table>
@@ -549,15 +549,15 @@
           This is the question people ask most. Re-running
           <span class="inline-code">/bismillah setup</span> edits the existing
           configuration: anything you leave blank keeps its current value,
-          including the reading position. So changing from three hadiths a day
-          to one does not restart the collection.
+          including the reading position. So changing from one hadith a day
+          to two does not restart the collection.
         </p>
 
         <h2>Running it in more than one channel</h2>
         <p>
           Each channel is independent. It keeps its own per-day counts and its
           own place in both the hadiths and the names, so a study channel can
-          take one hadith a day while a general channel takes five, and neither
+          take three hadiths a day while a general channel takes one, and neither
           affects the other. Run
           <span class="inline-code">/bismillah status</span> to see every
           channel in your server that's set up, and where each one is.

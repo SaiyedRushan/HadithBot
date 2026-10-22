@@ -26,6 +26,8 @@ import sys
 from html import escape
 from pathlib import Path
 
+from utils import channel_max, daily_count, load_custom_limits
+
 ROOT = Path(__file__).resolve().parent
 PAGE = ROOT / "docs" / "index.html"
 COMMUNITIES = ROOT / "docs" / "data" / "communities.json"
@@ -66,7 +68,13 @@ def collect_stats() -> list[tuple[str, str]]:
             "counted as servers -- run backfill_channel_names.py to fill them in"
         )
 
-    per_day = sum((r.get("hadiths_per_day") or 0) + (r.get("names_per_day") or 0) for r in rows)
+    # daily_count, not the raw column: rows from before the cap can hold up to 10.
+    limits = load_custom_limits()
+    per_day = sum(
+        daily_count(r.get("hadiths_per_day"), channel_max(r["channel_id"], limits))
+        + daily_count(r.get("names_per_day"), channel_max(r["channel_id"], limits))
+        for r in rows
+    )
 
     stats = [
         (f"{len(guilds):,}", "server" if len(guilds) == 1 else "servers"),

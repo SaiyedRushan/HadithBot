@@ -1,0 +1,3 @@
+{
+  "_note": "Channels allowed more than 3 hadiths/names a day, by request to support@hadithbot.app. Key is the channel id. Example: \"123456789\": {\"max_per_day\": 5, \"note\": \"Server name, emailed 2026-10-22\"}. Max is 10."
+}

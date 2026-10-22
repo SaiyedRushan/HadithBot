@@ -11,6 +11,10 @@ from utils import (
     getHadithFormattedMessage,
     sunnah_url,
     resolve_start_position,
+    channel_max,
+    daily_count,
+    load_custom_limits,
+    setup_reply,
 )
 
 DISCORD_MAX = 2000
@@ -188,3 +192,58 @@ def test_resolve_start_position_new_channel_defaults_to_one():
 
 def test_resolve_start_position_new_channel_with_chapter_starts_at_first_hadith():
     assert resolve_start_position(None, None, 12, None) == (1, 12, 1)
+
+
+# --- daily counts ------------------------------------------------------------
+
+def test_daily_count_defaults_to_one():
+    assert daily_count(None) == 1
+
+
+def test_daily_count_caps_old_settings_at_three():
+    """Channels saved when up to 10 was allowed now get 3."""
+    assert daily_count(10) == 3
+    assert daily_count(4) == 3
+
+
+def test_daily_count_keeps_values_in_range():
+    assert [daily_count(n) for n in (1, 2, 3)] == [1, 2, 3]
+    assert daily_count(0) == 1
+
+
+def test_setup_reply_recommends_one_when_more_is_chosen():
+    reply = setup_reply("#daily", "set up for", 3, 1)
+    assert "3 hadiths and 1 name a day" in reply
+    assert "We recommend 1 hadith and 1 name a day" in reply
+
+
+def test_setup_reply_skips_the_nudge_at_one_and_one():
+    reply = setup_reply("#daily", "set up for", 1, 1)
+    assert reply == "Daily messages set up for #daily: 1 hadith and 1 name a day."
+
+
+def test_custom_limits_raise_one_channel_and_ignore_notes(tmp_path):
+    path = tmp_path / "custom_limits.json"
+    path.write_text(
+        '{"_note": "ignored", "111": {"max_per_day": 5}, "222": {"max_per_day": 50}}'
+    )
+    limits = load_custom_limits(path)
+    assert limits == {"111": 5, "222": 10}  # 50 held to the 10 ceiling
+    assert channel_max(111, limits) == 5
+    assert channel_max("333", limits) == 3
+    assert daily_count(10, channel_max("111", limits)) == 5
+
+
+def test_custom_limits_missing_file_means_no_exceptions(tmp_path):
+    assert load_custom_limits(tmp_path / "nope.json") == {}
+
+
+def test_shipped_custom_limits_file_is_valid():
+    """load_custom_limits swallows a broken file at runtime; catch it here instead."""
+    import json
+
+    from utils import CUSTOM_LIMITS_FILE
+
+    for key, entry in json.loads(CUSTOM_LIMITS_FILE.read_text()).items():
+        if not key.startswith("_"):
+            assert key.isdigit() and int(entry["max_per_day"]) >= 1
