@@ -24,6 +24,13 @@
       "initials": "YU",
       "logo": "img/communities/york-msa.png",
       "url": "https://yorkumsa.com/"
+    },
+    {
+      "name": "UTM MSA",
+      "location": "Mississauga, Canada",
+      "initials": "UTM",
+      "logo": "img/communities/utm-msa.png",
+      "url": "https://utmmsa.org/"
     }
   ]
 }
