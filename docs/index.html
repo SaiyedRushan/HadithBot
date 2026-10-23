@@ -1222,6 +1222,67 @@
         }
       }
 
+      /* MugUp's own colours for its card: a pink-to-amber border drawn with
+         two backgrounds (the inner one is the card, the outer one shows
+         through the transparent border), so it follows the site's theme. */
+      .decks-card {
+        border: 2px solid transparent;
+        background: linear-gradient(var(--cream-card), var(--cream-card))
+            padding-box,
+          linear-gradient(135deg, #f472b6, #f59e0b) border-box;
+        box-shadow: var(--shadow), 0 18px 46px -22px rgba(244, 114, 182, 0.45);
+      }
+      .decks-card:hover {
+        border-color: transparent;
+      }
+      .decks-card .mugup-mark {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 6px 18px -6px rgba(244, 114, 182, 0.55);
+        margin-bottom: 16px;
+      }
+      .decks-card .mugup-go {
+        display: inline-block;
+        background: linear-gradient(135deg, #f472b6, #f59e0b);
+        color: #fff;
+        border-radius: 999px;
+        padding: 8px 16px;
+        font-weight: 700;
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .decks-card .mugup-go:hover {
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 22px -10px rgba(244, 114, 182, 0.8);
+      }
+      .decks-card .decks {
+        border-left: 0;
+        padding-left: 0;
+        gap: 10px;
+      }
+      .decks-card .decks a {
+        background: rgba(var(--tint), 0.05);
+        border: 1px solid rgba(var(--tint), 0.12);
+        border-radius: 12px;
+        padding: 12px 14px;
+        transition: background 0.2s ease, border-color 0.2s ease,
+          transform 0.2s ease;
+      }
+      .decks-card .decks a:hover {
+        background: rgba(244, 114, 182, 0.1);
+        border-color: rgba(244, 114, 182, 0.45);
+        transform: translateX(3px);
+      }
+      .decks-card .decks a:hover strong {
+        color: #db2777;
+      }
+      :root[data-theme="dark"] .decks-card .decks a:hover strong {
+        color: #f9a8d4;
+      }
+
       /* ---------- communities ---------- */
       /* Both rows centre their last line rather than left-aligning it, since
          the counts and the wall are short lists that grow one at a time. */
@@ -3464,7 +3525,14 @@
                  the login. -->
             <div class="app-card decks-card">
               <div class="decks-head">
-                <div class="ico">🧠</div>
+                <img
+                  class="mugup-mark"
+                  src="img/mugup-icon.png"
+                  alt="MugUp logo"
+                  width="64"
+                  height="64"
+                  loading="lazy"
+                />
                 <span class="platform">Web · free to clone</span>
                 <h3>Islamic decks on MugUp</h3>
                 <p>
@@ -3472,7 +3540,7 @@
                   fill-in-the-blanks), free to copy into your own account and
                   learn at your own pace.
                 </p>
-                <a class="go" href="https://mugup.app" target="_blank" rel="noopener">mugup.app →</a>
+                <a class="go mugup-go" href="https://mugup.app/decks" target="_blank" rel="noopener">Browse all decks on MugUp →</a>
               </div>
               <ul class="decks">
                 <li>
