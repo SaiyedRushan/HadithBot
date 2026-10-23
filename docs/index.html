@@ -715,6 +715,52 @@
         font-weight: 500;
       }
 
+      /* the name match card, as a follow-up message under the hadith */
+      .preview .game-msg {
+        margin-left: 52px;
+        animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 1.14s backwards;
+      }
+      .preview .game-embed {
+        background: #2f3136;
+        border-left: 4px solid var(--accent);
+        border-radius: 4px;
+        padding: 9px 12px;
+        color: #e6e7e8;
+      }
+      .preview .game-embed b {
+        color: #fff;
+      }
+      .preview .game-score {
+        margin-top: 8px;
+        letter-spacing: 0.5px;
+      }
+      .preview .ment {
+        background: rgba(88, 101, 242, 0.3);
+        color: #c9cdfb;
+        border-radius: 3px;
+        padding: 0 2px;
+      }
+      .preview .game-btn {
+        display: inline-block;
+        margin-top: 8px;
+        background: #5865f2;
+        color: #fff;
+        border-radius: 5px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.2s ease, transform 0.2s ease;
+      }
+      .preview .game-btn:hover {
+        background: #4752c4;
+        transform: translateY(-1px);
+      }
+      .preview .game-btn:focus-visible {
+        outline: 2px solid var(--accent-soft);
+        outline-offset: 2px;
+      }
+
       /* ---------- sections ---------- */
       section {
         padding: 76px 0;
@@ -1777,6 +1823,9 @@
           height: 34px;
           font-size: 16px;
         }
+        .preview .game-msg {
+          margin-left: 44px;
+        }
         .card {
           padding: 22px;
         }
@@ -2029,6 +2078,7 @@
         cursor: default;
       }
       .match-play {
+        scroll-margin-top: 110px;
         margin-top: 14px;
         background: #0d131c;
         border-radius: 10px;
@@ -2356,8 +2406,9 @@
 
           <!-- Discord message preview -->
           <div class="preview-float">
-            <div class="preview" aria-hidden="true">
+            <div class="preview">
               <div
+                aria-hidden="true"
                 class="bismillah arabic"
                 style="
                   color: var(--accent-soft);
@@ -2367,7 +2418,7 @@
               >
                 بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
               </div>
-              <div class="msg">
+              <div class="msg" aria-hidden="true">
                 <div class="avatar">☾</div>
                 <div>
                   <div>
@@ -2403,6 +2454,22 @@
                     ><span class="srcbtn">🚩 Report</span>
                   </div>
                 </div>
+              </div>
+              <!-- The name match card, as the batch's last message. Its button
+                   is a real link down to the playable round in #name-match. -->
+              <div class="game-msg">
+                <div class="game-embed">
+                  <b>Today's name match: 10 names of Allah</b>
+                  <div>
+                    Match today's name, Al-'Azeem, and the 9 names before it to
+                    their meanings.
+                  </div>
+                  <div class="game-score" aria-hidden="true">
+                    <b>9/10</b> · 52s · <span class="ment">@Aisha</span><br />
+                    🟩🟩🟩🟩🟩🟩🟩🟥🟩🟩
+                  </div>
+                </div>
+                <a class="game-btn" href="#matchPlay">Try the name match below ↓</a>
               </div>
             </div>
           </div>
@@ -3679,6 +3746,14 @@
           again.focus();
         }
         start();
+        document.querySelectorAll('a[href="#matchPlay"]').forEach(function (a) {
+          a.addEventListener("click", function () {
+            setTimeout(function () {
+              var first = cardsEl.querySelector("button:not(:disabled)");
+              if (first) first.focus({ preventScroll: true });
+            }, 600);
+          });
+        });
       })();
     </script>
   </body>
