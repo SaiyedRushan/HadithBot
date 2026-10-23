@@ -1,6 +1,6 @@
 .PHONY: install dev dev-server test lint format site site-wall books \
         logs status deploy restart shell health errors sends grep stale \
-        members update-preview update-test update-send help
+        members update-preview update-test help
 
 help:  ## List the available targets
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -70,20 +70,18 @@ stale:  ## Which active channels missed their daily message? (runs locally)
 members:  ## Refresh the stored server names and member counts from Discord
 	ssh $(VM) 'cd $(APP_DIR) && docker compose exec -T hadithbot python backfill_channel_names.py'
 
-# Update messages (see updates/README.md). The send targets run on the VM for
-# the production token; the file goes in over stdin because the image has no
-# .md files. git pull first so the newest update file is there.
+# Update messages (see updates/README.md). The daily broadcast posts each one on
+# its date; these only preview it, or post a test copy to one channel. The test
+# runs on the VM for the production token, after a git pull so the newest file
+# is there, and pipes it in so it doesn't wait for a rebuild.
 LATEST_UPDATE = $$(ls updates/[0-9]*.md | sort | tail -1)
 
 update-preview:  ## Show the newest update message, its length and who gets it
 	uv run python send_update.py
 
-update-test:  ## Post the newest update to one channel: make update-test CHANNEL=<id>
+update-test:  ## Post a test copy of the newest update to one channel: make update-test CHANNEL=<id>
 	@test -n "$(CHANNEL)" || { echo 'usage: make update-test CHANNEL=<channel id>'; exit 2; }
 	ssh $(VM) 'cd $(APP_DIR) && git pull --ff-only -q && f=$(LATEST_UPDATE) && echo "Sending $$f" && docker compose exec -T hadithbot python send_update.py --send --channel $(CHANNEL) --file - < $$f'
-
-update-send:  ## Post the newest update to every active channel
-	ssh $(VM) 'cd $(APP_DIR) && git pull --ff-only -q && f=$(LATEST_UPDATE) && echo "Sending $$f" && docker compose exec -T hadithbot python send_update.py --send --file - < $$f'
 
 deploy:  ## Pull main and rebuild on the VM (CI does this on push; use to force)
 	ssh $(VM) 'cd $(APP_DIR) && git pull --ff-only && docker compose up -d --build && docker image prune -f'

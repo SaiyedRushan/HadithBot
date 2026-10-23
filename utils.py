@@ -1,5 +1,6 @@
 from typing import Dict, Optional
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 import json
 import logging
@@ -187,6 +188,25 @@ def setup_reply(target_mention: str, verb: str, hadiths: int, names: int) -> str
             "`/bismillah setup`."
         )
     return reply
+
+
+UPDATES_DIR = Path(__file__).resolve().parent / "updates"
+
+
+def update_for(day: date, directory: Path = UPDATES_DIR) -> Optional[str]:
+    """The update message dated ``day`` (updates/YYYY-MM-DD.md), if there is one.
+
+    The daily broadcast posts it in every channel just before that day's
+    hadith, so each update goes out exactly once, on its date, with no record
+    of who has seen it. Anything over Discord's 2000-char limit is skipped
+    rather than cut (tests/test_send_update.py keeps that from shipping).
+    """
+    path = directory / f"{day.isoformat()}.md"
+    try:
+        text = path.read_text().strip()
+    except FileNotFoundError:
+        return None
+    return text if 0 < len(text) <= 2000 else None
 
 
 _DM_LIMIT = 2000  # Discord's per-message character cap

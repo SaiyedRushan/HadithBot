@@ -13,3 +13,5 @@ __pycache__/
 !.env.example
 docs/
 *.md
+# The bot posts these with the daily message (utils.update_for).
+!updates/*.md

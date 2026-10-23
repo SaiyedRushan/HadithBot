@@ -1,15 +1,15 @@
-"""Post an update message (see updates/README.md) to every active channel.
+"""Preview an update message, or post it to one channel to see it in Discord.
 
-    uv run python send_update.py                       # preview only: text, length, channels
-    uv run python send_update.py --send --channel ID   # post to one channel
-    uv run python send_update.py --send                # post to every active channel
+    uv run python send_update.py                              # preview the newest update
+    uv run python send_update.py --send --channel ID          # post it to one channel
 
-The message is the newest updates/YYYY-MM-DD.md, or --file PATH (``-`` reads
-stdin). On the VM the container has no .md files (.dockerignore drops them), so
-the make targets pipe the file in over stdin instead.
+Updates are not sent from here. The daily broadcast posts updates/<date>.md in
+every channel just before that day's hadith (see utils.update_for), so the
+file's date is the day it goes out. See updates/README.md.
 
-Posts through Discord's REST API with whichever bot DISCORD_TOKEN belongs to:
-the dev bot locally, the production bot on the VM.
+--file PATH picks a different file (``-`` reads stdin, which is how the make
+target hands the file to the container on the VM). --send posts with whichever
+bot DISCORD_TOKEN belongs to: the dev bot locally, the production bot on the VM.
 """
 
 import argparse
@@ -19,15 +19,18 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
+from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
+
+from utils import UPDATES_DIR
 
 # db is imported inside main(): it raises at import time without SUPABASE_URL,
 # which would make the pure helpers below untestable without credentials.
 
-UPDATES_DIR = Path(__file__).resolve().parent / "updates"
 DISCORD_LIMIT = 2000
 API = "https://discord.com/api/v10"
 
@@ -48,6 +51,15 @@ def check_message(text: str) -> Optional[str]:
             f"{DISCORD_LIMIT}. Shorten it by {len(text) - DISCORD_LIMIT}."
         )
     return None
+
+
+def when_it_goes_out(day: date, today: date) -> str:
+    """Plain-English note on when the daily broadcast will post this file."""
+    if day < today:
+        return f"Dated {day}, which has passed. It won't be sent again."
+    if day == today:
+        return f"Goes out today ({day}) with the 6:00 PM Toronto message."
+    return f"Goes out on {day} with the 6:00 PM Toronto message."
 
 
 def channel_label(row: dict) -> str:
@@ -89,11 +101,16 @@ def post_message(token: str, channel_id: str, content: str) -> Optional[str]:
 def main() -> int:
     load_dotenv()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--file", help="Message file to send (- for stdin). Default: newest in updates/")
-    parser.add_argument("--channel", help="Only this channel id, to test before sending to everyone")
-    parser.add_argument("--send", action="store_true", help="Actually post. Without it, only preview.")
+    parser.add_argument("--file", help="Message file (- for stdin). Default: newest in updates/")
+    parser.add_argument("--channel", help="Channel id to post a test copy to (needs --send)")
+    parser.add_argument("--send", action="store_true", help="Post the test copy to --channel")
     args = parser.parse_args()
 
+    if args.send and not args.channel:
+        print("--send needs --channel. Updates reach every channel through the daily message.")
+        return 2
+
+    path: Optional[Path] = None
     if args.file == "-":
         text, source = sys.stdin.read(), "stdin"
     else:
@@ -109,41 +126,34 @@ def main() -> int:
         print(problem)
         return 1
 
-    if args.channel:
-        rows = [{"channel_id": args.channel}]
-    else:
-        from db import get_channels  # noqa: PLC0415 -- see note at the imports
-
-        # Every channel, even several in one server: each was set up on its own.
-        rows = get_channels()
-
     print(f"--- {source} ({len(text)}/{DISCORD_LIMIT} characters) ---")
     print(text)
-    print(f"--- {len(rows)} channel(s) ---")
+    print("---")
+
+    if args.send:
+        token = os.environ.get("DISCORD_TOKEN")
+        if not token:
+            print("DISCORD_TOKEN is not set.")
+            return 1
+        error = post_message(token, args.channel, text)
+        print(f"Couldn't post it: {error}" if error else f"Posted a test copy to {args.channel}.")
+        return 1 if error else 0
+
+    if path is not None:
+        try:
+            day = date.fromisoformat(path.stem)
+        except ValueError:
+            day = None
+        if day is not None:
+            print(when_it_goes_out(day, datetime.now(ZoneInfo("America/Toronto")).date()))
+
+    from db import get_channels  # noqa: PLC0415 -- see note at the imports
+
+    rows = get_channels()
+    print(f"It will be posted in {len(rows)} channel(s):")
     for row in rows:
         print(f"  {channel_label(row)}")
-
-    if not args.send:
-        print("\nPreview only. Add --send to post it.")
-        return 0
-
-    token = os.environ.get("DISCORD_TOKEN")
-    if not token:
-        print("DISCORD_TOKEN is not set.")
-        return 1
-
-    failed = 0
-    for row in rows:
-        error = post_message(token, str(row["channel_id"]), text)
-        if error:
-            failed += 1
-            print(f"FAILED  {channel_label(row)}: {error}")
-        else:
-            print(f"sent    {channel_label(row)}")
-        time.sleep(0.5)  # well under Discord's rate limits for ~20 channels
-
-    print(f"\nSent to {len(rows) - failed} of {len(rows)} channel(s).")
-    return 1 if failed else 0
+    return 0
 
 
 if __name__ == "__main__":

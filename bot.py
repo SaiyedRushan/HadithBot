@@ -1,4 +1,4 @@
-from datetime import time
+from datetime import datetime, time
 import aiofiles
 import discord
 from discord import app_commands
@@ -52,6 +52,7 @@ from utils import (
     load_custom_limits,
     resolve_start_position,
     setup_reply,
+    update_for,
 )
 
 # Tail of the /bismillah books and /bismillah chapters replies. Both lists run
@@ -161,6 +162,8 @@ class HadithBot(commands.Bot):
 
         delivered = 0
         custom_limits = load_custom_limits()
+        # Today's update message (updates/<date>.md), if any, goes first.
+        update = update_for(datetime.now(ZoneInfo("America/Toronto")).date())
         for channel_row in channels:
             channel_id = channel_row["channel_id"]
             # Isolate each channel so one failure (e.g. missing permissions)
@@ -208,6 +211,10 @@ class HadithBot(commands.Bot):
                     )
                 )
 
+                if update:
+                    await channel.send(
+                        update, allowed_mentions=discord.AllowedMentions.none()
+                    )
                 # send greeting
                 await channel.send(
                     "# Assalamu Alaikum Warahmatullahi Wabarakatuh, here is today's hadith and one of Allah's beautiful name\n"
