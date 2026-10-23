@@ -2017,43 +2017,152 @@
       .match-btns span.grey {
         background: #4e5058;
       }
-      .match-cards {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
+      .match-label {
+        margin: 0 0 8px;
+        font-size: 0.74rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #949ba4;
+      }
+      .match-btns span {
+        cursor: default;
+      }
+      .match-play {
         margin-top: 14px;
         background: #0d131c;
         border-radius: 10px;
         padding: 12px;
       }
-      .match-cards div {
+      .match-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+        font-size: 0.8rem;
+        color: #98a2b3;
+      }
+      .match-bar b {
+        color: #fff;
+        font-size: 0.86rem;
+      }
+      .match-cards {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+      @media (max-width: 480px) {
+        .match-cards {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      .match-cards button {
+        font: inherit;
+        cursor: pointer;
         border: 1.5px solid #2f6aa8;
         background: #0f1e30;
         color: #f1f4f8;
         border-radius: 8px;
-        min-height: 52px;
+        min-height: 58px;
         display: grid;
         place-items: center;
         text-align: center;
         padding: 6px;
-        font-size: 0.74rem;
+        font-size: 0.76rem;
         font-weight: 600;
+        line-height: 1.3;
+        transition: transform 0.15s ease, box-shadow 0.15s ease,
+          background 0.2s ease, border-color 0.2s ease;
+      }
+      .match-cards button:hover:not(:disabled) {
+        transform: translateY(-2px);
+      }
+      .match-cards button:focus-visible {
+        outline: 2px solid #ddbb74;
+        outline-offset: 2px;
       }
       .match-cards .m {
         border-color: #c46a2b;
         background: #26190f;
         color: #fbe6cf;
       }
+      .match-cards .sel {
+        box-shadow: 0 0 0 3px #e8edf5;
+      }
+      .match-cards .bad {
+        border-color: #d2475a;
+        background: #2d1216;
+        color: #ffc9d0;
+        animation: match-shake 0.35s ease;
+      }
       .match-cards .ok {
         border-color: #2f9e63;
         background: #0f2a1d;
         color: #9be3bb;
+        cursor: default;
+        animation: match-pop 0.3s ease;
+      }
+      .match-cards .ok.missed {
+        border-style: dashed;
+        border-color: #d2475a;
       }
       .match-cards .ar {
         display: block;
         font-weight: 500;
-        font-size: 0.85rem;
+        font-size: 0.88rem;
         font-family: "Geeza Pro", "Noto Naskh Arabic", serif;
+      }
+      @keyframes match-shake {
+        25% { transform: translateX(-3px); }
+        75% { transform: translateX(3px); }
+      }
+      @keyframes match-pop {
+        50% { transform: scale(1.05); }
+      }
+      .match-done {
+        text-align: center;
+        padding: 8px 4px 4px;
+        color: #c9d1dc;
+        font-size: 0.86rem;
+      }
+      .match-done .big {
+        color: #fff;
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin: 0 0 2px;
+      }
+      .match-done .sq {
+        font-size: 1.1rem;
+        letter-spacing: 2px;
+        margin: 6px 0;
+      }
+      .match-done .acts {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+      .match-done button,
+      .match-done a {
+        font: inherit;
+        font-size: 0.82rem;
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 7px 12px;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .match-done button {
+        background: #2f9e63;
+        border: 1px solid #2f9e63;
+        color: #04140b;
+      }
+      .match-done a {
+        border: 1px solid #c8883a;
+        color: #f3d3a3;
       }
 
       /* ---------- scroll reveal ---------- */
@@ -2579,8 +2688,9 @@
             </div>
 
             <figure class="shot" style="margin: 0">
-              <div class="match-demo" role="img" aria-label="HadithBot's name match message in Discord, with two scores and a Play button, and part of the game's grid of name and meaning cards.">
-                <div class="match-embed">
+              <div class="match-demo">
+                <p class="match-label">What the message looks like in Discord</p>
+                <div class="match-embed" role="img" aria-label="HadithBot's name match message in Discord, with two scores and a Play button.">
                   <div class="t">Today's name match: 10 names of Allah</div>
                   <div>
                     Match today's name, Al-Mubdi, and the 9 names before it to
@@ -2596,19 +2706,20 @@
                     <span class="sq">🟩🟩🟩🟥🟩🟩🟩🟩🟩🟩</span>
                   </div>
                 </div>
-                <div class="match-btns">
+                <div class="match-btns" aria-hidden="true">
                   <span>Play today's match</span>
                   <span class="grey">All 99 names on MugUp ↗</span>
                 </div>
-                <div class="match-cards" aria-hidden="true">
-                  <div>58. Al-Mubdi<span class="ar">الْمُبْدِئُ</span></div>
-                  <div class="ok">The Witness</div>
-                  <div class="m">The Originator</div>
-                  <div>52. Al-Wakeel<span class="ar">الْوَكِيلُ</span></div>
-                  <div class="m">The All-Strong</div>
-                  <div class="ok">50. Ash-Shaheed</div>
-                  <div>53. Al-Qawiyy<span class="ar">الْقَوِيُّ</span></div>
-                  <div class="m">The Trustee and Disposer of Affairs</div>
+                <div class="match-play" id="matchPlay">
+                  <div class="match-bar">
+                    <b>Try it here: match 4 names to their meanings</b>
+                    <span id="matchStatus" aria-live="polite">Tap a name, then its meaning</span>
+                  </div>
+                  <div class="match-cards" id="matchCards"></div>
+                  <div class="match-done" id="matchDone" hidden></div>
+                  <noscript>
+                    <p class="match-done">Turn on JavaScript to play the sample here.</p>
+                  </noscript>
                 </div>
               </div>
             </figure>
@@ -3446,6 +3557,128 @@
           { passive: true }
         );
         update();
+      })();
+    </script>
+    <script>
+      // The playable sample in the name match section: the same rules as the
+      // real game in activity/ (a pair scores when it's matched without a
+      // mistake), with 4 random names a round instead of 10.
+      (function () {
+        var NAMES = [[1,"Ar-Rahman","الرَّحْمَنُ","The Most Compassionate"],[2,"Ar-Raheem","الرَّحِيمُ","The Most Merciful"],[3,"Al-Malik","الْمَلِكُ","The Sovereign King"],[4,"Al-Quddus","الْقُدُّوسُ","The Most Holy"],[5,"As-Salam","السَّلاَمُ","The Source of Peace"],[6,"Al-Mu'min","الْمُؤْمِنُ","The Granter of Security"],[7,"Al-Muhaymin","الْمُهَيْمِنُ","The Guardian Overseer"],[8,"Al-Azeez","الْعَزِيزُ","The Almighty"],[10,"Al-Mutakabbir","الْمُتَكَبِّرُ","The Supreme in Greatness"],[11,"Al-Khaliq","الْخَالِقُ","The Creator"],[12,"Al-Baari","الْبَارِئُ","The Maker"],[13,"Al-Musawwir","الْمُصَوِّرُ","The Fashioner of Forms"],[14,"Al-Ghaffar","الْغَفَّارُ","The Ever-Forgiving"],[15,"Al-Qahhar","الْقَهَّارُ","The Subduer"],[16,"Al-Wahhab","الْوَهَّابُ","The Bestower of Gifts"],[17,"Ar-Razzaq","الرَّزَّاقُ","The Provider"],[18,"Al-Fattah","الْفَتَّاحُ","The Opener"],[19,"Al-'Aleem","اَلْعَلِيْمُ","The All-Knowing"],[20,"Al-Qabid","الْقَابِضُ","The Withholder"],[21,"Al-Basit","الْبَاسِطُ","The Expander"],[22,"Al-Khafid","الْخَافِضُ","The Abaser"],[23,"Ar-Rafi'","الرَّافِعُ","The Exalter"],[24,"Al-Mu'izz","الْمُعِزُّ","The Giver of Honor"],[25,"Al-Mudhill","المُذِلُّ","The Giver of Dishonor"],[26,"As-Samee'","السَّمِيعُ","The All-Hearing"],[27,"Al-Baseer","الْبَصِيرُ","The All-Seeing"],[28,"Al-Hakam","الْحَكَمُ","The Judge"],[29,"Al-'Adl","الْعَدْلُ","The Utterly Just"],[30,"Al-Lateef","اللَّطِيفُ","The Subtle and Kind"],[31,"Al-Khabeer","الْخَبِيرُ","The All-Aware"],[32,"Al-Haleem","الْحَلِيمُ","The Forbearing"],[33,"Al-'Azeem","الْعَظِيمُ","The Magnificent"],[34,"Al-Ghafoor","الْغَفُورُ","The All-Forgiving"],[35,"Ash-Shakoor","الشَّكُورُ","The Most Appreciative"],[36,"Al-'Aliyy","الْعَلِيُّ","The Most High"],[37,"Al-Kabeer","الْكَبِيرُ","The Most Great"],[38,"Al-Hafeez","الْحَفِيظُ","The Preserver"],[39,"Al-Muqeet","المُقيِت","The Sustainer"],[40,"Al-Haseeb","الْحسِيبُ","The Reckoner"],[41,"Al-Jaleel","الْجَلِيلُ","The Majestic"],[42,"Al-Kareem","الْكَرِيمُ","The Most Generous"],[43,"Ar-Raqeeb","الرَّقِيبُ","The Watchful"],[44,"Al-Mujeeb","الْمُجِيبُ","The Responsive"],[45,"Al-Waasi'","الْوَاسِعُ","The All-Encompassing"],[46,"Al-Hakeem","الْحَكِيمُ","The All-Wise"],[47,"Al-Wudood","الْوَدُودُ","The Most Loving"],[48,"Al-Majeed","الْمَجِيدُ","The Most Glorious"],[49,"Al-Baa'ith","الْبَاعِثُ","The Resurrector"],[50,"Ash-Shaheed","الشَّهِيدُ","The Witness"],[51,"Al-Haqq","الْحَقُّ","The Absolute Truth"],[53,"Al-Qawiyy","الْقَوِيُّ","The All-Strong"],[54,"Al-Mateen","الْمَتِينُ","The Firm and Steadfast"],[55,"Al-Waliyy","الْوَلِيُّ","The Protecting Friend"],[56,"Al-Hameed","الْحَمِيدُ","The All-Praiseworthy"],[57,"Al-Muhsi","الْمُحْصِي","The All-Enumerating"],[58,"Al-Mubdi","الْمُبْدِئُ","The Originator"],[59,"Al-Mu'eed","الْمُعِيدُ","The Restorer"],[60,"Al-Muhyi","الْمُحْيِي","The Giver of Life"],[61,"Al-Mumeet","اَلْمُمِيتُ","The Bringer of Death"],[62,"Al-Hayy","الْحَيُّ","The Ever-Living"],[64,"Al-Waajid","الْوَاجِدُ","The Perceiver and Finder"],[66,"Al-Waahid","الْواحِدُ","The One"],[67,"Al-Ahad","اَلاَحَدُ","The Indivisible One"],[68,"As-Samad","الصَّمَدُ","The Eternal Refuge"],[69,"Al-Qaadir","الْقَادِرُ","The All-Powerful"],[70,"Al-Muqtadir","الْمُقْتَدِرُ","The Omnipotent"],[71,"Al-Muqaddim","الْمُقَدِّمُ","The Expediter"],[72,"Al-Mu'akhkhir","الْمُؤَخِّرُ","The Delayer"],[73,"Al-Awwal","الأوَّلُ","The First"],[74,"Al-Aakhir","الآخِرُ","The Last"],[75,"Az-Zaahir","الظَّاهِرُ","The Manifest"],[76,"Al-Baatin","الْبَاطِنُ","The Hidden One"],[77,"Al-Waali","الْوَالِي","The Governor"],[78,"Al-Muta'ali","الْمُتَعَالِي","The Supreme One"],[81,"Al-Muntaqim","الْمُنْتَقِمُ","The Avenger"],[82,"Al-'Afuww","العَفُوُّ","The Pardoner"],[83,"Ar-Ra'oof","الرَّؤُوفُ","The Most Kind"],[86,"Al-Muqsit","الْمُقْسِطُ","The Equitable One"],[87,"Al-Jaami'","الْجَامِعُ","The Gatherer"],[88,"Al-Ghaniyy","الْغَنِيُّ","The Self-Sufficient One"],[89,"Al-Mughni","الْمُغْنِي","The Enricher"],[91,"Ad-Daarr","الضَّارَّ","The Creator of Harm"],[92,"An-Naafi'","النَّافِعُ","The Creator of Good"],[93,"An-Noor","النُّورُ","The Light"],[94,"Al-Haadi","الْهَادِي","The Guide"],[96,"Al-Baaqi","اَلْبَاقِي","The Everlasting One"],[97,"Al-Waarith","الْوَارِثُ","The Inheritor"],[99,"As-Saboor","الصَّبُورُ","The Patient One"]];
+        var cardsEl = document.getElementById("matchCards");
+        if (!cardsEl) return;
+        var statusEl = document.getElementById("matchStatus");
+        var doneEl = document.getElementById("matchDone");
+        var SIZE = 4;
+        var round, selected, matched, missed, mistakes, startedAt, busy;
+
+        function shuffle(a) {
+          for (var i = a.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = a[i]; a[i] = a[j]; a[j] = t;
+          }
+          return a;
+        }
+        function took(ms) {
+          var s = Math.max(1, Math.round(ms / 1000));
+          return s < 60 ? s + "s" : Math.floor(s / 60) + "m " + String(s % 60).padStart(2, "0") + "s";
+        }
+        function status() {
+          var n = Object.keys(matched).length;
+          statusEl.textContent = n + " of " + SIZE + " matched · " + mistakes +
+            (mistakes === 1 ? " mistake" : " mistakes");
+        }
+        function start() {
+          round = shuffle(NAMES.slice()).slice(0, SIZE);
+          selected = null; matched = {}; missed = {}; mistakes = 0;
+          startedAt = null; busy = false;
+          var cards = [];
+          round.forEach(function (n) {
+            cards.push({ id: n[0], kind: "n", label: n[0] + ". " + n[1], ar: n[2] });
+            cards.push({ id: n[0], kind: "m", label: n[3] });
+          });
+          cardsEl.innerHTML = "";
+          shuffle(cards).forEach(function (c) {
+            var b = document.createElement("button");
+            b.type = "button";
+            b.className = c.kind === "m" ? "m" : "";
+            b.dataset.id = c.id;
+            b.dataset.kind = c.kind;
+            b.textContent = c.label;
+            if (c.ar) {
+              var ar = document.createElement("span");
+              ar.className = "ar"; ar.lang = "ar"; ar.textContent = c.ar;
+              b.appendChild(ar);
+            }
+            b.setAttribute("aria-label", c.kind === "n" ? "Name: " + c.label : "Meaning: " + c.label);
+            b.addEventListener("click", function () { pick(b); });
+            cardsEl.appendChild(b);
+          });
+          cardsEl.hidden = false;
+          doneEl.hidden = true;
+          statusEl.textContent = "Tap a name, then its meaning";
+        }
+        function pick(b) {
+          if (busy || b.disabled) return;
+          if (startedAt === null) startedAt = Date.now();
+          if (!selected) { selected = b; b.classList.add("sel"); return; }
+          if (selected === b) { b.classList.remove("sel"); selected = null; return; }
+          if (selected.dataset.kind === b.dataset.kind) {
+            selected.classList.remove("sel"); selected = b; b.classList.add("sel"); return;
+          }
+          var a = selected; selected = null;
+          a.classList.remove("sel");
+          if (a.dataset.id === b.dataset.id) {
+            var id = a.dataset.id;
+            matched[id] = true;
+            [a, b].forEach(function (el) {
+              el.classList.add("ok");
+              if (missed[id]) el.classList.add("missed");
+              el.disabled = true;
+            });
+            status();
+            if (Object.keys(matched).length === SIZE) finish();
+          } else {
+            mistakes++;
+            missed[a.dataset.id] = true; missed[b.dataset.id] = true;
+            busy = true;
+            a.classList.add("bad"); b.classList.add("bad");
+            status();
+            setTimeout(function () {
+              a.classList.remove("bad"); b.classList.remove("bad"); busy = false;
+            }, 800);
+          }
+        }
+        function finish() {
+          var clean = round.filter(function (n) { return !missed[n[0]]; }).length;
+          var squares = round.map(function (n) { return missed[n[0]] ? "🟥" : "🟩"; }).join("");
+          var line = clean === SIZE
+            ? "All " + SIZE + " on the first try"
+            : clean + " of " + SIZE + " on the first try";
+          doneEl.innerHTML = "";
+          var big = document.createElement("p"); big.className = "big";
+          big.textContent = line + " in " + took(Date.now() - startedAt);
+          var sq = document.createElement("p"); sq.className = "sq"; sq.textContent = squares;
+          var note = document.createElement("p"); note.style.margin = "0";
+          note.textContent = "In Discord it's 10 names a day, and your score goes on the message for your whole server to see.";
+          var acts = document.createElement("div"); acts.className = "acts";
+          var again = document.createElement("button"); again.type = "button";
+          again.textContent = "Play again with 4 new names";
+          again.addEventListener("click", function () {
+            start();
+            var first = cardsEl.querySelector("button");
+            if (first) first.focus();
+          });
+          var add = document.createElement("a"); add.href = "#add";
+          add.textContent = "Add HadithBot to your server";
+          acts.appendChild(again); acts.appendChild(add);
+          doneEl.appendChild(big); doneEl.appendChild(sq); doneEl.appendChild(note); doneEl.appendChild(acts);
+          cardsEl.hidden = true;
+          doneEl.hidden = false;
+          statusEl.textContent = line + ".";
+          again.focus();
+        }
+        start();
       })();
     </script>
   </body>
