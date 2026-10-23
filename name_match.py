@@ -55,8 +55,17 @@ GAMES = {
         "detail": "10 surahs of the Quran, a different 10 each day",
         "mugup": "https://mugup.app/decks/102",
     },
+    "words": {
+        "title": "Quranic words",
+        "play": "Match each Quranic word to its meaning",
+        "detail": "12 words from the Quran, one theme a day",
+        "mugup": "https://mugup.app/decks/103",
+    },
 }
-GAME_ORDER = ("names", "surahs")
+GAME_ORDER = ("names", "surahs", "words")
+# What each game is called in a sentence on the card.
+GAME_NAMES = {"surahs": "surah match", "words": "Quranic word match"}
+WORDS_FILE = Path(__file__).resolve().parent / "data" / "quranic_words.json"
 SURAHS_FILE = Path(__file__).resolve().parent / "data" / "114surahs.json"
 # Day 0 of the surah rotation. Any fixed date works; this is launch day.
 SURAH_EPOCH = date(2026, 10, 23)
@@ -154,6 +163,33 @@ def build_surah_items(surahs: Sequence[dict], numbers: Sequence[int]) -> dict:
         for n in numbers
     ]
     return {"sets": [{"kind": "surahs", "pairs": pairs}]}
+
+
+def load_word_themes(path: Path = WORDS_FILE) -> list[dict]:
+    """24 themes of Quranic words (MugUp deck 103, its grammar themes left out)."""
+    return json.loads(path.read_text())
+
+
+def pick_word_theme(key: str, count: int) -> int:
+    """Which theme a day gets: the same everywhere, each theme once per cycle."""
+    cycle, slot = divmod((date.fromisoformat(key) - SURAH_EPOCH).days, count)
+    order = list(range(count))
+    random.Random(f"words:{cycle}").shuffle(order)
+    return order[slot]
+
+
+def build_word_items(themes: Sequence[dict], index: int) -> dict:
+    theme = themes[index]
+    pairs = [
+        {
+            "id": i + 1,
+            "left": w["transliteration"],
+            "left_ar": w["arabic"],
+            "right": w["meaning"],
+        }
+        for i, w in enumerate(theme["words"])
+    ]
+    return {"sets": [{"kind": "words", "pairs": pairs}], "theme": theme["theme"]}
 
 
 def all_pairs(items: dict) -> list[dict]:
@@ -359,17 +395,23 @@ def intro_text(items: dict) -> str:
     )
 
 
-def other_games_text(others: dict, *, final: bool) -> list[str]:
-    """A line on the card for each other game in the match."""
+def other_games_text(others: dict, *, final: bool, details: Optional[dict] = None) -> list[str]:
+    """A line on the card for each other game in the match.
+
+    ``details`` replaces a game's generic detail line, e.g. with today's theme.
+    """
     lines = []
     for key in GAME_ORDER[1:]:
+        if key not in others:
+            continue
         ranked = rank(others.get(key) or [])
-        name = "surah match" if key == "surahs" else GAMES[key]["title"].lower()
+        name = GAME_NAMES.get(key, GAMES[key]["title"].lower())
+        detail = (details or {}).get(key) or GAMES[key]["detail"]
         if not ranked:
             lines.append(
                 f"**Also today: a {name}.** Nobody played it."
                 if final
-                else f"**Also today: a {name}.** {GAMES[key]['detail']}. "
+                else f"**Also today: a {name}.** {detail}. "
                 "Press Play and pick it after the names."
             )
             continue
@@ -383,6 +425,16 @@ def other_games_text(others: dict, *, final: bool) -> list[str]:
             f"**{_clean_name(top.get('display_name') or '')}** {verb} {score}."
         )
     return lines
+
+
+def day_details(key: str) -> dict:
+    """Per-day detail lines for the card: today's word theme."""
+    try:
+        themes = load_word_themes()
+    except OSError:
+        return {}
+    theme = themes[pick_word_theme(key, len(themes))]
+    return {"words": f"Today's theme: {theme['theme']}, {len(theme['words'])} words"}
 
 
 def card_title(items: dict) -> str:
@@ -427,7 +479,7 @@ def card_embed(
     if hidden > 0:
         parts.append(f"_and {hidden} other player{'s' if hidden != 1 else ''}_")
     if others is not None:
-        parts.extend(other_games_text(others, final=final))
+        parts.extend(other_games_text(others, final=final, details=day_details(day["day_key"])))
 
     embed = discord.Embed(title=title, description="\n\n".join(parts)[:4096], color=EMBED_COLOR)
     footer = f"Names {pairs[0]['id']} to {pairs[-1]['id']} · {MUGUP_CREDIT}"

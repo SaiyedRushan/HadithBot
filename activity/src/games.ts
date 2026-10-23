@@ -5,10 +5,10 @@
  */
 import {formatDuration, type Result} from './game'
 
-export type GameKey = 'names' | 'surahs'
+export type GameKey = 'names' | 'surahs' | 'words'
 
 /** One entry of `games` in GET /api/today. */
-export type GameInfo = {key: GameKey; title: string; detail: string; myResult: Result | null}
+export type GameInfo = {key: GameKey; title: string; detail: string; count?: number; myResult: Result | null}
 
 export type Wording = {
   /** "Name match" in the page header. */
@@ -24,8 +24,8 @@ export type Wording = {
   rules: string
   /** "Play the surah match" */
   play: string
-  /** "Play the surah match (10 surahs)" */
-  playWithCount: string
+  /** "Play the surah match (10 surahs)". The count comes from the server when it sends one. */
+  playWithCount: (count?: number) => string
   /** "See your surah match result" */
   seeResult: string
   boardHeading: string
@@ -50,7 +50,7 @@ const WORDING: Record<GameKey, Wording> = {
     phoneHeading: 'Match each name to its meaning',
     rules: 'Tap a name, then tap its meaning. You get a point for each name you match without a mistake. Showing a pair counts as a mistake.',
     play: 'Play the names match',
-    playWithCount: `Play the names match (${PAIRS_PER_GAME} names)`,
+    playWithCount: (n = PAIRS_PER_GAME) => `Play the names match (${n} names)`,
     seeResult: 'See your names match result',
     boardHeading: 'Today in this server',
     listNoun: '',
@@ -67,7 +67,7 @@ const WORDING: Record<GameKey, Wording> = {
     phoneHeading: 'Match each surah to its meaning',
     rules: 'Tap a surah, then tap its meaning. You get a point for each surah you match without a mistake. Showing a pair counts as a mistake.',
     play: 'Play the surah match',
-    playWithCount: `Play the surah match (${PAIRS_PER_GAME} surahs)`,
+    playWithCount: (n = PAIRS_PER_GAME) => `Play the surah match (${n} surahs)`,
     seeResult: 'See your surah match result',
     boardHeading: 'Today in this server: surah match',
     listNoun: ' surahs',
@@ -76,9 +76,27 @@ const WORDING: Record<GameKey, Wording> = {
     learnText: (missedAny) => `MugUp has every surah as a matching game${missedAny ? ', so you can practise the ones you missed.' : '.'}`,
     learnButton: 'Open the surahs on MugUp',
   },
+  words: {
+    header: 'Quranic word match',
+    cardLabel: 'Word',
+    column: 'Words',
+    sample: 'A Quranic word',
+    phoneHeading: 'Match each word to its meaning',
+    rules: 'Tap an Arabic word, then tap its meaning. You get a point for each word you match without a mistake. Showing a pair counts as a mistake.',
+    play: 'Play the Quranic word match',
+    playWithCount: (n = 12) => `Play the Quranic word match (${n} words)`,
+    seeResult: 'See your Quranic word match result',
+    boardHeading: 'Today in this server: Quranic word match',
+    listNoun: ' words',
+    empty: "Today's word match has no words in it. Close the game and press Play again later.",
+    learnHeading: 'Want to learn the words you recite?',
+    learnText: (missedAny) =>
+      `MugUp's 80% of Quranic Words deck has every theme as a matching game${missedAny ? ', so you can practise the ones you missed.' : '.'}`,
+    learnButton: 'Open the Quranic words on MugUp',
+  },
 }
 
-export const isGameKey = (key: unknown): key is GameKey => key === 'names' || key === 'surahs'
+export const isGameKey = (key: unknown): key is GameKey => key === 'names' || key === 'surahs' || key === 'words'
 
 /** The wording for a game. Anything unknown gets the names wording. */
 export function wording(game: string | null | undefined): Wording {

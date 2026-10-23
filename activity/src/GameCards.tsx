@@ -66,7 +66,7 @@ export function AnotherGame({today, onOpen}: {today: Today; onOpen: (game: GameK
               <Button onClick={() => onOpen(info.key)}>See your result</Button>
             ) : (
               <Button variant="primary" className="px-4 py-2.5" onClick={() => onOpen(info.key)}>
-                {wording(info.key).playWithCount}
+                {wording(info.key).playWithCount(info.count)}
               </Button>
             )}
           </GameCard>

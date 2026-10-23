@@ -297,7 +297,7 @@ def test_today_lists_both_games_and_serves_the_surah_match():
         return names, surahs, missing.status
 
     (names, surahs, missing), _ = serve(store, scenario)
-    assert [g["key"] for g in names["games"]] == ["names", "surahs"]
+    assert [g["key"] for g in names["games"]] == ["names", "surahs", "words"]
     assert names["game"] == "names" and surahs["game"] == "surahs"
     ids = [p["id"] for p in surahs["sets"][0]["pairs"]]
     assert ids == nm.pick_surahs("2026-10-22")
@@ -324,7 +324,8 @@ def test_each_game_has_its_own_one_try_and_board():
     assert names["recorded"] and surahs["recorded"] and not again["recorded"]
     assert surahs["result"]["score"] == 10 and again["result"]["score"] == 10
     assert len(surahs["board"]) == 1 and len(names["board"]) == 1
-    assert {g["key"]: g["myResult"]["score"] for g in surahs["games"]} == {"names": 10, "surahs": 10}
+    scores = {g["key"]: (g["myResult"] or {}).get("score") for g in surahs["games"]}
+    assert scores == {"names": 10, "surahs": 10, "words": None}
     mine = {g["key"]: g["myResult"] for g in today["games"]}
     assert mine["names"]["score"] == 10 and mine["surahs"]["score"] == 10
 
@@ -340,3 +341,27 @@ def test_names_guesses_are_not_valid_for_the_surah_match():
 
     status, _ = serve(store, scenario)
     assert status == 400
+
+
+def test_the_quranic_word_match_serves_and_scores_todays_theme():
+    store = FakeStore()
+    add_day(store)
+    themes = nm.load_word_themes()
+    theme = themes[nm.pick_word_theme("2026-10-22", len(themes))]
+    n = len(theme["words"])
+
+    async def scenario(client):
+        _, body = await sign_in(client)
+        h = auth(body["token"])
+        today = await (await client.get("/api/today?game=words", headers=h)).json()
+        posted = await (await client.post("/api/result", json={"dayKey": "2026-10-22", "game": "words", "guesses": [[i, i] for i in range(1, n + 1)], "durationMs": 40000}, headers=h)).json()
+        return today, posted
+
+    (today, posted), _ = serve(store, scenario)
+    assert today["game"] == "words" and today["title"] == "Match each Quranic word to its meaning"
+    assert today["subtitle"].startswith(f"Today's theme: {theme['theme']}.")
+    assert [p["right"] for p in today["sets"][0]["pairs"]] == [w["meaning"] for w in theme["words"]]
+    assert today["sets"][0]["pairs"][0]["leftAr"] == theme["words"][0]["arabic"]
+    words = next(g for g in today["games"] if g["key"] == "words")
+    assert words["count"] == n and words["detail"] == f"Today's theme: {theme['theme']}"
+    assert posted["recorded"] and posted["result"]["score"] == n == posted["result"]["total"]

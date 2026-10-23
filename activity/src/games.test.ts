@@ -29,7 +29,8 @@ describe('wording', () => {
     expect(w.column).toBe('Surahs')
     expect(w.boardHeading).toBe('Today in this server: surah match')
     expect(w.play).toBe('Play the surah match')
-    expect(w.playWithCount).toBe('Play the surah match (10 surahs)')
+    expect(w.playWithCount()).toBe('Play the surah match (10 surahs)')
+    expect(wording('words').playWithCount(11)).toBe('Play the Quranic word match (11 words)')
     expect(w.seeResult).toBe('See your surah match result')
     expect(w.learnHeading).toBe('Want to learn all 114 surahs?')
     expect(w.learnText(true)).toBe('MugUp has every surah as a matching game, so you can practise the ones you missed.')
@@ -42,7 +43,7 @@ describe('wording', () => {
   })
 
   it('never uses an em or en dash', () => {
-    for (const key of ['names', 'surahs']) {
+    for (const key of ['names', 'surahs', 'words']) {
       const w = wording(key)
       const text = [...Object.values(w).filter((v) => typeof v === 'string'), w.learnText(true), w.learnText(false)].join(' ')
       expect(text).not.toMatch(/[\u2013\u2014]/)

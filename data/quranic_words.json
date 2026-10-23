@@ -1,0 +1,1552 @@
+[
+  {
+    "theme": "Abstract Nouns of Belief, Character & Conduct",
+    "words": [
+      {
+        "arabic": "صَبْر",
+        "transliteration": "sabr",
+        "meaning": "patience"
+      },
+      {
+        "arabic": "شُكْر",
+        "transliteration": "shukr",
+        "meaning": "gratitude"
+      },
+      {
+        "arabic": "خَوْف",
+        "transliteration": "khawf",
+        "meaning": "fear"
+      },
+      {
+        "arabic": "رَجَاء",
+        "transliteration": "raja'",
+        "meaning": "hope"
+      },
+      {
+        "arabic": "رُشْد",
+        "transliteration": "rushd",
+        "meaning": "sound guidance"
+      },
+      {
+        "arabic": "سَفَه",
+        "transliteration": "safah",
+        "meaning": "foolishness"
+      },
+      {
+        "arabic": "عِلْم",
+        "transliteration": "'ilm",
+        "meaning": "knowledge"
+      },
+      {
+        "arabic": "جَهْل",
+        "transliteration": "jahl",
+        "meaning": "ignorance"
+      },
+      {
+        "arabic": "حِلْم",
+        "transliteration": "hilm",
+        "meaning": "forbearance"
+      },
+      {
+        "arabic": "غَضَب",
+        "transliteration": "ghadab",
+        "meaning": "anger"
+      },
+      {
+        "arabic": "عَدْل",
+        "transliteration": "'adl",
+        "meaning": "justice"
+      },
+      {
+        "arabic": "عَفْو",
+        "transliteration": "'afw",
+        "meaning": "pardon"
+      }
+    ]
+  },
+  {
+    "theme": "Attributes of Allah: the Adjectives That End the Verses",
+    "words": [
+      {
+        "arabic": "سَمِيع",
+        "transliteration": "sami'",
+        "meaning": "All-Hearing"
+      },
+      {
+        "arabic": "بَصِير",
+        "transliteration": "basir",
+        "meaning": "All-Seeing"
+      },
+      {
+        "arabic": "شَكُور",
+        "transliteration": "shakur",
+        "meaning": "Most Appreciative"
+      },
+      {
+        "arabic": "رَءُوف",
+        "transliteration": "ra'uf",
+        "meaning": "Most Compassionate"
+      },
+      {
+        "arabic": "وَدُود",
+        "transliteration": "wadud",
+        "meaning": "Most Loving"
+      },
+      {
+        "arabic": "حَيّ",
+        "transliteration": "hayy",
+        "meaning": "the Living One"
+      },
+      {
+        "arabic": "غَنِيّ",
+        "transliteration": "ghaniyy",
+        "meaning": "Self-Sufficient"
+      },
+      {
+        "arabic": "قُدُّوس",
+        "transliteration": "quddus",
+        "meaning": "the Most Holy"
+      },
+      {
+        "arabic": "نَصِير",
+        "transliteration": "nasir",
+        "meaning": "the Helper"
+      },
+      {
+        "arabic": "بَشِير",
+        "transliteration": "bashir",
+        "meaning": "Bearer of glad tidings"
+      },
+      {
+        "arabic": "وَهَّاب",
+        "transliteration": "wahhab",
+        "meaning": "the Bestower"
+      },
+      {
+        "arabic": "مُقْتَدِر",
+        "transliteration": "muqtadir",
+        "meaning": "All-Capable"
+      }
+    ]
+  },
+  {
+    "theme": "Blessings, Power & Provision",
+    "words": [
+      {
+        "arabic": "قُوَّة",
+        "transliteration": "quwwah",
+        "meaning": "strength"
+      },
+      {
+        "arabic": "بَأْس",
+        "transliteration": "ba's",
+        "meaning": "might, severity"
+      },
+      {
+        "arabic": "نَصْر",
+        "transliteration": "nasr",
+        "meaning": "help to victory"
+      },
+      {
+        "arabic": "فَتْح",
+        "transliteration": "fath",
+        "meaning": "opening, conquest"
+      },
+      {
+        "arabic": "شِفَاء",
+        "transliteration": "shifa'",
+        "meaning": "healing"
+      },
+      {
+        "arabic": "سَلَام",
+        "transliteration": "salam",
+        "meaning": "peace, safety"
+      },
+      {
+        "arabic": "أَمْن",
+        "transliteration": "amn",
+        "meaning": "security"
+      },
+      {
+        "arabic": "مَغْفِرَة",
+        "transliteration": "maghfirah",
+        "meaning": "forgiveness"
+      },
+      {
+        "arabic": "مَشِيئَة",
+        "transliteration": "mashi'ah",
+        "meaning": "divine will"
+      },
+      {
+        "arabic": "إِرَادَة",
+        "transliteration": "iradah",
+        "meaning": "intention, wanting"
+      },
+      {
+        "arabic": "نَعْمَاء",
+        "transliteration": "na'ma'",
+        "meaning": "prosperity"
+      },
+      {
+        "arabic": "ضَرَّاء",
+        "transliteration": "darra'",
+        "meaning": "adversity"
+      }
+    ]
+  },
+  {
+    "theme": "Deeds, Sin & Lawfulness",
+    "words": [
+      {
+        "arabic": "شَرّ",
+        "transliteration": "sharr",
+        "meaning": "evil"
+      },
+      {
+        "arabic": "حَلَال",
+        "transliteration": "halal",
+        "meaning": "lawful"
+      },
+      {
+        "arabic": "بَغْي",
+        "transliteration": "baghy",
+        "meaning": "oppression, outrage"
+      },
+      {
+        "arabic": "عُدْوَان",
+        "transliteration": "'udwan",
+        "meaning": "aggression"
+      },
+      {
+        "arabic": "رِيَاء",
+        "transliteration": "riya'",
+        "meaning": "showing off"
+      },
+      {
+        "arabic": "قَتْل",
+        "transliteration": "qatl",
+        "meaning": "killing"
+      },
+      {
+        "arabic": "سَرِقَة",
+        "transliteration": "sariqah",
+        "meaning": "theft"
+      },
+      {
+        "arabic": "زِنَا",
+        "transliteration": "zina",
+        "meaning": "fornication"
+      },
+      {
+        "arabic": "خَمْر",
+        "transliteration": "khamr",
+        "meaning": "intoxicating drink"
+      },
+      {
+        "arabic": "مَيْسِر",
+        "transliteration": "maysir",
+        "meaning": "gambling"
+      },
+      {
+        "arabic": "رِجْس",
+        "transliteration": "rijs",
+        "meaning": "filth, abomination"
+      },
+      {
+        "arabic": "لَغْو",
+        "transliteration": "laghw",
+        "meaning": "idle talk"
+      }
+    ]
+  },
+  {
+    "theme": "Deen & Faith: Core Nouns",
+    "words": [
+      {
+        "arabic": "مُسْلِم",
+        "transliteration": "muslim",
+        "meaning": "one who submits"
+      },
+      {
+        "arabic": "مُؤْمِن",
+        "transliteration": "mu'min",
+        "meaning": "a believer"
+      },
+      {
+        "arabic": "كَافِر",
+        "transliteration": "kafir",
+        "meaning": "a disbeliever"
+      },
+      {
+        "arabic": "مُشْرِك",
+        "transliteration": "mushrik",
+        "meaning": "one who associates partners"
+      },
+      {
+        "arabic": "مُنَافِق",
+        "transliteration": "munafiq",
+        "meaning": "a hypocrite"
+      },
+      {
+        "arabic": "شَرِيك",
+        "transliteration": "sharik",
+        "meaning": "a partner, an associate"
+      },
+      {
+        "arabic": "جِنّ",
+        "transliteration": "jinn",
+        "meaning": "the hidden beings"
+      },
+      {
+        "arabic": "بَاطِل",
+        "transliteration": "batil",
+        "meaning": "falsehood, the void"
+      },
+      {
+        "arabic": "قِبْلَة",
+        "transliteration": "qiblah",
+        "meaning": "direction faced in prayer"
+      },
+      {
+        "arabic": "مِيثَاق",
+        "transliteration": "mithaq",
+        "meaning": "a binding covenant"
+      },
+      {
+        "arabic": "زَكَاة",
+        "transliteration": "zakah",
+        "meaning": "the purifying alms"
+      }
+    ]
+  },
+  {
+    "theme": "Describing Words: Common Adjectives",
+    "words": [
+      {
+        "arabic": "كَبِير",
+        "transliteration": "kabir",
+        "meaning": "big, great"
+      },
+      {
+        "arabic": "صَغِير",
+        "transliteration": "saghir",
+        "meaning": "small, young"
+      },
+      {
+        "arabic": "كَثِير",
+        "transliteration": "kathir",
+        "meaning": "much, many"
+      },
+      {
+        "arabic": "قَلِيل",
+        "transliteration": "qalil",
+        "meaning": "little, few"
+      },
+      {
+        "arabic": "قَرِيب",
+        "transliteration": "qarib",
+        "meaning": "near, close"
+      },
+      {
+        "arabic": "بَعِيد",
+        "transliteration": "ba'id",
+        "meaning": "far, distant"
+      },
+      {
+        "arabic": "مَيِّت",
+        "transliteration": "mayyit",
+        "meaning": "dead"
+      },
+      {
+        "arabic": "ضَعِيف",
+        "transliteration": "da'if",
+        "meaning": "weak"
+      },
+      {
+        "arabic": "خَفِيف",
+        "transliteration": "khafif",
+        "meaning": "light in weight"
+      },
+      {
+        "arabic": "جَدِيد",
+        "transliteration": "jadid",
+        "meaning": "new"
+      },
+      {
+        "arabic": "أَصَمّ",
+        "transliteration": "asamm",
+        "meaning": "deaf"
+      },
+      {
+        "arabic": "أَبْكَم",
+        "transliteration": "abkam",
+        "meaning": "mute, dumb"
+      }
+    ]
+  },
+  {
+    "theme": "Family & Relatives",
+    "words": [
+      {
+        "arabic": "رَجُل",
+        "transliteration": "rajul",
+        "meaning": "a man"
+      },
+      {
+        "arabic": "نِسَاء",
+        "transliteration": "nisa'",
+        "meaning": "women"
+      },
+      {
+        "arabic": "أُخْت",
+        "transliteration": "ukht",
+        "meaning": "sister"
+      },
+      {
+        "arabic": "بِنْت",
+        "transliteration": "bint",
+        "meaning": "daughter"
+      },
+      {
+        "arabic": "بَنَات",
+        "transliteration": "banat",
+        "meaning": "daughters"
+      },
+      {
+        "arabic": "بَنُون",
+        "transliteration": "banun",
+        "meaning": "sons"
+      },
+      {
+        "arabic": "خَال",
+        "transliteration": "khal",
+        "meaning": "maternal uncle"
+      },
+      {
+        "arabic": "صَاحِبَة",
+        "transliteration": "sahibah",
+        "meaning": "wife, consort"
+      },
+      {
+        "arabic": "ابْن",
+        "transliteration": "ibn",
+        "meaning": "son"
+      },
+      {
+        "arabic": "مَوْلُود",
+        "transliteration": "mawlud",
+        "meaning": "newborn child"
+      },
+      {
+        "arabic": "حَمْل",
+        "transliteration": "haml",
+        "meaning": "pregnancy"
+      }
+    ]
+  },
+  {
+    "theme": "More Frequent Verbs: Action & Response",
+    "words": [
+      {
+        "arabic": "كَرِهَ",
+        "transliteration": "kariha",
+        "meaning": "he disliked, hated"
+      },
+      {
+        "arabic": "كَارِهُونَ",
+        "transliteration": "karihun",
+        "meaning": "unwilling ones"
+      },
+      {
+        "arabic": "غَضِبَ",
+        "transliteration": "ghadiba",
+        "meaning": "he became angry"
+      },
+      {
+        "arabic": "أَمِنَ",
+        "transliteration": "amina",
+        "meaning": "he felt safe, secure"
+      },
+      {
+        "arabic": "رَجَا",
+        "transliteration": "raja",
+        "meaning": "he hoped for"
+      },
+      {
+        "arabic": "عَصَىٰ",
+        "transliteration": "'asa",
+        "meaning": "he disobeyed"
+      },
+      {
+        "arabic": "فَرِحَ",
+        "transliteration": "fariha",
+        "meaning": "he rejoiced, exulted"
+      },
+      {
+        "arabic": "أَعْرَضَ",
+        "transliteration": "a'rada",
+        "meaning": "he turned aside, ignored"
+      },
+      {
+        "arabic": "اسْتَهْزَأَ",
+        "transliteration": "istahza'a",
+        "meaning": "he mocked, ridiculed"
+      },
+      {
+        "arabic": "فَسَقَ",
+        "transliteration": "fasaqa",
+        "meaning": "he defiantly disobeyed"
+      },
+      {
+        "arabic": "تَرَبَّصَ",
+        "transliteration": "tarabbasa",
+        "meaning": "he waited, lay in wait"
+      },
+      {
+        "arabic": "أَبَىٰ",
+        "transliteration": "aba",
+        "meaning": "he refused"
+      }
+    ]
+  },
+  {
+    "theme": "Nature, Sky & Earth",
+    "words": [
+      {
+        "arabic": "نَحْل",
+        "transliteration": "nahl",
+        "meaning": "bees"
+      },
+      {
+        "arabic": "نَمْل",
+        "transliteration": "naml",
+        "meaning": "ants"
+      },
+      {
+        "arabic": "عَنْكَبُوت",
+        "transliteration": "'ankabut",
+        "meaning": "spider"
+      },
+      {
+        "arabic": "فِيل",
+        "transliteration": "fil",
+        "meaning": "elephant"
+      },
+      {
+        "arabic": "بَقَرَة",
+        "transliteration": "baqarah",
+        "meaning": "cow"
+      },
+      {
+        "arabic": "إِبِل",
+        "transliteration": "ibil",
+        "meaning": "camels"
+      },
+      {
+        "arabic": "حُوت",
+        "transliteration": "hut",
+        "meaning": "great fish, whale"
+      },
+      {
+        "arabic": "كَلْب",
+        "transliteration": "kalb",
+        "meaning": "dog"
+      },
+      {
+        "arabic": "خَيْل",
+        "transliteration": "khayl",
+        "meaning": "horses"
+      },
+      {
+        "arabic": "عَسَل",
+        "transliteration": "'asal",
+        "meaning": "honey"
+      },
+      {
+        "arabic": "لَبَن",
+        "transliteration": "laban",
+        "meaning": "milk"
+      },
+      {
+        "arabic": "طَيْر",
+        "transliteration": "tayr",
+        "meaning": "birds"
+      }
+    ]
+  },
+  {
+    "theme": "People & Society",
+    "words": [
+      {
+        "arabic": "مُجْرِم",
+        "transliteration": "mujrim",
+        "meaning": "criminal"
+      },
+      {
+        "arabic": "مُصْلِح",
+        "transliteration": "muslih",
+        "meaning": "reformer"
+      },
+      {
+        "arabic": "مُفْسِد",
+        "transliteration": "mufsid",
+        "meaning": "corrupter"
+      },
+      {
+        "arabic": "مُفْلِح",
+        "transliteration": "muflih",
+        "meaning": "one who prospers"
+      },
+      {
+        "arabic": "خَاسِر",
+        "transliteration": "khasir",
+        "meaning": "loser"
+      },
+      {
+        "arabic": "ظَالِم",
+        "transliteration": "zalim",
+        "meaning": "wrongdoer"
+      },
+      {
+        "arabic": "فَاسِق",
+        "transliteration": "fasiq",
+        "meaning": "defiant sinner"
+      },
+      {
+        "arabic": "كَاذِب",
+        "transliteration": "kadhib",
+        "meaning": "liar"
+      },
+      {
+        "arabic": "جَاهِل",
+        "transliteration": "jahil",
+        "meaning": "ignorant one"
+      },
+      {
+        "arabic": "غَافِل",
+        "transliteration": "ghafil",
+        "meaning": "heedless one"
+      },
+      {
+        "arabic": "مُسْتَكْبِر",
+        "transliteration": "mustakbir",
+        "meaning": "arrogant one"
+      },
+      {
+        "arabic": "ضَيْف",
+        "transliteration": "dayf",
+        "meaning": "guest"
+      }
+    ]
+  },
+  {
+    "theme": "Places & the World",
+    "words": [
+      {
+        "arabic": "مَشْرِق",
+        "transliteration": "mashriq",
+        "meaning": "east"
+      },
+      {
+        "arabic": "مَغْرِب",
+        "transliteration": "maghrib",
+        "meaning": "west"
+      },
+      {
+        "arabic": "بَرّ",
+        "transliteration": "barr",
+        "meaning": "dry land"
+      },
+      {
+        "arabic": "جِدَار",
+        "transliteration": "jidar",
+        "meaning": "wall"
+      },
+      {
+        "arabic": "مَنْزِل",
+        "transliteration": "manzil",
+        "meaning": "stage, stopping place"
+      },
+      {
+        "arabic": "مِصْر",
+        "transliteration": "misr",
+        "meaning": "Egypt"
+      },
+      {
+        "arabic": "بَكَّة",
+        "transliteration": "bakkah",
+        "meaning": "Makkah's other name"
+      },
+      {
+        "arabic": "يَثْرِب",
+        "transliteration": "yathrib",
+        "meaning": "Madinah's old name"
+      },
+      {
+        "arabic": "مِحْرَاب",
+        "transliteration": "mihrab",
+        "meaning": "prayer chamber"
+      },
+      {
+        "arabic": "أَسْوَاق",
+        "transliteration": "aswaq",
+        "meaning": "markets"
+      },
+      {
+        "arabic": "رَبْوَة",
+        "transliteration": "rabwah",
+        "meaning": "high ground, hill"
+      },
+      {
+        "arabic": "سَاحَة",
+        "transliteration": "sahah",
+        "meaning": "courtyard"
+      }
+    ]
+  },
+  {
+    "theme": "Prophets, Nations & Signs",
+    "words": [
+      {
+        "arabic": "هُود",
+        "transliteration": "hud",
+        "meaning": "sent to 'Ad"
+      },
+      {
+        "arabic": "صَالِح",
+        "transliteration": "salih",
+        "meaning": "Thamud and the she-camel"
+      },
+      {
+        "arabic": "شُعَيْب",
+        "transliteration": "shu'ayb",
+        "meaning": "sent to Madyan"
+      },
+      {
+        "arabic": "لُوط",
+        "transliteration": "lut",
+        "meaning": "the overturned cities"
+      },
+      {
+        "arabic": "يُونُس",
+        "transliteration": "yunus",
+        "meaning": "swallowed by the great fish"
+      },
+      {
+        "arabic": "أَيُّوب",
+        "transliteration": "ayyub",
+        "meaning": "patient under long illness"
+      },
+      {
+        "arabic": "دَاوُود",
+        "transliteration": "dawud",
+        "meaning": "mountains echoed his praise"
+      },
+      {
+        "arabic": "سُلَيْمَان",
+        "transliteration": "sulayman",
+        "meaning": "ruled wind, jinn and birds"
+      },
+      {
+        "arabic": "هَارُون",
+        "transliteration": "harun",
+        "meaning": "Musa's brother and helper"
+      },
+      {
+        "arabic": "قَارُون",
+        "transliteration": "qarun",
+        "meaning": "swallowed with his treasures"
+      },
+      {
+        "arabic": "هَامَان",
+        "transliteration": "haman",
+        "meaning": "Pharaoh's tower builder"
+      },
+      {
+        "arabic": "عِيسَى ابْنُ مَرْيَم",
+        "transliteration": "'isa bnu maryam",
+        "meaning": "the Messiah, a word from Allah"
+      }
+    ]
+  },
+  {
+    "theme": "The Human Body & the Senses",
+    "words": [
+      {
+        "arabic": "أُذُن",
+        "transliteration": "udhun",
+        "meaning": "ear"
+      },
+      {
+        "arabic": "فَم",
+        "transliteration": "fam",
+        "meaning": "mouth"
+      },
+      {
+        "arabic": "رِجْل",
+        "transliteration": "rijl",
+        "meaning": "leg"
+      },
+      {
+        "arabic": "رَأْس",
+        "transliteration": "ra's",
+        "meaning": "head"
+      },
+      {
+        "arabic": "بَطْن",
+        "transliteration": "batn",
+        "meaning": "belly"
+      },
+      {
+        "arabic": "ظَهْر",
+        "transliteration": "zahr",
+        "meaning": "back"
+      },
+      {
+        "arabic": "دَم",
+        "transliteration": "dam",
+        "meaning": "blood"
+      },
+      {
+        "arabic": "لَحْم",
+        "transliteration": "lahm",
+        "meaning": "flesh, meat"
+      },
+      {
+        "arabic": "عَظْم",
+        "transliteration": "'azm",
+        "meaning": "bone"
+      },
+      {
+        "arabic": "شَعْر",
+        "transliteration": "sha'r",
+        "meaning": "hair"
+      },
+      {
+        "arabic": "قَدَم",
+        "transliteration": "qadam",
+        "meaning": "foot"
+      },
+      {
+        "arabic": "عُنُق",
+        "transliteration": "'unuq",
+        "meaning": "neck"
+      }
+    ]
+  },
+  {
+    "theme": "The Last Day: Resurrection, Reckoning & Recompense",
+    "words": [
+      {
+        "arabic": "سَقَر",
+        "transliteration": "saqar",
+        "meaning": "the scorching fire"
+      },
+      {
+        "arabic": "هَاوِيَة",
+        "transliteration": "hawiyah",
+        "meaning": "the abyss, a bottomless pit"
+      },
+      {
+        "arabic": "حُطَمَة",
+        "transliteration": "hutamah",
+        "meaning": "the crusher"
+      },
+      {
+        "arabic": "لَظَىٰ",
+        "transliteration": "laza",
+        "meaning": "the blazing flame"
+      },
+      {
+        "arabic": "فِرْدَوْس",
+        "transliteration": "firdaws",
+        "meaning": "the highest garden"
+      },
+      {
+        "arabic": "عَدْن",
+        "transliteration": "'adn",
+        "meaning": "Eden, the lasting abode"
+      },
+      {
+        "arabic": "نَعِيم",
+        "transliteration": "na'im",
+        "meaning": "bliss, delight"
+      },
+      {
+        "arabic": "قَبْر",
+        "transliteration": "qabr",
+        "meaning": "a grave"
+      },
+      {
+        "arabic": "شَفَاعَة",
+        "transliteration": "shafa'ah",
+        "meaning": "intercession"
+      },
+      {
+        "arabic": "بَرْزَخ",
+        "transliteration": "barzakh",
+        "meaning": "barrier until the rising"
+      },
+      {
+        "arabic": "الْقَارِعَة",
+        "transliteration": "al-qari'ah",
+        "meaning": "the striking calamity"
+      },
+      {
+        "arabic": "كَوْثَر",
+        "transliteration": "kawthar",
+        "meaning": "abundance, a river of Paradise"
+      }
+    ]
+  },
+  {
+    "theme": "The Most Frequent Verbs",
+    "words": [
+      {
+        "arabic": "أَمَرَ",
+        "transliteration": "amara",
+        "meaning": "he commanded"
+      },
+      {
+        "arabic": "أُمِرْتُ",
+        "transliteration": "umirtu",
+        "meaning": "I was commanded"
+      },
+      {
+        "arabic": "اتَّقَىٰ",
+        "transliteration": "ittaqa",
+        "meaning": "he was mindful of Allah"
+      },
+      {
+        "arabic": "دَعَا",
+        "transliteration": "da'a",
+        "meaning": "he called upon, invoked"
+      },
+      {
+        "arabic": "دَاعٍ",
+        "transliteration": "da'in",
+        "meaning": "a caller, one who invites"
+      },
+      {
+        "arabic": "أَنزَلَ",
+        "transliteration": "anzala",
+        "meaning": "he brought down, revealed"
+      },
+      {
+        "arabic": "ذَكَرَ",
+        "transliteration": "dhakara",
+        "meaning": "he remembered, mentioned"
+      },
+      {
+        "arabic": "هَدَىٰ",
+        "transliteration": "hada",
+        "meaning": "he guided"
+      },
+      {
+        "arabic": "هَادٍ",
+        "transliteration": "hadin",
+        "meaning": "a guide"
+      },
+      {
+        "arabic": "رَحِمَ",
+        "transliteration": "rahima",
+        "meaning": "he showed mercy"
+      },
+      {
+        "arabic": "كُنْ",
+        "transliteration": "kun",
+        "meaning": "be!"
+      },
+      {
+        "arabic": "رُؤْيَا",
+        "transliteration": "ru'ya",
+        "meaning": "a dream, a vision"
+      }
+    ]
+  },
+  {
+    "theme": "Time, Place & Direction",
+    "words": [
+      {
+        "arabic": "خَلْفَ",
+        "transliteration": "khalfa",
+        "meaning": "behind"
+      },
+      {
+        "arabic": "أَمَامَ",
+        "transliteration": "amama",
+        "meaning": "in front of"
+      },
+      {
+        "arabic": "شِمَال",
+        "transliteration": "shimal",
+        "meaning": "left"
+      },
+      {
+        "arabic": "أَيْنَمَا",
+        "transliteration": "aynama",
+        "meaning": "wherever"
+      },
+      {
+        "arabic": "قَبْلَ",
+        "transliteration": "qabla",
+        "meaning": "before"
+      },
+      {
+        "arabic": "غَدًا",
+        "transliteration": "ghadan",
+        "meaning": "tomorrow"
+      },
+      {
+        "arabic": "يَوْم",
+        "transliteration": "yawm",
+        "meaning": "a day"
+      },
+      {
+        "arabic": "سَحَر",
+        "transliteration": "sahar",
+        "meaning": "pre-dawn hours"
+      },
+      {
+        "arabic": "أَمَد",
+        "transliteration": "amad",
+        "meaning": "a long span of time"
+      },
+      {
+        "arabic": "سَرْمَدًا",
+        "transliteration": "sarmadan",
+        "meaning": "perpetual, unending"
+      },
+      {
+        "arabic": "تِلْقَاءَ",
+        "transliteration": "tilqa'a",
+        "meaning": "toward, facing"
+      },
+      {
+        "arabic": "آنِفًا",
+        "transliteration": "anifan",
+        "meaning": "just now"
+      }
+    ]
+  },
+  {
+    "theme": "Trade, Wealth & Measure",
+    "words": [
+      {
+        "arabic": "ذَهَب",
+        "transliteration": "dhahab",
+        "meaning": "gold"
+      },
+      {
+        "arabic": "فِضَّة",
+        "transliteration": "fiddah",
+        "meaning": "silver"
+      },
+      {
+        "arabic": "دِينَار",
+        "transliteration": "dinar",
+        "meaning": "gold coin"
+      },
+      {
+        "arabic": "دِرْهَم",
+        "transliteration": "dirham",
+        "meaning": "silver coin"
+      },
+      {
+        "arabic": "أُجْرَة",
+        "transliteration": "ujrah",
+        "meaning": "a wage for work done"
+      },
+      {
+        "arabic": "مِسْكِين",
+        "transliteration": "miskin",
+        "meaning": "destitute person"
+      },
+      {
+        "arabic": "رِبْح",
+        "transliteration": "ribh",
+        "meaning": "profit"
+      },
+      {
+        "arabic": "خُسْرَان",
+        "transliteration": "khusran",
+        "meaning": "loss"
+      },
+      {
+        "arabic": "حَرْث",
+        "transliteration": "harth",
+        "meaning": "tilth, cropland"
+      },
+      {
+        "arabic": "زِينَة",
+        "transliteration": "zinah",
+        "meaning": "adornment"
+      },
+      {
+        "arabic": "سَفِينَة",
+        "transliteration": "safinah",
+        "meaning": "boat"
+      },
+      {
+        "arabic": "رَهْن",
+        "transliteration": "rahn",
+        "meaning": "pledge, security"
+      }
+    ]
+  },
+  {
+    "theme": "Verbs of Creation, Life, Death & Provision",
+    "words": [
+      {
+        "arabic": "أَمَاتَ",
+        "transliteration": "amata",
+        "meaning": "caused to die"
+      },
+      {
+        "arabic": "حَيِيَ",
+        "transliteration": "hayiya",
+        "meaning": "lived, was alive"
+      },
+      {
+        "arabic": "أَغْرَقَ",
+        "transliteration": "aghraqa",
+        "meaning": "drowned (someone)"
+      },
+      {
+        "arabic": "أَذَاقَ",
+        "transliteration": "adhaqa",
+        "meaning": "made (someone) taste"
+      },
+      {
+        "arabic": "مَلَكَ",
+        "transliteration": "malaka",
+        "meaning": "possessed, owned"
+      },
+      {
+        "arabic": "أَنْعَمَ",
+        "transliteration": "an'ama",
+        "meaning": "bestowed favour"
+      },
+      {
+        "arabic": "أَعْطَىٰ",
+        "transliteration": "a'ta",
+        "meaning": "gave (a gift)"
+      },
+      {
+        "arabic": "صَوَّرَ",
+        "transliteration": "sawwara",
+        "meaning": "shaped, fashioned"
+      },
+      {
+        "arabic": "أَكَلَ",
+        "transliteration": "akala",
+        "meaning": "ate"
+      },
+      {
+        "arabic": "شَرِبَ",
+        "transliteration": "shariba",
+        "meaning": "drank"
+      },
+      {
+        "arabic": "زَادَ",
+        "transliteration": "zada",
+        "meaning": "increased"
+      },
+      {
+        "arabic": "نَقَصَ",
+        "transliteration": "naqasa",
+        "meaning": "decreased, diminished"
+      }
+    ]
+  },
+  {
+    "theme": "Verbs of Faith, Worship & Obedience",
+    "words": [
+      {
+        "arabic": "رَكَعَ",
+        "transliteration": "raka'a",
+        "meaning": "bowed"
+      },
+      {
+        "arabic": "حَمِدَ",
+        "transliteration": "hamida",
+        "meaning": "praised"
+      },
+      {
+        "arabic": "كَبَّرَ",
+        "transliteration": "kabbara",
+        "meaning": "magnified, declared greatest"
+      },
+      {
+        "arabic": "صَامَ",
+        "transliteration": "sama",
+        "meaning": "fasted"
+      },
+      {
+        "arabic": "حَجَّ",
+        "transliteration": "hajja",
+        "meaning": "made the pilgrimage"
+      },
+      {
+        "arabic": "قَاتَلَ",
+        "transliteration": "qatala",
+        "meaning": "fought"
+      },
+      {
+        "arabic": "صَلَّىٰ",
+        "transliteration": "salla",
+        "meaning": "prayed"
+      },
+      {
+        "arabic": "زَكَّىٰ",
+        "transliteration": "zakka",
+        "meaning": "purified"
+      },
+      {
+        "arabic": "نَذَرَ",
+        "transliteration": "nadhara",
+        "meaning": "vowed"
+      },
+      {
+        "arabic": "ذَبَحَ",
+        "transliteration": "dhabaha",
+        "meaning": "slaughtered"
+      },
+      {
+        "arabic": "نَحَرَ",
+        "transliteration": "nahara",
+        "meaning": "sacrificed (a camel)"
+      },
+      {
+        "arabic": "أَنصَتَ",
+        "transliteration": "ansata",
+        "meaning": "listened in silence"
+      }
+    ]
+  },
+  {
+    "theme": "Verbs of Giving, Judging & Command",
+    "words": [
+      {
+        "arabic": "نَهَىٰ",
+        "transliteration": "naha",
+        "meaning": "forbade"
+      },
+      {
+        "arabic": "أَحَلَّ",
+        "transliteration": "ahalla",
+        "meaning": "made lawful"
+      },
+      {
+        "arabic": "حَرَّمَ",
+        "transliteration": "harrama",
+        "meaning": "made unlawful"
+      },
+      {
+        "arabic": "مَنَعَ",
+        "transliteration": "mana'a",
+        "meaning": "withheld, prevented"
+      },
+      {
+        "arabic": "أَذِنَ",
+        "transliteration": "adhina",
+        "meaning": "permitted, gave leave"
+      },
+      {
+        "arabic": "فَرَضَ",
+        "transliteration": "farada",
+        "meaning": "made obligatory"
+      },
+      {
+        "arabic": "بَخِلَ",
+        "transliteration": "bakhila",
+        "meaning": "was stingy"
+      },
+      {
+        "arabic": "أَعَزَّ",
+        "transliteration": "a'azza",
+        "meaning": "gave might, honoured"
+      },
+      {
+        "arabic": "أَذَلَّ",
+        "transliteration": "adhalla",
+        "meaning": "humbled, disgraced"
+      },
+      {
+        "arabic": "خَذَلَ",
+        "transliteration": "khadhala",
+        "meaning": "forsook, abandoned"
+      },
+      {
+        "arabic": "هَزَمَ",
+        "transliteration": "hazama",
+        "meaning": "routed, defeated"
+      },
+      {
+        "arabic": "بَاعَ",
+        "transliteration": "ba'a",
+        "meaning": "sold"
+      }
+    ]
+  },
+  {
+    "theme": "Verbs of Movement & Position",
+    "words": [
+      {
+        "arabic": "قَعَدَ",
+        "transliteration": "qa'ada",
+        "meaning": "he sat, stayed behind"
+      },
+      {
+        "arabic": "وَقَعَ",
+        "transliteration": "waqa'a",
+        "meaning": "it fell, came to pass"
+      },
+      {
+        "arabic": "رَفَعَ",
+        "transliteration": "rafa'a",
+        "meaning": "he raised, lifted up"
+      },
+      {
+        "arabic": "وَضَعَ",
+        "transliteration": "wada'a",
+        "meaning": "he put down, laid"
+      },
+      {
+        "arabic": "هَاجَرَ",
+        "transliteration": "hajara",
+        "meaning": "he emigrated"
+      },
+      {
+        "arabic": "مَدَّ",
+        "transliteration": "madda",
+        "meaning": "he stretched, extended"
+      },
+      {
+        "arabic": "مَشَىٰ",
+        "transliteration": "masha",
+        "meaning": "he walked"
+      },
+      {
+        "arabic": "سَعَىٰ",
+        "transliteration": "sa'a",
+        "meaning": "he strove, hurried"
+      },
+      {
+        "arabic": "هَبَطَ",
+        "transliteration": "habata",
+        "meaning": "he went down, descended"
+      },
+      {
+        "arabic": "صَعِدَ",
+        "transliteration": "sa'ida",
+        "meaning": "he ascended, climbed"
+      },
+      {
+        "arabic": "دَنَا",
+        "transliteration": "dana",
+        "meaning": "he drew near"
+      },
+      {
+        "arabic": "انتَهَىٰ",
+        "transliteration": "intaha",
+        "meaning": "he desisted, stopped"
+      }
+    ]
+  },
+  {
+    "theme": "Verbs of Speech, Perception & Mind",
+    "words": [
+      {
+        "arabic": "أَبْصَرَ",
+        "transliteration": "absara",
+        "meaning": "saw, perceived"
+      },
+      {
+        "arabic": "شَعَرَ",
+        "transliteration": "sha'ara",
+        "meaning": "was aware, sensed"
+      },
+      {
+        "arabic": "فَقِهَ",
+        "transliteration": "faqiha",
+        "meaning": "comprehended deeply"
+      },
+      {
+        "arabic": "فَهِمَ",
+        "transliteration": "fahima",
+        "meaning": "understood"
+      },
+      {
+        "arabic": "حَسِبَ",
+        "transliteration": "hasiba",
+        "meaning": "supposed, reckoned"
+      },
+      {
+        "arabic": "قَرَأَ",
+        "transliteration": "qara'a",
+        "meaning": "read aloud"
+      },
+      {
+        "arabic": "كَتَبَ",
+        "transliteration": "kataba",
+        "meaning": "wrote"
+      },
+      {
+        "arabic": "بَشَّرَ",
+        "transliteration": "bashshara",
+        "meaning": "gave good news"
+      },
+      {
+        "arabic": "بَيَّنَ",
+        "transliteration": "bayyana",
+        "meaning": "made clear"
+      },
+      {
+        "arabic": "نَبَّأَ",
+        "transliteration": "nabba'a",
+        "meaning": "informed, told"
+      },
+      {
+        "arabic": "وَصَفَ",
+        "transliteration": "wasafa",
+        "meaning": "described, ascribed"
+      },
+      {
+        "arabic": "أَسَرَّ",
+        "transliteration": "asarra",
+        "meaning": "kept secret, confided"
+      }
+    ]
+  },
+  {
+    "theme": "Verbs of Wrongdoing, Misguidance & Ruin",
+    "words": [
+      {
+        "arabic": "أَصْلَحَ",
+        "transliteration": "aslaha",
+        "meaning": "set right, reformed"
+      },
+      {
+        "arabic": "صَلَحَ",
+        "transliteration": "salaha",
+        "meaning": "was righteous"
+      },
+      {
+        "arabic": "غَرَّ",
+        "transliteration": "gharra",
+        "meaning": "deluded, beguiled"
+      },
+      {
+        "arabic": "سَحَرَ",
+        "transliteration": "sahara",
+        "meaning": "bewitched"
+      },
+      {
+        "arabic": "أَغْوَىٰ",
+        "transliteration": "aghwa",
+        "meaning": "seduced into error"
+      },
+      {
+        "arabic": "عَتَا",
+        "transliteration": "'ata",
+        "meaning": "was insolent"
+      },
+      {
+        "arabic": "اعْتَدَىٰ",
+        "transliteration": "i'tada",
+        "meaning": "transgressed, overstepped"
+      },
+      {
+        "arabic": "خَدَعَ",
+        "transliteration": "khada'a",
+        "meaning": "deceived, tricked"
+      },
+      {
+        "arabic": "كَتَمَ",
+        "transliteration": "katama",
+        "meaning": "concealed"
+      },
+      {
+        "arabic": "سَرَقَ",
+        "transliteration": "saraqa",
+        "meaning": "stole"
+      },
+      {
+        "arabic": "حَسَدَ",
+        "transliteration": "hasada",
+        "meaning": "envied"
+      },
+      {
+        "arabic": "جَحَدَ",
+        "transliteration": "jahada",
+        "meaning": "rejected knowingly"
+      }
+    ]
+  },
+  {
+    "theme": "Words Whose Quranic Sense Differs from Modern Arabic",
+    "words": [
+      {
+        "arabic": "سَيَّارَة",
+        "transliteration": "sayyarah",
+        "meaning": "a caravan"
+      },
+      {
+        "arabic": "رَقِيب",
+        "transliteration": "raqib",
+        "meaning": "watcher, observer"
+      },
+      {
+        "arabic": "مُصِيبَة",
+        "transliteration": "musibah",
+        "meaning": "calamity that strikes"
+      },
+      {
+        "arabic": "سَبَب",
+        "transliteration": "sabab",
+        "meaning": "a rope, a means"
+      },
+      {
+        "arabic": "رِجْز",
+        "transliteration": "rijz",
+        "meaning": "punishment, plague"
+      },
+      {
+        "arabic": "سَفِيه",
+        "transliteration": "safih",
+        "meaning": "foolish, weak-minded"
+      },
+      {
+        "arabic": "طَائِر",
+        "transliteration": "ta'ir",
+        "meaning": "omen, fortune"
+      },
+      {
+        "arabic": "خَاتَم",
+        "transliteration": "khatam",
+        "meaning": "seal"
+      },
+      {
+        "arabic": "عَقَبَة",
+        "transliteration": "'aqabah",
+        "meaning": "steep mountain pass"
+      },
+      {
+        "arabic": "عَشِيرَة",
+        "transliteration": "'ashirah",
+        "meaning": "kinsfolk, clan"
+      },
+      {
+        "arabic": "ثَقَلَان",
+        "transliteration": "thaqalan",
+        "meaning": "jinn and mankind"
+      },
+      {
+        "arabic": "قَسْوَة",
+        "transliteration": "qaswah",
+        "meaning": "hardness of heart"
+      }
+    ]
+  }
+]

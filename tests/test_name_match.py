@@ -289,3 +289,36 @@ def test_card_mentions_the_surah_match():
     final = nm.card_embed(day_row(), [], final=True, others={"surahs": [run("1", 9, 41000, name="Rush")]}).description
     assert final.endswith("**Also today: a surah match.** 1 person played. **Rush** won it with **9/10** · 41s.")
     assert "\u2014" not in nobody + played + final
+
+
+# --- the Quranic word match ----------------------------------------------
+
+
+def test_word_themes_are_clean():
+    themes = nm.load_word_themes()
+    assert len(themes) == 24
+    for t in themes:
+        assert 11 <= len(t["words"]) <= 12, t["theme"]
+        meanings = [w["meaning"].lower() for w in t["words"]]
+        assert len(meanings) == len(set(meanings)), t["theme"]
+        assert all(w["arabic"] and w["transliteration"] for w in t["words"])
+    text = json.dumps(themes, ensure_ascii=False)
+    assert "\u2014" not in text and "\u2013" not in text and "singular command" not in text
+
+
+def test_pick_word_theme_uses_every_theme_once_per_cycle():
+    from datetime import timedelta
+
+    picks = [nm.pick_word_theme((nm.SURAH_EPOCH + timedelta(days=i)).isoformat(), 24) for i in range(24)]
+    assert sorted(picks) == list(range(24))
+
+
+def test_card_line_for_the_word_match_names_todays_theme():
+    themes = nm.load_word_themes()
+    theme = themes[nm.pick_word_theme("2026-10-22", len(themes))]
+    text = nm.card_embed(day_row(), [], others={"surahs": [], "words": []}).description
+    assert text.endswith(
+        f"**Also today: a Quranic word match.** Today's theme: {theme['theme']}, "
+        f"{len(theme['words'])} words. Press Play and pick it after the names."
+    )
+    assert "**Also today: a surah match.**" in text

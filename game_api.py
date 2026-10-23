@@ -112,6 +112,11 @@ def _subtitle(items: dict) -> str:
     )
 
 
+def _words_subtitle(items: dict) -> str:
+    n = len(name_match.all_pairs(items))
+    return f"Today's theme: {items.get('theme')}. Everyone in this server gets the same {n} words today."
+
+
 def _surah_subtitle(items: dict) -> str:
     n = len(name_match.all_pairs(items))
     return f"{n} surahs of the Quran. Everyone in this server gets the same {n} today."
@@ -177,6 +182,7 @@ class GameApi:
         self.log_limit = RateLimit(60, 60)
         self._pending_edits: set[tuple[str, str]] = set()
         self.surahs = name_match.load_surahs()
+        self.word_themes = name_match.load_word_themes()
 
     def routes(self) -> list[web.RouteDef]:
         return [
@@ -200,6 +206,13 @@ class GameApi:
         Without a day (practice), a random 10.
         """
         size = name_match.MATCH_SIZE
+        if game == "words":
+            index = (
+                name_match.pick_word_theme(str(day["day_key"]), len(self.word_themes))
+                if day
+                else random.randrange(len(self.word_themes))
+            )
+            return name_match.build_word_items(self.word_themes, index)
         if game == "surahs":
             numbers = (
                 name_match.pick_surahs(str(day["day_key"]))
@@ -212,18 +225,29 @@ class GameApi:
         names = sorted(random.sample(self.bot.names, size), key=lambda n: n.number)
         return name_match.build_items(self.bot.names, [n.number for n in names], [])
 
-    def _games_list(self, mine: dict, *, practice: bool = False) -> list[dict]:
+    def _games_list(
+        self, mine: dict, *, practice: bool = False, day_key: Optional[str] = None
+    ) -> list[dict]:
         """Today's games for the picker: what each is and your score in it."""
-        practice_detail = {
-            "names": "10 names of Allah, picked at random",
-            "surahs": "10 surahs of the Quran, picked at random",
-        }
+        detail = {k: g["detail"] for k, g in name_match.GAMES.items()}
+        count = {k: name_match.MATCH_SIZE for k in name_match.GAMES}
+        if practice:
+            detail.update(
+                names="10 names of Allah, picked at random",
+                surahs="10 surahs of the Quran, picked at random",
+                words="One theme of Quranic words, picked at random",
+            )
+            count["words"] = 12
+        elif day_key:
+            theme = self.word_themes[name_match.pick_word_theme(day_key, len(self.word_themes))]
+            detail["words"] = f"Today's theme: {theme['theme']}"
+            count["words"] = len(theme["words"])
         return [
             {
                 "key": k,
                 "title": name_match.GAMES[k]["title"],
-                "detail": practice_detail[k] if practice else name_match.GAMES[k]["detail"],
-                "count": name_match.MATCH_SIZE,
+                "detail": detail[k],
+                "count": count[k],
                 "myResult": name_match.result_payload(mine[k]) if mine.get(k) else None,
             }
             for k in name_match.GAME_ORDER
@@ -231,14 +255,14 @@ class GameApi:
 
     def _practice(self, claims: dict, game: str = "names") -> dict:
         items = self._game_items(game, None)
-        noun = "surahs of the Quran" if game == "surahs" else "names of Allah"
+        noun = {"surahs": "10 surahs of the Quran", "words": "Quranic words"}.get(game, "10 names of Allah")
         return {
             "mode": "practice",
             "game": game,
             "games": self._games_list({}, practice=True),
             "dayKey": None,
             "channelName": None,
-            "title": f"Practice: match 10 {noun}",
+            "title": f"Practice: match {noun}",
             # The game prints its own "not scored" paragraph for practice.
             "subtitle": None,
             "sets": _client_sets(items),
@@ -361,11 +385,17 @@ class GameApi:
             {
                 "mode": "daily",
                 "game": game,
-                "games": self._games_list(mine),
+                "games": self._games_list(mine, day_key=key),
                 "dayKey": key,
                 "channelName": self._channel_name(cid),
                 "title": name_match.GAMES[game]["play"],
-                "subtitle": _surah_subtitle(items) if game == "surahs" else _subtitle(items),
+                "subtitle": (
+                    _surah_subtitle(items)
+                    if game == "surahs"
+                    else _words_subtitle(items)
+                    if game == "words"
+                    else _subtitle(items)
+                ),
                 "sets": _client_sets(items),
                 "myResult": name_match.result_payload(mine[game]) if mine[game] else None,
                 "board": name_match.board_rows(results, claims["uid"]),
@@ -443,7 +473,7 @@ class GameApi:
             {
                 "result": name_match.result_payload(saved),
                 "recorded": recorded,
-                "games": self._games_list(mine),
+                "games": self._games_list(mine, day_key=day_key),
                 "board": name_match.board_rows(results, claims["uid"]),
             }
         )
