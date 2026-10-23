@@ -2040,20 +2040,45 @@
         padding: 4px 0 4px 14px;
         margin: 0 0 18px;
       }
+      /* Pulses to draw the eye to MugUp: a soft ring in the accent colour
+         grows and fades every few seconds. The reduced-motion rule further
+         down stops it for anyone who asks for less movement. */
       .match-mugup {
+        position: relative;
         display: flex;
-        gap: 14px;
+        gap: 16px;
         align-items: flex-start;
-        background: var(--cream-card);
-        border: 1px solid var(--line);
+        background: linear-gradient(
+          135deg,
+          var(--cream-card),
+          rgba(var(--tint), 0.07)
+        );
+        border: 1.5px solid var(--accent);
         border-radius: var(--radius);
-        padding: 16px 18px;
+        padding: 18px 20px;
         box-shadow: var(--shadow);
+        animation: mugup-pulse 2.8s ease-in-out infinite;
+        transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .match-mugup:hover {
+        transform: translateY(-3px);
+        animation-play-state: paused;
+      }
+      @keyframes mugup-pulse {
+        0%,
+        100% {
+          box-shadow: var(--shadow), 0 0 0 0 rgba(200, 136, 58, 0.45);
+        }
+        60% {
+          box-shadow: var(--shadow), 0 0 0 12px rgba(200, 136, 58, 0);
+        }
       }
       .match-mugup img {
-        width: 44px;
-        height: 44px;
-        border-radius: 10px;
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 4px 14px -4px rgba(0, 0, 0, 0.35);
         flex: none;
       }
       .match-mugup p {
@@ -2828,7 +2853,7 @@
                 <span class="inline-code">/bismillah setup name_match:False</span>.
               </p>
               <div class="match-mugup">
-                <img src="img/mugup-logo.png" alt="MugUp logo" width="44" height="44" loading="lazy" />
+                <img src="img/mugup-icon.png" alt="MugUp logo" width="52" height="52" loading="lazy" />
                 <div>
                   <p>
                     <b>The game is built on MugUp.</b> MugUp's own Discord app can
