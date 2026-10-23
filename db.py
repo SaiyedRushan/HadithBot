@@ -562,29 +562,34 @@ def close_game_day(channel_id: str, day_key: str) -> None:
     ).eq("channel_id", channel_id).eq("day_key", day_key).execute()
 
 
-def get_game_results(channel_id: str, day_key: str) -> list[dict]:
+def get_game_results(channel_id: str, day_key: str, game: str = "names") -> list[dict]:
+    """Every score for one game of one day's match (see name_match.GAMES)."""
     return cast(
         list[dict],
         supabase.table("game_results")
         .select(
-            "discord_user_id,display_name,score,total,item_results,duration_ms,created_at"
+            "discord_user_id,display_name,score,total,item_results,duration_ms,created_at,game"
         )
         .eq("channel_id", channel_id)
         .eq("day_key", day_key)
+        .eq("game", game)
         .execute()
         .data,
     )
 
 
-def get_game_result(channel_id: str, day_key: str, user_id: str) -> Optional[dict]:
+def get_game_result(
+    channel_id: str, day_key: str, user_id: str, game: str = "names"
+) -> Optional[dict]:
     res = (
         supabase.table("game_results")
         .select(
-            "discord_user_id,display_name,score,total,item_results,duration_ms,created_at"
+            "discord_user_id,display_name,score,total,item_results,duration_ms,created_at,game"
         )
         .eq("channel_id", channel_id)
         .eq("day_key", day_key)
         .eq("discord_user_id", user_id)
+        .eq("game", game)
         .limit(1)
         .execute()
     )
@@ -598,11 +603,15 @@ def insert_game_result(record: dict) -> tuple[dict, bool]:
         res = supabase.table("game_results").insert(record).execute()
         return cast(dict, res.data[0]), True
     except Exception as e:
-        # 23505: the unique (channel, day, player) constraint. One try each.
+        # 23505: the unique (channel, day, player, game) constraint. One try
+        # per game each day.
         if "23505" not in str(e) and "duplicate key" not in str(e):
             raise
     existing = get_game_result(
-        record["channel_id"], record["day_key"], record["discord_user_id"]
+        record["channel_id"],
+        record["day_key"],
+        record["discord_user_id"],
+        record.get("game", "names"),
     )
     if existing is None:
         raise RuntimeError("duplicate result reported but none found")

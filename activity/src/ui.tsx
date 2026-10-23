@@ -1,4 +1,4 @@
-import {useEffect, useState, type ButtonHTMLAttributes, type ReactNode} from 'react'
+import {useEffect, useState, type ComponentProps, type ReactNode} from 'react'
 
 type Variant = 'plain' | 'primary' | 'warn' | 'gold' | 'reveal'
 
@@ -10,7 +10,7 @@ const VARIANTS: Record<Variant, string> = {
   reveal: 'border-[#6b5326] text-[#f1d39b] hover:border-[#8a6a2f] hover:bg-[#6b5326]/25',
 }
 
-export function Button({variant = 'plain', className = '', ...props}: ButtonHTMLAttributes<HTMLButtonElement> & {variant?: Variant}) {
+export function Button({variant = 'plain', className = '', ...props}: ComponentProps<'button'> & {variant?: Variant}) {
   return (
     <button
       type="button"
@@ -28,14 +28,17 @@ export function Kbd({children}: {children: ReactNode}) {
 }
 
 /** HadithBot's mark and name, with whatever belongs on the right (the sound setting). */
-export function Header({place, right}: {place?: string | null; right?: ReactNode}) {
+export function Header({label = 'Name match', place, right}: {label?: string; place?: string | null; right?: ReactNode}) {
   return (
     <header className="mb-5 flex items-center justify-between gap-3 border-b border-white/[0.06] pb-3 sm:mb-6">
       <div className="flex min-w-0 items-center gap-2.5">
         <img src="/hadithbot.png" alt="" width={32} height={32} className="h-8 w-8 shrink-0 rounded-full ring-1 ring-[#c8883a]/60" />
         <div className="min-w-0 leading-tight">
           <div className="text-sm font-semibold text-white">HadithBot</div>
-          <div className="truncate text-xs text-[#7f8a9a]">Name match{place ? ` · ${place}` : ''}</div>
+          <div className="truncate text-xs text-[#7f8a9a]">
+            {label}
+            {place ? ` · ${place}` : ''}
+          </div>
         </div>
       </div>
       {right}
@@ -44,11 +47,11 @@ export function Header({place, right}: {place?: string | null; right?: ReactNode
 }
 
 /** The page: dark background, content centred and capped at the mockup's width. */
-export function Page({children, place, headerRight}: {children: ReactNode; place?: string | null; headerRight?: ReactNode}) {
+export function Page({children, label, place, headerRight}: {children: ReactNode; label?: string; place?: string | null; headerRight?: ReactNode}) {
   return (
     <main className="min-h-screen bg-game-bg bg-[radial-gradient(ellipse_at_top,rgba(47,106,168,0.12),transparent_60%)] font-sans text-[15px] leading-[1.5] text-[#e8e8e8] antialiased">
       <div className="mx-auto max-w-[980px] px-3 py-3.5 sm:px-[26px] sm:py-[22px]">
-        <Header place={place} right={headerRight} />
+        <Header label={label} place={place} right={headerRight} />
         {children}
       </div>
     </main>

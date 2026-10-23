@@ -2,6 +2,8 @@ import {useCallback, useEffect, useRef, useState} from 'react'
 import {ApiError, getToday, postResult, type BoardRow, type Today} from './api'
 import {OUTSIDE_DISCORD, SLOW_MS, useDiscordSession} from './discord'
 import {allGuesses, revealedIds, scoreGame, type Guess, type Result as GameResult} from './game'
+import {TodaysGames} from './GameCards'
+import {wording, type GameKey} from './games'
 import {channelLabel, Play, SoundToggle} from './Play'
 import {Result, type ResultVariant} from './Result'
 import {unlockAudio} from './sound'
@@ -10,7 +12,8 @@ import {Button, Kbd, MUGUP_DISCORD_URL, Notice, Page, Panel, PoweredByMugup, use
 type Phase =
   | {name: 'loading'}
   | {name: 'loadError'; message: string}
-  | {name: 'start'; today: Today}
+  /** `focusStart`: the player switched games, so keyboard focus goes to the new start button. */
+  | {name: 'start'; today: Today; focusStart: boolean}
   | {name: 'playing'; today: Today; startedAt: number}
   | {name: 'posting'; today: Today; guesses: Guess[]; durationMs: number; error: string | null}
   | {name: 'result'; today: Today; result: GameResult; board: BoardRow[]; variant: ResultVariant; revealed: number[] | null}
@@ -47,16 +50,24 @@ function Connecting() {
 function Game({token, openExternal}: {token: string; openExternal: (url: string) => Promise<void>}) {
   const [phase, setPhase] = useState<Phase>({name: 'loading'})
 
-  const load = useCallback(async () => {
+  /** The game last asked for, so "Try loading the match again" retries the same one. */
+  const lastGame = useRef<GameKey | undefined>(undefined)
+
+  /**
+   * Loads one game's match. Every game switch comes through here, so play state starts
+   * fresh: the playing phase (timer, guesses, sounds) only exists until the next load.
+   */
+  const load = useCallback(async (game?: GameKey, switched = false) => {
+    lastGame.current = game
     setPhase({name: 'loading'})
     try {
-      const today = await getToday(token)
+      const today = await getToday(token, game)
       if (today.myResult) {
         setPhase({name: 'result', today, result: today.myResult, board: today.board, variant: 'alreadyPlayed', revealed: null})
       } else if (!isPlayable(today)) {
-        setPhase({name: 'loadError', message: "Today's match has no names in it. Close the game and press Play again later."})
+        setPhase({name: 'loadError', message: wording(today.game).empty})
       } else {
-        setPhase({name: 'start', today})
+        setPhase({name: 'start', today, focusStart: switched})
       }
     } catch (err) {
       setPhase({name: 'loadError', message: readable(err, "The game couldn't load today's match.")})
@@ -72,7 +83,7 @@ function Game({token, openExternal}: {token: string; openExternal: (url: string)
       setPhase({name: 'posting', today, guesses, durationMs, error: null})
       try {
         if (!today.dayKey) throw new ApiError("This match has no date, so the score can't be posted. Close the game and press Play again.")
-        const res = await postResult(token, today.dayKey, guesses, durationMs)
+        const res = await postResult(token, today.game ?? 'names', today.dayKey, guesses, durationMs)
         // recorded: false means an earlier run was returned, so this run's reveals don't apply to it.
         const revealed = res.recorded ? revealedIds([guesses]) : null
         setPhase({name: 'result', today, result: res.result, board: res.board, variant: res.recorded ? 'posted' : 'alreadyPlayed', revealed})
@@ -95,7 +106,7 @@ function Game({token, openExternal}: {token: string; openExternal: (url: string)
 
     case 'loadError':
       return (
-        <Notice title="The game couldn't load the match" action={<Button onClick={() => void load()}>Try loading the match again</Button>}>
+        <Notice title="The game couldn't load the match" action={<Button onClick={() => void load(lastGame.current)}>Try loading the match again</Button>}>
           {phase.message}
         </Notice>
       )
@@ -103,7 +114,10 @@ function Game({token, openExternal}: {token: string; openExternal: (url: string)
     case 'start':
       return (
         <Start
+          key={phase.today.game}
           today={phase.today}
+          focusStart={phase.focusStart}
+          onOpenGame={(game) => void load(game, true)}
           onStart={() => {
             unlockAudio()
             setPhase({name: 'playing', today: phase.today, startedAt: Date.now()})
@@ -115,6 +129,7 @@ function Game({token, openExternal}: {token: string; openExternal: (url: string)
     case 'playing':
       return (
         <Play
+          key={`${phase.today.game}-${phase.startedAt}`}
           today={phase.today}
           startedAt={phase.startedAt}
           onFinish={(state, durationMs) => {
@@ -158,17 +173,36 @@ function Game({token, openExternal}: {token: string; openExternal: (url: string)
           revealed={phase.revealed}
           onOpenMugup={() => openMugup(phase.today.mugupUrl)}
           onOpenMugupDiscord={() => openMugup(MUGUP_DISCORD_URL)}
-          onPracticeAgain={() => void load()}
+          onPracticeAgain={() => void load(phase.today.game, true)}
+          onOpenGame={(game) => void load(game, true)}
         />
       )
   }
 }
 
-function Start({today, onStart, onOpenMugupDiscord}: {today: Today; onStart: () => void; onOpenMugupDiscord: () => void}) {
+function Start({
+  today,
+  focusStart,
+  onStart,
+  onOpenGame,
+  onOpenMugupDiscord,
+}: {
+  today: Today
+  focusStart: boolean
+  onStart: () => void
+  onOpenGame: (game: GameKey) => void
+  onOpenMugupDiscord: () => void
+}) {
   const practice = today.mode === 'practice'
+  const w = wording(today.game)
   const finePointer = useFinePointer()
   const begin = useRef(onStart)
   begin.current = onStart
+  const startButton = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (focusStart) startButton.current?.focus()
+  }, [focusStart])
 
   // Enter starts, unless a different button has focus (the browser presses that one).
   useEffect(() => {
@@ -182,16 +216,15 @@ function Start({today, onStart, onOpenMugupDiscord}: {today: Today; onStart: () 
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  const rules =
-    'Tap a name, then tap its meaning. You get a point for each name you match without a mistake. Showing a pair counts as a mistake.'
+  const rules = w.rules
 
   return (
-    <Page place={practice ? 'Practice' : channelLabel(today)} headerRight={<SoundToggle />}>
+    <Page label={w.header} place={practice ? 'Practice' : channelLabel(today)} headerRight={<SoundToggle />}>
       <Panel className="anim-rise px-5 py-9 text-center sm:px-10 sm:py-12">
         <h1 className="mb-1.5 text-xl font-bold tracking-tight text-white sm:text-[28px]">{today.title}</h1>
         {today.subtitle && <p className="mx-auto mb-4 max-w-[600px] text-[#98a2b3]">{today.subtitle}</p>}
         <div className="mx-auto mb-6 mt-3 flex max-w-[260px] items-center justify-center gap-2" aria-hidden>
-          <span className="flex-1 rounded-lg border-[1.5px] border-name-line bg-name-bg px-2 py-2 text-xs font-semibold text-[#f1f4f8]">A name</span>
+          <span className="flex-1 rounded-lg border-[1.5px] border-name-line bg-name-bg px-2 py-2 text-xs font-semibold text-[#f1f4f8]">{w.sample}</span>
           <span className="text-[#7f8a9a]">+</span>
           <span className="flex-1 rounded-lg border-[1.5px] border-mean-line bg-mean-bg px-2 py-2 text-xs font-semibold text-[#fbe6cf]">Its meaning</span>
         </div>
@@ -207,11 +240,12 @@ function Start({today, onStart, onOpenMugupDiscord}: {today: Today; onStart: () 
             </>
           )}
         </p>
-        <Button variant="primary" className="px-6 py-3 text-base" onClick={onStart}>
+        <Button ref={startButton} variant="primary" className="px-6 py-3 text-base" onClick={onStart}>
           {practice ? 'Start a practice round' : 'Start the timer and play'}
           {finePointer && <Kbd>Enter</Kbd>}
         </Button>
       </Panel>
+      <TodaysGames today={today} onOpen={onOpenGame} />
       <PoweredByMugup onOpen={onOpenMugupDiscord} />
     </Page>
   )

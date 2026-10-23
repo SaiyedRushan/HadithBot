@@ -1,0 +1,686 @@
+[
+  {
+    "number": 1,
+    "transliteration": "Al-Fatihah",
+    "arabic": "الْفَاتِحَة",
+    "meaning": "The Opening"
+  },
+  {
+    "number": 2,
+    "transliteration": "Al-Baqarah",
+    "arabic": "الْبَقَرَة",
+    "meaning": "The Cow"
+  },
+  {
+    "number": 3,
+    "transliteration": "Aal-Imran",
+    "arabic": "آل عِمْرَان",
+    "meaning": "The Family of Imran"
+  },
+  {
+    "number": 4,
+    "transliteration": "An-Nisa",
+    "arabic": "النِّسَاء",
+    "meaning": "The Women"
+  },
+  {
+    "number": 5,
+    "transliteration": "Al-Ma'idah",
+    "arabic": "الْمَائِدَة",
+    "meaning": "The Table Spread"
+  },
+  {
+    "number": 6,
+    "transliteration": "Al-An'am",
+    "arabic": "الْأَنْعَام",
+    "meaning": "The Cattle"
+  },
+  {
+    "number": 7,
+    "transliteration": "Al-A'raf",
+    "arabic": "الْأَعْرَاف",
+    "meaning": "The Heights"
+  },
+  {
+    "number": 8,
+    "transliteration": "Al-Anfal",
+    "arabic": "الْأَنْفَال",
+    "meaning": "The Spoils of War"
+  },
+  {
+    "number": 9,
+    "transliteration": "At-Tawbah",
+    "arabic": "التَّوْبَة",
+    "meaning": "The Repentance"
+  },
+  {
+    "number": 10,
+    "transliteration": "Yunus",
+    "arabic": "يُونُس",
+    "meaning": "The Prophet Yunus (Jonah)"
+  },
+  {
+    "number": 11,
+    "transliteration": "Hud",
+    "arabic": "هُود",
+    "meaning": "The Prophet Hud"
+  },
+  {
+    "number": 12,
+    "transliteration": "Yusuf",
+    "arabic": "يُوسُف",
+    "meaning": "The Prophet Yusuf (Joseph)"
+  },
+  {
+    "number": 13,
+    "transliteration": "Ar-Ra'd",
+    "arabic": "الرَّعْد",
+    "meaning": "The Thunder"
+  },
+  {
+    "number": 14,
+    "transliteration": "Ibrahim",
+    "arabic": "إِبْرَاهِيم",
+    "meaning": "The Prophet Ibrahim (Abraham)"
+  },
+  {
+    "number": 15,
+    "transliteration": "Al-Hijr",
+    "arabic": "الْحِجْر",
+    "meaning": "The Rocky Tract"
+  },
+  {
+    "number": 16,
+    "transliteration": "An-Nahl",
+    "arabic": "النَّحْل",
+    "meaning": "The Bee"
+  },
+  {
+    "number": 17,
+    "transliteration": "Al-Isra",
+    "arabic": "الْإِسْرَاء",
+    "meaning": "The Night Journey"
+  },
+  {
+    "number": 18,
+    "transliteration": "Al-Kahf",
+    "arabic": "الْكَهْف",
+    "meaning": "The Cave"
+  },
+  {
+    "number": 19,
+    "transliteration": "Maryam",
+    "arabic": "مَرْيَم",
+    "meaning": "Mary"
+  },
+  {
+    "number": 20,
+    "transliteration": "Ta-Ha",
+    "arabic": "طه",
+    "meaning": "The Letters Ta-Ha"
+  },
+  {
+    "number": 21,
+    "transliteration": "Al-Anbiya",
+    "arabic": "الْأَنْبِيَاء",
+    "meaning": "The Prophets"
+  },
+  {
+    "number": 22,
+    "transliteration": "Al-Hajj",
+    "arabic": "الْحَجّ",
+    "meaning": "The Pilgrimage"
+  },
+  {
+    "number": 23,
+    "transliteration": "Al-Mu'minun",
+    "arabic": "الْمُؤْمِنُون",
+    "meaning": "The Believers"
+  },
+  {
+    "number": 24,
+    "transliteration": "An-Nur",
+    "arabic": "النُّور",
+    "meaning": "The Light"
+  },
+  {
+    "number": 25,
+    "transliteration": "Al-Furqan",
+    "arabic": "الْفُرْقَان",
+    "meaning": "The Criterion"
+  },
+  {
+    "number": 26,
+    "transliteration": "Ash-Shu'ara",
+    "arabic": "الشُّعَرَاء",
+    "meaning": "The Poets"
+  },
+  {
+    "number": 27,
+    "transliteration": "An-Naml",
+    "arabic": "النَّمْل",
+    "meaning": "The Ants"
+  },
+  {
+    "number": 28,
+    "transliteration": "Al-Qasas",
+    "arabic": "الْقَصَص",
+    "meaning": "The Stories"
+  },
+  {
+    "number": 29,
+    "transliteration": "Al-Ankabut",
+    "arabic": "الْعَنْكَبُوت",
+    "meaning": "The Spider"
+  },
+  {
+    "number": 30,
+    "transliteration": "Ar-Rum",
+    "arabic": "الرُّوم",
+    "meaning": "The Romans"
+  },
+  {
+    "number": 31,
+    "transliteration": "Luqman",
+    "arabic": "لُقْمَان",
+    "meaning": "Luqman the Wise"
+  },
+  {
+    "number": 32,
+    "transliteration": "As-Sajdah",
+    "arabic": "السَّجْدَة",
+    "meaning": "The Prostration"
+  },
+  {
+    "number": 33,
+    "transliteration": "Al-Ahzab",
+    "arabic": "الْأَحْزَاب",
+    "meaning": "The Confederates"
+  },
+  {
+    "number": 34,
+    "transliteration": "Saba",
+    "arabic": "سَبَأ",
+    "meaning": "Sheba"
+  },
+  {
+    "number": 35,
+    "transliteration": "Fatir",
+    "arabic": "فَاطِر",
+    "meaning": "The Originator of Creation"
+  },
+  {
+    "number": 36,
+    "transliteration": "Ya-Sin",
+    "arabic": "يس",
+    "meaning": "The Letters Ya-Sin"
+  },
+  {
+    "number": 37,
+    "transliteration": "As-Saffat",
+    "arabic": "الصَّافَّات",
+    "meaning": "Those Arranged in Ranks"
+  },
+  {
+    "number": 38,
+    "transliteration": "Sad",
+    "arabic": "ص",
+    "meaning": "The Letter Sad"
+  },
+  {
+    "number": 39,
+    "transliteration": "Az-Zumar",
+    "arabic": "الزُّمَر",
+    "meaning": "The Groups"
+  },
+  {
+    "number": 40,
+    "transliteration": "Ghafir",
+    "arabic": "غَافِر",
+    "meaning": "The Forgiver"
+  },
+  {
+    "number": 41,
+    "transliteration": "Fussilat",
+    "arabic": "فُصِّلَت",
+    "meaning": "Explained in Detail"
+  },
+  {
+    "number": 42,
+    "transliteration": "Ash-Shura",
+    "arabic": "الشُّورَىٰ",
+    "meaning": "The Consultation"
+  },
+  {
+    "number": 43,
+    "transliteration": "Az-Zukhruf",
+    "arabic": "الزُّخْرُف",
+    "meaning": "The Gold Adornments"
+  },
+  {
+    "number": 44,
+    "transliteration": "Ad-Dukhan",
+    "arabic": "الدُّخَان",
+    "meaning": "The Smoke"
+  },
+  {
+    "number": 45,
+    "transliteration": "Al-Jathiyah",
+    "arabic": "الْجَاثِيَة",
+    "meaning": "The Kneeling"
+  },
+  {
+    "number": 46,
+    "transliteration": "Al-Ahqaf",
+    "arabic": "الْأَحْقَاف",
+    "meaning": "The Sand Dunes"
+  },
+  {
+    "number": 47,
+    "transliteration": "Muhammad",
+    "arabic": "مُحَمَّد",
+    "meaning": "The Prophet Muhammad"
+  },
+  {
+    "number": 48,
+    "transliteration": "Al-Fath",
+    "arabic": "الْفَتْح",
+    "meaning": "The Victory"
+  },
+  {
+    "number": 49,
+    "transliteration": "Al-Hujurat",
+    "arabic": "الْحُجُرَات",
+    "meaning": "The Chambers"
+  },
+  {
+    "number": 50,
+    "transliteration": "Qaf",
+    "arabic": "ق",
+    "meaning": "The Letter Qaf"
+  },
+  {
+    "number": 51,
+    "transliteration": "Adh-Dhariyat",
+    "arabic": "الذَّارِيَات",
+    "meaning": "The Scattering Winds"
+  },
+  {
+    "number": 52,
+    "transliteration": "At-Tur",
+    "arabic": "الطُّور",
+    "meaning": "The Mount"
+  },
+  {
+    "number": 53,
+    "transliteration": "An-Najm",
+    "arabic": "النَّجْم",
+    "meaning": "The Star"
+  },
+  {
+    "number": 54,
+    "transliteration": "Al-Qamar",
+    "arabic": "الْقَمَر",
+    "meaning": "The Moon"
+  },
+  {
+    "number": 55,
+    "transliteration": "Ar-Rahman",
+    "arabic": "الرَّحْمَٰن",
+    "meaning": "The Most Merciful"
+  },
+  {
+    "number": 56,
+    "transliteration": "Al-Waqi'ah",
+    "arabic": "الْوَاقِعَة",
+    "meaning": "The Inevitable Event"
+  },
+  {
+    "number": 57,
+    "transliteration": "Al-Hadid",
+    "arabic": "الْحَدِيد",
+    "meaning": "The Iron"
+  },
+  {
+    "number": 58,
+    "transliteration": "Al-Mujadilah",
+    "arabic": "الْمُجَادِلَة",
+    "meaning": "The Pleading Woman"
+  },
+  {
+    "number": 59,
+    "transliteration": "Al-Hashr",
+    "arabic": "الْحَشْر",
+    "meaning": "The Gathering"
+  },
+  {
+    "number": 60,
+    "transliteration": "Al-Mumtahanah",
+    "arabic": "الْمُمْتَحَنَة",
+    "meaning": "The Woman Examined"
+  },
+  {
+    "number": 61,
+    "transliteration": "As-Saff",
+    "arabic": "الصَّفّ",
+    "meaning": "The Ranks"
+  },
+  {
+    "number": 62,
+    "transliteration": "Al-Jumu'ah",
+    "arabic": "الْجُمُعَة",
+    "meaning": "The Friday Congregation"
+  },
+  {
+    "number": 63,
+    "transliteration": "Al-Munafiqun",
+    "arabic": "الْمُنَافِقُون",
+    "meaning": "The Hypocrites"
+  },
+  {
+    "number": 64,
+    "transliteration": "At-Taghabun",
+    "arabic": "التَّغَابُن",
+    "meaning": "The Mutual Loss and Gain"
+  },
+  {
+    "number": 65,
+    "transliteration": "At-Talaq",
+    "arabic": "الطَّلَاق",
+    "meaning": "The Divorce"
+  },
+  {
+    "number": 66,
+    "transliteration": "At-Tahrim",
+    "arabic": "التَّحْرِيم",
+    "meaning": "The Prohibition"
+  },
+  {
+    "number": 67,
+    "transliteration": "Al-Mulk",
+    "arabic": "الْمُلْك",
+    "meaning": "The Sovereignty"
+  },
+  {
+    "number": 68,
+    "transliteration": "Al-Qalam",
+    "arabic": "الْقَلَم",
+    "meaning": "The Pen"
+  },
+  {
+    "number": 69,
+    "transliteration": "Al-Haqqah",
+    "arabic": "الْحَاقَّة",
+    "meaning": "The Sure Reality"
+  },
+  {
+    "number": 70,
+    "transliteration": "Al-Ma'arij",
+    "arabic": "الْمَعَارِج",
+    "meaning": "The Ways of Ascent"
+  },
+  {
+    "number": 71,
+    "transliteration": "Nuh",
+    "arabic": "نُوح",
+    "meaning": "The Prophet Nuh (Noah)"
+  },
+  {
+    "number": 72,
+    "transliteration": "Al-Jinn",
+    "arabic": "الْجِنّ",
+    "meaning": "The Jinn"
+  },
+  {
+    "number": 73,
+    "transliteration": "Al-Muzzammil",
+    "arabic": "الْمُزَّمِّل",
+    "meaning": "The Enshrouded One"
+  },
+  {
+    "number": 74,
+    "transliteration": "Al-Muddaththir",
+    "arabic": "الْمُدَّثِّر",
+    "meaning": "The Cloaked One"
+  },
+  {
+    "number": 75,
+    "transliteration": "Al-Qiyamah",
+    "arabic": "الْقِيَامَة",
+    "meaning": "The Resurrection"
+  },
+  {
+    "number": 76,
+    "transliteration": "Al-Insan",
+    "arabic": "الْإِنْسَان",
+    "meaning": "The Human Being"
+  },
+  {
+    "number": 77,
+    "transliteration": "Al-Mursalat",
+    "arabic": "الْمُرْسَلَات",
+    "meaning": "Those Sent Forth"
+  },
+  {
+    "number": 78,
+    "transliteration": "An-Naba",
+    "arabic": "النَّبَأ",
+    "meaning": "The Great News"
+  },
+  {
+    "number": 79,
+    "transliteration": "An-Nazi'at",
+    "arabic": "النَّازِعَات",
+    "meaning": "Those Who Extract"
+  },
+  {
+    "number": 80,
+    "transliteration": "Abasa",
+    "arabic": "عَبَسَ",
+    "meaning": "He Frowned"
+  },
+  {
+    "number": 81,
+    "transliteration": "At-Takwir",
+    "arabic": "التَّكْوِير",
+    "meaning": "The Folding Up"
+  },
+  {
+    "number": 82,
+    "transliteration": "Al-Infitar",
+    "arabic": "الاِنْفِطَار",
+    "meaning": "The Cleaving Apart"
+  },
+  {
+    "number": 83,
+    "transliteration": "Al-Mutaffifin",
+    "arabic": "الْمُطَفِّفِين",
+    "meaning": "The Defrauders"
+  },
+  {
+    "number": 84,
+    "transliteration": "Al-Inshiqaq",
+    "arabic": "الاِنْشِقَاق",
+    "meaning": "The Splitting Open"
+  },
+  {
+    "number": 85,
+    "transliteration": "Al-Buruj",
+    "arabic": "الْبُرُوج",
+    "meaning": "The Constellations"
+  },
+  {
+    "number": 86,
+    "transliteration": "At-Tariq",
+    "arabic": "الطَّارِق",
+    "meaning": "The Night Visitor"
+  },
+  {
+    "number": 87,
+    "transliteration": "Al-A'la",
+    "arabic": "الْأَعْلَىٰ",
+    "meaning": "The Most High"
+  },
+  {
+    "number": 88,
+    "transliteration": "Al-Ghashiyah",
+    "arabic": "الْغَاشِيَة",
+    "meaning": "The Overwhelming Event"
+  },
+  {
+    "number": 89,
+    "transliteration": "Al-Fajr",
+    "arabic": "الْفَجْر",
+    "meaning": "The Dawn"
+  },
+  {
+    "number": 90,
+    "transliteration": "Al-Balad",
+    "arabic": "الْبَلَد",
+    "meaning": "The City"
+  },
+  {
+    "number": 91,
+    "transliteration": "Ash-Shams",
+    "arabic": "الشَّمْس",
+    "meaning": "The Sun"
+  },
+  {
+    "number": 92,
+    "transliteration": "Al-Layl",
+    "arabic": "اللَّيْل",
+    "meaning": "The Night"
+  },
+  {
+    "number": 93,
+    "transliteration": "Ad-Duha",
+    "arabic": "الضُّحَىٰ",
+    "meaning": "The Morning Brightness"
+  },
+  {
+    "number": 94,
+    "transliteration": "Ash-Sharh",
+    "arabic": "الشَّرْح",
+    "meaning": "The Relief"
+  },
+  {
+    "number": 95,
+    "transliteration": "At-Tin",
+    "arabic": "التِّين",
+    "meaning": "The Fig"
+  },
+  {
+    "number": 96,
+    "transliteration": "Al-Alaq",
+    "arabic": "الْعَلَق",
+    "meaning": "The Clinging Clot"
+  },
+  {
+    "number": 97,
+    "transliteration": "Al-Qadr",
+    "arabic": "الْقَدْر",
+    "meaning": "The Night of Decree"
+  },
+  {
+    "number": 98,
+    "transliteration": "Al-Bayyinah",
+    "arabic": "الْبَيِّنَة",
+    "meaning": "The Clear Evidence"
+  },
+  {
+    "number": 99,
+    "transliteration": "Az-Zalzalah",
+    "arabic": "الزَّلْزَلَة",
+    "meaning": "The Earthquake"
+  },
+  {
+    "number": 100,
+    "transliteration": "Al-Adiyat",
+    "arabic": "الْعَادِيَات",
+    "meaning": "The Charging Steeds"
+  },
+  {
+    "number": 101,
+    "transliteration": "Al-Qari'ah",
+    "arabic": "الْقَارِعَة",
+    "meaning": "The Striking Calamity"
+  },
+  {
+    "number": 102,
+    "transliteration": "At-Takathur",
+    "arabic": "التَّكَاثُر",
+    "meaning": "The Rivalry in Increase"
+  },
+  {
+    "number": 103,
+    "transliteration": "Al-Asr",
+    "arabic": "الْعَصْر",
+    "meaning": "The Passage of Time"
+  },
+  {
+    "number": 104,
+    "transliteration": "Al-Humazah",
+    "arabic": "الْهُمَزَة",
+    "meaning": "The Slanderer"
+  },
+  {
+    "number": 105,
+    "transliteration": "Al-Fil",
+    "arabic": "الْفِيل",
+    "meaning": "The Elephant"
+  },
+  {
+    "number": 106,
+    "transliteration": "Quraysh",
+    "arabic": "قُرَيْش",
+    "meaning": "The Tribe of Quraysh"
+  },
+  {
+    "number": 107,
+    "transliteration": "Al-Ma'un",
+    "arabic": "الْمَاعُون",
+    "meaning": "The Small Kindnesses"
+  },
+  {
+    "number": 108,
+    "transliteration": "Al-Kawthar",
+    "arabic": "الْكَوْثَر",
+    "meaning": "The Abundance"
+  },
+  {
+    "number": 109,
+    "transliteration": "Al-Kafirun",
+    "arabic": "الْكَافِرُون",
+    "meaning": "The Disbelievers"
+  },
+  {
+    "number": 110,
+    "transliteration": "An-Nasr",
+    "arabic": "النَّصْر",
+    "meaning": "The Divine Help"
+  },
+  {
+    "number": 111,
+    "transliteration": "Al-Masad",
+    "arabic": "الْمَسَد",
+    "meaning": "The Palm Fiber"
+  },
+  {
+    "number": 112,
+    "transliteration": "Al-Ikhlas",
+    "arabic": "الْإِخْلَاص",
+    "meaning": "The Sincerity"
+  },
+  {
+    "number": 113,
+    "transliteration": "Al-Falaq",
+    "arabic": "الْفَلَق",
+    "meaning": "The Daybreak"
+  },
+  {
+    "number": 114,
+    "transliteration": "An-Nas",
+    "arabic": "النَّاس",
+    "meaning": "Mankind"
+  }
+]

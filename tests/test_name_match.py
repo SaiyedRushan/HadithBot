@@ -244,3 +244,48 @@ def test_token_rejects_tampering_expiry_and_wrong_secret():
     assert activity_token.verify(SECRET, token, now=1000 + activity_token.TTL_SECONDS + 1) is None
     assert activity_token.verify("z" * 40, token, now=1001) is None
     assert activity_token.verify(SECRET, "garbage", now=1001) is None
+
+
+# --- the surah match -----------------------------------------------------
+
+
+def test_pick_surahs_is_ten_a_day_and_covers_all_114_in_12_days():
+    from datetime import date, timedelta
+
+    seen = set()
+    for i in range(12):
+        day = (nm.SURAH_EPOCH + timedelta(days=i)).isoformat()
+        picked = nm.pick_surahs(day)
+        assert len(picked) == 10 == len(set(picked))
+        assert picked == nm.pick_surahs(day)
+        seen |= set(picked)
+    assert seen == set(range(1, 115))
+    assert nm.pick_surahs(date(2026, 9, 1).isoformat())  # days before launch work too
+
+
+def test_surah_data_is_complete_and_unambiguous():
+    surahs = nm.load_surahs()
+    assert [s["number"] for s in surahs] == list(range(1, 115))
+    meanings = [s["meaning"].lower() for s in surahs]
+    assert len(meanings) == len(set(meanings))
+
+
+def test_surah_items_score_like_names():
+    items = nm.build_surah_items(nm.load_surahs(), [1, 2, 112])
+    assert nm.all_pairs(items)[0] == {"id": 1, "left": "1. Al-Fatihah", "left_ar": "الْفَاتِحَة", "right": "The Opening"}
+    assert nm.score_guesses(items, [[1, 1], [2, 112], [2, 2], [112, 112]]) == (1, [True, False, False])
+
+
+def test_card_mentions_the_surah_match():
+    nobody = nm.card_embed(day_row(), [], others={"surahs": []}).description
+    assert nobody.endswith(
+        "**Also today: a surah match.** 10 surahs of the Quran, a different 10 each day. "
+        "Press Play and pick it after the names."
+    )
+    played = nm.card_embed(
+        day_row(), [], others={"surahs": [run("1", 9, 41000, name="Rush"), run("2", 7, 30000)]}
+    ).description
+    assert played.endswith("**Also today: a surah match.** 2 people played. **Rush** leads with **9/10** · 41s.")
+    final = nm.card_embed(day_row(), [], final=True, others={"surahs": [run("1", 9, 41000, name="Rush")]}).description
+    assert final.endswith("**Also today: a surah match.** 1 person played. **Rush** won it with **9/10** · 41s.")
+    assert "\u2014" not in nobody + played + final

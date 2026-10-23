@@ -72,9 +72,11 @@ async def _run(fn, *args):
 
 
 async def render_card(store, day: dict, *, final: bool) -> discord.Embed:
-    results = await _run(store.get_game_results, day["channel_id"], day["day_key"])
-    played = [] if final else await _run(store.get_played_day_keys, day["channel_id"])
-    return name_match.card_embed(day, results, final=final, played_keys=played)
+    cid, key = day["channel_id"], str(day["day_key"])
+    results = await _run(store.get_game_results, cid, key)
+    others = {g: await _run(store.get_game_results, cid, key, g) for g in name_match.GAME_ORDER[1:]}
+    played = [] if final else await _run(store.get_played_day_keys, cid)
+    return name_match.card_embed(day, results, final=final, played_keys=played, others=others)
 
 
 async def edit_card(bot, store, day: dict, *, final: bool) -> bool:
@@ -110,8 +112,13 @@ def _subtitle(items: dict) -> str:
     )
 
 
+def _surah_subtitle(items: dict) -> str:
+    n = len(name_match.all_pairs(items))
+    return f"{n} surahs of the Quran. Everyone in this server gets the same {n} today."
+
+
 def _client_sets(items: dict) -> list[dict]:
-    titles = {"names": "Match each name of Allah to its meaning"}
+    titles = {k: g["play"] for k, g in name_match.GAMES.items()}
     return [
         {
             "kind": s["kind"],
@@ -169,6 +176,7 @@ class GameApi:
         self.signin_limit = RateLimit(300, 60)
         self.log_limit = RateLimit(60, 60)
         self._pending_edits: set[tuple[str, str]] = set()
+        self.surahs = name_match.load_surahs()
 
     def routes(self) -> list[web.RouteDef]:
         return [
@@ -186,22 +194,58 @@ class GameApi:
             return None
         return activity_token.verify(self.secret, header[len("Bearer ") :])
 
-    def _practice(self, claims: dict) -> dict:
-        names = random.sample(self.bot.names, name_match.MATCH_SIZE)
-        names.sort(key=lambda n: n.number)
-        items = name_match.build_items(self.bot.names, [n.number for n in names], [])
+    def _game_items(self, game: str, day: Optional[dict]) -> dict:
+        """The pairs for one game: the day's frozen names, or the day's surahs.
+
+        Without a day (practice), a random 10.
+        """
+        size = name_match.MATCH_SIZE
+        if game == "surahs":
+            numbers = (
+                name_match.pick_surahs(str(day["day_key"]))
+                if day
+                else sorted(random.sample(range(1, len(self.surahs) + 1), size))
+            )
+            return name_match.build_surah_items(self.surahs, numbers)
+        if day:
+            return day["items"]
+        names = sorted(random.sample(self.bot.names, size), key=lambda n: n.number)
+        return name_match.build_items(self.bot.names, [n.number for n in names], [])
+
+    def _games_list(self, mine: dict, *, practice: bool = False) -> list[dict]:
+        """Today's games for the picker: what each is and your score in it."""
+        practice_detail = {
+            "names": "10 names of Allah, picked at random",
+            "surahs": "10 surahs of the Quran, picked at random",
+        }
+        return [
+            {
+                "key": k,
+                "title": name_match.GAMES[k]["title"],
+                "detail": practice_detail[k] if practice else name_match.GAMES[k]["detail"],
+                "count": name_match.MATCH_SIZE,
+                "myResult": name_match.result_payload(mine[k]) if mine.get(k) else None,
+            }
+            for k in name_match.GAME_ORDER
+        ]
+
+    def _practice(self, claims: dict, game: str = "names") -> dict:
+        items = self._game_items(game, None)
+        noun = "surahs of the Quran" if game == "surahs" else "names of Allah"
         return {
             "mode": "practice",
+            "game": game,
+            "games": self._games_list({}, practice=True),
             "dayKey": None,
             "channelName": None,
-            "title": "Practice: match 10 names of Allah",
+            "title": f"Practice: match 10 {noun}",
             # The game prints its own "not scored" paragraph for practice.
             "subtitle": None,
             "sets": _client_sets(items),
             "myResult": None,
             "board": [],
             "nextMatch": name_match.NEXT_MATCH_TEXT,
-            "mugupUrl": name_match.MUGUP_NAMES_URL,
+            "mugupUrl": name_match.GAMES[game]["mugup"],
         }
 
     def _channel_name(self, channel_id: str) -> Optional[str]:
@@ -295,29 +339,38 @@ class GameApi:
         claims = self._claims(request)
         if claims is None:
             return _error(401, "Your sign-in ran out. Close the game and open it again.")
+        game = request.query.get("game", "names")
+        if game not in name_match.GAMES:
+            return _error(404, "That game isn't in today's match. Close the game and open it again.")
         cid = claims.get("cid")
         if not cid:
-            return web.json_response(self._practice(claims))
+            return web.json_response(self._practice(claims, game))
         row = await _run(self.store.get_channel_state, cid)
         day = await _run(self.store.get_open_game_day, cid)
         if not day or not row or not name_match_on(row):
-            return web.json_response(self._practice(claims))
+            return web.json_response(self._practice(claims, game))
 
-        mine = await _run(self.store.get_game_result, cid, str(day["day_key"]), claims["uid"])
-        results = await _run(self.store.get_game_results, cid, str(day["day_key"]))
-        items = day["items"]
+        key = str(day["day_key"])
+        mine = {
+            g: await _run(self.store.get_game_result, cid, key, claims["uid"], g)
+            for g in name_match.GAME_ORDER
+        }
+        results = await _run(self.store.get_game_results, cid, key, game)
+        items = self._game_items(game, day)
         return web.json_response(
             {
                 "mode": "daily",
-                "dayKey": str(day["day_key"]),
+                "game": game,
+                "games": self._games_list(mine),
+                "dayKey": key,
                 "channelName": self._channel_name(cid),
-                "title": "Match each name of Allah to its meaning",
-                "subtitle": _subtitle(items),
+                "title": name_match.GAMES[game]["play"],
+                "subtitle": _surah_subtitle(items) if game == "surahs" else _subtitle(items),
                 "sets": _client_sets(items),
-                "myResult": name_match.result_payload(mine) if mine else None,
+                "myResult": name_match.result_payload(mine[game]) if mine[game] else None,
                 "board": name_match.board_rows(results, claims["uid"]),
                 "nextMatch": name_match.NEXT_MATCH_TEXT,
-                "mugupUrl": name_match.MUGUP_NAMES_URL,
+                "mugupUrl": name_match.GAMES[game]["mugup"],
             }
         )
 
@@ -333,6 +386,9 @@ class GameApi:
         try:
             body = await request.json()
             day_key = str(body["dayKey"])
+            game = str(body.get("game") or "names")
+            if game not in name_match.GAMES:
+                raise ValueError
             guesses = body.get("guesses") or []
             duration = body.get("durationMs")
             if not isinstance(guesses, list):
@@ -353,7 +409,8 @@ class GameApi:
                 )
 
         try:
-            score, item_results = name_match.score_guesses(day["items"], guesses)
+            items = self._game_items(game, day)
+            score, item_results = name_match.score_guesses(items, guesses)
             duration_ms = name_match.check_duration(duration, item_results)
         except name_match.InvalidRun as e:
             logger.warning(f"Rejected name match run from {claims['uid']}: {e}")
@@ -370,17 +427,23 @@ class GameApi:
             "item_results": item_results,
             "guesses": guesses,
             "duration_ms": duration_ms,
+            "game": game,
         }
         saved, recorded = await _run(self.store.insert_game_result, record)
         if recorded:
             if not day.get("played"):
                 await _run(self.store.mark_game_day_played, cid, day_key)
             self.schedule_card_edit(day)
-        results = await _run(self.store.get_game_results, cid, day_key)
+        results = await _run(self.store.get_game_results, cid, day_key, game)
+        mine = {
+            g: saved if g == game else await _run(self.store.get_game_result, cid, day_key, claims["uid"], g)
+            for g in name_match.GAME_ORDER
+        }
         return web.json_response(
             {
                 "result": name_match.result_payload(saved),
                 "recorded": recorded,
+                "games": self._games_list(mine),
                 "board": name_match.board_rows(results, claims["uid"]),
             }
         )

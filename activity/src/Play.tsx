@@ -26,6 +26,7 @@ import {
   type Pair,
   type PairSet,
 } from './game'
+import {cardAriaLabel, wording} from './games'
 import {moveCursor, settleCursor, type BoardShape, type Move} from './nav'
 import {playSound, unlockAudio, useSoundSetting} from './sound'
 import {Button, Kbd, Page, Panel, plural, useFinePointer, useGridColumns, useIsPhone} from './ui'
@@ -49,13 +50,14 @@ export function channelLabel(today: Today) {
 function heading(state: GameState, isPhone: boolean) {
   const set = currentSet(state)
   if (state.sets.length > 1) return `Set ${state.setIndex + 1} of ${state.sets.length}: ${lowerFirst(set.title)}`
-  if (isPhone && set.kind === 'names') return 'Match each name to its meaning'
+  if (isPhone) return wording(set.kind).phoneHeading
   return set.title
 }
 
 function subheading(today: Today, set: PairSet) {
   if (today.mode === 'practice') return 'Practice round · nothing is posted'
   if (set.kind === 'names') return `Names ${set.pairs[0].id} to ${set.pairs[set.pairs.length - 1].id} · one try today`
+  if (set.kind === 'surahs') return `${set.pairs.length} surahs of the Quran · one try today`
   return 'One try today'
 }
 
@@ -233,6 +235,7 @@ export function Play({today, startedAt, onFinish}: {today: Today; startedAt: num
         else cardRefs.current.delete(key)
       }}
       cardKey={key}
+      game={set.kind}
       pair={pairsById.get(parseCardKey(key).pairId)!}
       matched={isMatched(state, key)}
       missed={isMissed(state, key)}
@@ -278,7 +281,7 @@ export function Play({today, startedAt, onFinish}: {today: Today; startedAt: num
   )
 
   return (
-    <Page place={daily ? channelLabel(today) : 'Practice'} headerRight={<SoundToggle />}>
+    <Page label={wording(today.game).header} place={daily ? channelLabel(today) : 'Practice'} headerRight={<SoundToggle />}>
       <h1 className="mb-1 text-lg font-bold tracking-tight text-white sm:text-2xl">{heading(state, isPhone)}</h1>
       {!isPhone && <p className="mb-4 text-[#98a2b3]">{subheading(today, set)}</p>}
 
@@ -312,7 +315,7 @@ export function Play({today, startedAt, onFinish}: {today: Today; startedAt: num
       <div role="group" aria-label="Cards">
         {isPhone ? (
           <div className="grid grid-cols-2 gap-2">
-            <div className="-mb-0.5 text-center text-xs font-medium uppercase tracking-wide text-[#7f8a9a]">Names</div>
+            <div className="-mb-0.5 text-center text-xs font-medium uppercase tracking-wide text-[#7f8a9a]">{wording(set.kind).column}</div>
             <div className="-mb-0.5 text-center text-xs font-medium uppercase tracking-wide text-[#7f8a9a]">Meanings</div>
             {state.layout.names.flatMap((nameKey, i) => [card(nameKey), card(state.layout.meanings[i])])}
           </div>
@@ -352,6 +355,8 @@ export function Play({today, startedAt, onFinish}: {today: Today; startedAt: num
 type CardProps = {
   ref: (el: HTMLButtonElement | null) => void
   cardKey: string
+  /** The set's kind ("names", "surahs"), for the screen-reader label. */
+  game: string
   pair: Pair
   matched: boolean
   missed: boolean
@@ -364,7 +369,7 @@ type CardProps = {
   onPick: () => void
 }
 
-function CardButton({ref, cardKey, pair, matched, missed, selected, wrong, revealing, compact, tabIndex, onFocus, onPick}: CardProps) {
+function CardButton({ref, cardKey, game, pair, matched, missed, selected, wrong, revealing, compact, tabIndex, onFocus, onPick}: CardProps) {
   const isName = parseCardKey(cardKey).side === 'name'
   const text = isName ? pair.left : pair.right
 
@@ -391,7 +396,7 @@ function CardButton({ref, cardKey, pair, matched, missed, selected, wrong, revea
       disabled={matched || revealing}
       tabIndex={tabIndex}
       aria-pressed={selected}
-      aria-label={`${text}${isName && pair.leftAr ? `, ${pair.leftAr}` : ''} (${isName ? 'name' : 'meaning'})${status}`}
+      aria-label={cardAriaLabel(game, isName ? 'name' : 'meaning', text, pair.leftAr, status)}
       className={`relative grid cursor-pointer place-items-center rounded-xl border-[1.5px] text-center font-semibold leading-snug transition duration-150 disabled:cursor-default ${size} ${look} ${lift} ${ring}`}>
       <span>
         {text}

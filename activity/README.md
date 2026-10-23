@@ -2,6 +2,8 @@
 
 The game that opens when someone presses **Play today's match** under HadithBot's daily name match card. It shows 10 names of Allah and their 10 meanings in one shuffled grid of 20 cards, and the player matches each name to its meaning. It's a port of the pair match game on MugUp's website.
 
+The daily match has two games, the names of Allah and the surahs of the Quran, each with one try a day and its own board. Players switch between them inside the game: `GET /api/today?game=names|surahs` loads one, and `POST /api/result` says which game the run was for.
+
 It's a static Vite + React app. Everything it knows comes from the bot's API: `POST /api/token`, `GET /api/today` and `POST /api/result`, all relative URLs with a bearer token. The bot recomputes the score from the list of guesses, so the rules in `src/game.ts` have to agree with `score_guesses` in the bot.
 
 The guess log is a list of `[nameId, meaningId]` (one per name and meaning picked together) and `["reveal", pairId]` (one per press of "Show one pair", which matches that pair and counts it as a mistake).
@@ -9,6 +11,7 @@ The guess log is a list of `[nameId, meaningId]` (one per name and meaning picke
 ## Files
 
 - `src/game.ts`: the game rules as pure functions (cards, picks, reveals, the guess log, scoring, squares, time formats). Tested in `src/game.test.ts`.
+- `src/games.ts`: the wording that changes with the game, and the list of other games to play. Tested in `src/games.test.ts`. `src/GameCards.tsx` shows that list.
 - `src/nav.ts`: arrow-key movement on the grid and on the two phone columns. Tested in `src/nav.test.ts`.
 - `src/sound.ts`: short sounds made with Web Audio (no audio files). The "Sound: on" setting is kept in localStorage.
 - `src/confetti.ts`: confetti on a finished run, skipped for reduced motion (the system setting or Discord's `reduced_motion=true`).

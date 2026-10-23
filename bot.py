@@ -541,6 +541,7 @@ class HadithBot(commands.Bot):
             day,
             db.get_game_results(channel_id, today),
             played_keys=db.get_played_day_keys(channel_id),
+            others={g: db.get_game_results(channel_id, today, g) for g in name_match.GAME_ORDER[1:]},
         )
         message = await channel.send(embed=embed, view=build_name_match_view())
         db.set_game_day_message(channel_id, today, str(message.id))

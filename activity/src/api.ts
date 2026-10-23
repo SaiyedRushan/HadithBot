@@ -1,10 +1,15 @@
 import type {Guess, PairSet, Result} from './game'
+import type {GameInfo, GameKey} from './games'
 
 /** One line of the board. `durationMs` is null for a run with no usable time. */
 export type BoardRow = {rank: number; displayName: string; score: number; total: number; durationMs: number | null; isMe: boolean}
 
 export type Today = {
   mode: 'daily' | 'practice'
+  /** Which game this response is for. */
+  game: GameKey
+  /** Every game in today's match, in the server's order, with your score in each. */
+  games: GameInfo[]
   dayKey: string | null
   channelName: string | null
   title: string
@@ -58,7 +63,8 @@ export async function api<T>(path: string, token: string | null, init: {method?:
 export const getToken = (code: string, guildId: string | null, channelId: string | null) =>
   api<TokenResponse>('/token', null, {method: 'POST', body: {code, guildId, channelId}})
 
-export const getToday = (token: string) => api<Today>('/today', token)
+/** Today's match for one game. No game means names, as the server does. */
+export const getToday = (token: string, game?: GameKey) => api<Today>(game ? `/today?game=${encodeURIComponent(game)}` : '/today', token)
 
-export const postResult = (token: string, dayKey: string, guesses: Guess[], durationMs: number) =>
-  api<PostResultResponse>('/result', token, {method: 'POST', body: {dayKey, guesses, durationMs}})
+export const postResult = (token: string, game: GameKey, dayKey: string, guesses: Guess[], durationMs: number) =>
+  api<PostResultResponse>('/result', token, {method: 'POST', body: {dayKey, game, guesses, durationMs}})

@@ -36,14 +36,19 @@ class FakeStore:
     def get_game_day(self, cid, key):
         return self.days.get((cid, key))
 
-    def get_game_results(self, cid, key):
-        return [r for (c, k, _), r in self.results.items() if (c, k) == (cid, key)]
+    def get_game_results(self, cid, key, game="names"):
+        return [r for (c, k, _, g), r in self.results.items() if (c, k, g) == (cid, key, game)]
 
-    def get_game_result(self, cid, key, uid):
-        return self.results.get((cid, key, uid))
+    def get_game_result(self, cid, key, uid, game="names"):
+        return self.results.get((cid, key, uid, game))
 
     def insert_game_result(self, record):
-        k = (record["channel_id"], record["day_key"], record["discord_user_id"])
+        k = (
+            record["channel_id"],
+            record["day_key"],
+            record["discord_user_id"],
+            record.get("game", "names"),
+        )
         if k in self.results:
             return self.results[k], False
         self.results[k] = dict(record, created_at="2026-10-22T22:00:00")
@@ -277,3 +282,61 @@ def test_client_log_accepts_a_report_without_sign_in(caplog):
         status, _ = serve(FakeStore(), scenario)
     assert status == 204
     assert "ready-timeout" in caplog.text
+
+
+def test_today_lists_both_games_and_serves_the_surah_match():
+    store = FakeStore()
+    add_day(store)
+
+    async def scenario(client):
+        _, body = await sign_in(client)
+        h = auth(body["token"])
+        names = await (await client.get("/api/today", headers=h)).json()
+        surahs = await (await client.get("/api/today?game=surahs", headers=h)).json()
+        missing = await client.get("/api/today?game=chess", headers=h)
+        return names, surahs, missing.status
+
+    (names, surahs, missing), _ = serve(store, scenario)
+    assert [g["key"] for g in names["games"]] == ["names", "surahs"]
+    assert names["game"] == "names" and surahs["game"] == "surahs"
+    ids = [p["id"] for p in surahs["sets"][0]["pairs"]]
+    assert ids == nm.pick_surahs("2026-10-22")
+    assert surahs["title"] == "Match each surah to its meaning"
+    assert surahs["mugupUrl"] == "https://mugup.app/decks/102"
+    assert missing == 404
+
+
+def test_each_game_has_its_own_one_try_and_board():
+    store = FakeStore()
+    add_day(store)
+    surah_ids = nm.pick_surahs("2026-10-22")
+
+    async def scenario(client):
+        _, body = await sign_in(client)
+        h = auth(body["token"])
+        names = await (await client.post("/api/result", json={"dayKey": "2026-10-22", "guesses": [[i, i] for i in range(49, 59)], "durationMs": 30000}, headers=h)).json()
+        surahs = await (await client.post("/api/result", json={"dayKey": "2026-10-22", "game": "surahs", "guesses": [[i, i] for i in surah_ids], "durationMs": 40000}, headers=h)).json()
+        again = await (await client.post("/api/result", json={"dayKey": "2026-10-22", "game": "surahs", "guesses": [], "durationMs": 40000}, headers=h)).json()
+        today = await (await client.get("/api/today", headers=h)).json()
+        return names, surahs, again, today
+
+    (names, surahs, again, today), edits = serve(store, scenario)
+    assert names["recorded"] and surahs["recorded"] and not again["recorded"]
+    assert surahs["result"]["score"] == 10 and again["result"]["score"] == 10
+    assert len(surahs["board"]) == 1 and len(names["board"]) == 1
+    assert {g["key"]: g["myResult"]["score"] for g in surahs["games"]} == {"names": 10, "surahs": 10}
+    mine = {g["key"]: g["myResult"] for g in today["games"]}
+    assert mine["names"]["score"] == 10 and mine["surahs"]["score"] == 10
+
+
+def test_names_guesses_are_not_valid_for_the_surah_match():
+    store = FakeStore()
+    add_day(store)
+
+    async def scenario(client):
+        _, body = await sign_in(client)
+        r = await client.post("/api/result", json={"dayKey": "2026-10-22", "game": "surahs", "guesses": [[200, 200]], "durationMs": 5000}, headers=auth(body["token"]))
+        return r.status
+
+    status, _ = serve(store, scenario)
+    assert status == 400

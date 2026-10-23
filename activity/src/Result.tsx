@@ -1,6 +1,8 @@
 import {useEffect} from 'react'
 import type {BoardRow, Today} from './api'
 import {celebrate} from './confetti'
+import {AnotherGame} from './GameCards'
+import {wording, type GameKey} from './games'
 import {formatDuration, pairsWithResult, squares, type Pair, type Result as GameResult} from './game'
 import {channelLabel} from './Play'
 import {Button, Page, Panel, PoweredByMugup} from './ui'
@@ -35,6 +37,7 @@ export function Result({
   onOpenMugup,
   onOpenMugupDiscord,
   onPracticeAgain,
+  onOpenGame,
 }: {
   today: Today
   result: GameResult
@@ -45,7 +48,9 @@ export function Result({
   onOpenMugup: () => void
   onOpenMugupDiscord: () => void
   onPracticeAgain: () => void
+  onOpenGame: (game: GameKey) => void
 }) {
+  const w = wording(today.game)
   const fresh = revealed !== null && variant !== 'alreadyPlayed'
   const perfect = result.score === result.total
 
@@ -62,7 +67,7 @@ export function Result({
   const tried = revealed ? retried.filter((p) => !revealed.includes(p.id)) : []
 
   return (
-    <Page place={variant === 'practice' ? 'Practice' : channelLabel(today)}>
+    <Page label={w.header} place={variant === 'practice' ? 'Practice' : channelLabel(today)}>
       <Panel className="anim-rise px-5 py-7 text-center sm:px-8 sm:py-9">
         {variant === 'alreadyPlayed' && (
           <p className="mx-auto mb-4 w-fit rounded-full border border-[#ffd38a]/30 bg-[#ffd38a]/10 px-3 py-1 text-sm font-semibold text-[#ffd38a]">
@@ -87,13 +92,13 @@ export function Result({
 
         {revealed ? (
           <>
-            <PairList one={(l) => `You took more than one try on ${l}.`} many={(n) => `You took more than one try on these ${n}:`} pairs={tried} />
-            <PairList one={(l) => `You had the game show you ${l}.`} many={(n) => `You had the game show you these ${n}:`} pairs={shown} />
+            <PairList one={(l) => `You took more than one try on ${l}.`} many={(n) => `You took more than one try on these ${n}${w.listNoun}:`} pairs={tried} />
+            <PairList one={(l) => `You had the game show you ${l}.`} many={(n) => `You had the game show you these ${n}${w.listNoun}:`} pairs={shown} />
           </>
         ) : (
-          <PairList one={(l) => `You didn't get ${l} on the first try.`} many={(n) => `You didn't get these ${n} on the first try:`} pairs={retried} />
+          <PairList one={(l) => `You didn't get ${l} on the first try.`} many={(n) => `You didn't get these ${n}${w.listNoun} on the first try:`} pairs={retried} />
         )}
-        <PairList one={(l) => `You stopped before matching ${l}.`} many={(n) => `You stopped before matching these ${n}:`} pairs={unmatched} />
+        <PairList one={(l) => `You stopped before matching ${l}.`} many={(n) => `You stopped before matching these ${n}${w.listNoun}:`} pairs={unmatched} />
 
         <p className="mt-4 text-sm text-[#98a2b3]">
           {variant === 'practice'
@@ -108,9 +113,11 @@ export function Result({
         )}
       </Panel>
 
+      <AnotherGame today={today} onOpen={onOpenGame} />
+
       {variant !== 'practice' && board.length > 0 && (
         <Panel className="mt-4 px-4 py-3 sm:px-5">
-          <h2 className="mb-1.5 text-[15px] font-bold text-white">Today in this server</h2>
+          <h2 className="mb-1.5 text-[15px] font-bold text-white">{w.boardHeading}</h2>
           <ol>
             {board.map((row) => {
               const time = formatDuration(row.durationMs)
@@ -146,11 +153,10 @@ export function Result({
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3.5 rounded-xl border border-[#4a3a22] bg-[#1a1610] px-4 py-3.5">
         <p className="max-w-[520px] text-sm text-[#e7d6bb]">
-          <b>Want to learn all 99?</b> MugUp has every name as a matching game and flashcards
-          {missedAny ? ', so you can practise the ones you missed.' : '.'}
+          <b>{w.learnHeading}</b> {w.learnText(missedAny)}
         </p>
         <Button variant="gold" onClick={onOpenMugup}>
-          Open the 99 names on MugUp ↗
+          {w.learnButton} ↗
         </Button>
       </div>
 

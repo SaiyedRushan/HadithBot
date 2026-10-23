@@ -11,7 +11,10 @@ Pure on purpose, with no database import, so it can be tested without
 credentials (same reasoning as views.py).
 """
 
+import json
+import random
 from datetime import date, datetime, timedelta
+from pathlib import Path
 from typing import Iterable, Optional, Sequence
 from zoneinfo import ZoneInfo
 
@@ -35,6 +38,28 @@ MIN_MS_PER_PAIR = 1000
 MAX_DURATION_MS = 6 * 60 * 60 * 1000
 
 MEDALS = ("🥇", "🥈", "🥉")
+
+# The games inside one day's match. "names" is the one the card is about; the
+# others are played from the same Activity after it, each with its own one try
+# and its own board (game_results.game), and get a line on the card.
+GAMES = {
+    "names": {
+        "title": "Names of Allah",
+        "play": "Match each name of Allah to its meaning",
+        "detail": "10 names of Allah, including today's",
+        "mugup": MUGUP_NAMES_URL,
+    },
+    "surahs": {
+        "title": "Surahs of the Quran",
+        "play": "Match each surah to its meaning",
+        "detail": "10 surahs of the Quran, a different 10 each day",
+        "mugup": "https://mugup.app/decks/102",
+    },
+}
+GAME_ORDER = ("names", "surahs")
+SURAHS_FILE = Path(__file__).resolve().parent / "data" / "114surahs.json"
+# Day 0 of the surah rotation. Any fixed date works; this is launch day.
+SURAH_EPOCH = date(2026, 10, 23)
 
 
 class InvalidRun(ValueError):
@@ -95,6 +120,40 @@ def build_items(names: Sequence, numbers: Sequence[int], today: Sequence[int]) -
         "today": list(today),
         "today_names": today_names,
     }
+
+
+def load_surahs(path: Path = SURAHS_FILE) -> list[dict]:
+    """The 114 surahs: number, transliteration, arabic, meaning (from MugUp deck 102)."""
+    return json.loads(path.read_text())
+
+
+def pick_surahs(key: str, total: int = 114, size: int = MATCH_SIZE) -> list[int]:
+    """The surahs for one day: the same everywhere, and all 114 every 12 days.
+
+    Each 12-day cycle shuffles 1 to 114 with a seed from the cycle number and
+    deals 10 a day; the last day tops up from the start of that shuffle.
+    """
+    per_cycle = -(-total // size)
+    cycle, block = divmod((date.fromisoformat(key) - SURAH_EPOCH).days, per_cycle)
+    order = list(range(1, total + 1))
+    random.Random(f"surahs:{cycle}").shuffle(order)
+    picked = order[block * size : (block + 1) * size]
+    picked += [n for n in order if n not in picked][: size - len(picked)]
+    return sorted(picked)
+
+
+def build_surah_items(surahs: Sequence[dict], numbers: Sequence[int]) -> dict:
+    by_number = {s["number"]: s for s in surahs}
+    pairs = [
+        {
+            "id": n,
+            "left": f"{n}. {by_number[n]['transliteration']}",
+            "left_ar": by_number[n]["arabic"],
+            "right": by_number[n]["meaning"],
+        }
+        for n in numbers
+    ]
+    return {"sets": [{"kind": "surahs", "pairs": pairs}]}
 
 
 def all_pairs(items: dict) -> list[dict]:
@@ -300,6 +359,32 @@ def intro_text(items: dict) -> str:
     )
 
 
+def other_games_text(others: dict, *, final: bool) -> list[str]:
+    """A line on the card for each other game in the match."""
+    lines = []
+    for key in GAME_ORDER[1:]:
+        ranked = rank(others.get(key) or [])
+        name = "surah match" if key == "surahs" else GAMES[key]["title"].lower()
+        if not ranked:
+            lines.append(
+                f"**Also today: a {name}.** Nobody played it."
+                if final
+                else f"**Also today: a {name}.** {GAMES[key]['detail']}. "
+                "Press Play and pick it after the names."
+            )
+            continue
+        top = ranked[0]
+        took = format_duration(top.get("duration_ms"))
+        score = f"**{top['score']}/{top['total']}**" + (f" · {took}" if took else "")
+        people = "1 person" if len(ranked) == 1 else f"{len(ranked)} people"
+        verb = "won it with" if final else "leads with"
+        lines.append(
+            f"**Also today: a {name}.** {people} played. "
+            f"**{_clean_name(top.get('display_name') or '')}** {verb} {score}."
+        )
+    return lines
+
+
 def card_title(items: dict) -> str:
     return f"Today's name match: {len(all_pairs(items))} names of Allah"
 
@@ -310,6 +395,7 @@ def card_embed(
     *,
     final: bool = False,
     played_keys: Iterable[str] = (),
+    others: Optional[dict] = None,
 ) -> discord.Embed:
     """The card for one day. ``day`` is a ``game_days`` row."""
     items = day["items"]
@@ -340,6 +426,8 @@ def card_embed(
             parts.append(player_block(r, sizes))
     if hidden > 0:
         parts.append(f"_and {hidden} other player{'s' if hidden != 1 else ''}_")
+    if others is not None:
+        parts.extend(other_games_text(others, final=final))
 
     embed = discord.Embed(title=title, description="\n\n".join(parts)[:4096], color=EMBED_COLOR)
     footer = f"Names {pairs[0]['id']} to {pairs[-1]['id']} · {MUGUP_CREDIT}"
