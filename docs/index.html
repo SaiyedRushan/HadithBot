@@ -1056,6 +1056,94 @@
         color: var(--brand);
       }
 
+      /* Hayya, the featured app. Its own colours in both themes, since they
+         are the app's brand rather than this site's. */
+      .hayya-card {
+        grid-column: 1 / -1;
+        flex-direction: row;
+        align-items: center;
+        gap: 24px;
+        background: radial-gradient(
+            120% 140% at 0% 0%,
+            #1f4a37 0%,
+            #0f2a1f 55%,
+            #0b2018 100%
+          );
+        border: 1.5px solid #c9a55a;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2),
+          0 26px 50px -24px rgba(11, 32, 24, 0.7);
+      }
+      .hayya-card:hover {
+        border-color: #e3c27a;
+      }
+      .hayya-card .platform {
+        color: #e3c27a;
+      }
+      .hayya-card h3 {
+        color: #fff;
+        font-size: 1.4rem;
+      }
+      .hayya-card p {
+        color: #cfe0d6;
+        max-width: 620px;
+      }
+      .hayya-card .go {
+        display: inline-block;
+        margin-top: 16px;
+        background: #c9a55a;
+        color: #0b2018;
+        border-radius: 999px;
+        padding: 8px 16px;
+        font-weight: 700;
+        transition: background 0.2s ease;
+      }
+      .hayya-card:hover .go {
+        background: #e3c27a;
+      }
+      .hayya-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 18px;
+        flex: none;
+        box-shadow: 0 0 0 1px rgba(227, 194, 122, 0.35),
+          0 10px 24px -8px rgba(0, 0, 0, 0.6);
+        animation: hayya-ring 4s ease-in-out infinite;
+        transform-origin: 50% 60%;
+      }
+      /* a quick wiggle, like a phone ringing, then a long pause */
+      @keyframes hayya-ring {
+        0%,
+        70%,
+        100% {
+          transform: rotate(0);
+        }
+        73% {
+          transform: rotate(-9deg);
+        }
+        76% {
+          transform: rotate(8deg);
+        }
+        79% {
+          transform: rotate(-7deg);
+        }
+        82% {
+          transform: rotate(6deg);
+        }
+        85% {
+          transform: rotate(-3deg);
+        }
+        88% {
+          transform: rotate(0);
+        }
+      }
+      @media (max-width: 640px) {
+        .hayya-card {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 16px;
+        }
+      }
+
       /* The MugUp decks card: full row, head on the left, deck rows on the
          right. Not a link itself, so it neither lifts nor recolours on hover. */
       .decks-card {
@@ -3293,21 +3381,33 @@
             </p>
           </div>
           <div class="apps">
+            <!-- Hayya is the featured app: a full row in its own green and
+                 gold, with the icon "ringing" now and then, since the app's
+                 whole idea is a prayer time that rings like a call. -->
             <a
-              class="app-card"
+              class="app-card hayya-card"
               href="https://hayyaprayer.com/"
               target="_blank"
               rel="noopener"
             >
-              <div class="ico">📞</div>
-              <span class="platform">iPhone · Android</span>
-              <h3>Hayya — Prayer Alarm</h3>
-              <p>
-                Prayer times that ring like an incoming call — full-screen, with
-                a real ringtone, calling back until you answer. Answering logs
-                the prayer and grows a streak you have to earn.
-              </p>
-              <span class="go">Get the app →</span>
+              <img
+                class="hayya-icon"
+                src="img/hayya-icon.png"
+                alt="Hayya app icon"
+                width="72"
+                height="72"
+                loading="lazy"
+              />
+              <div class="hayya-body">
+                <span class="platform">Free on iPhone and Android</span>
+                <h3>Hayya: Prayer Alarm</h3>
+                <p>
+                  Prayer times that ring like an incoming call: full-screen,
+                  with a real ringtone, calling back until you answer. Answering
+                  logs the prayer and grows a streak you have to earn.
+                </p>
+                <span class="go">Get Hayya on your phone →</span>
+              </div>
             </a>
             <a
               class="app-card"
