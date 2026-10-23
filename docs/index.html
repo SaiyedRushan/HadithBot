@@ -715,6 +715,55 @@
         font-weight: 500;
       }
 
+      a.srcbtn,
+      button.srcbtn {
+        font: inherit;
+        font-size: 0.78rem;
+        font-weight: 500;
+        border: 0;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background 0.2s ease, transform 0.2s ease;
+      }
+      a.srcbtn:hover,
+      button.srcbtn:hover {
+        background: #5d6269;
+        transform: translateY(-1px);
+      }
+      a.srcbtn:focus-visible,
+      button.srcbtn:focus-visible {
+        outline: 2px solid var(--accent-soft);
+        outline-offset: 2px;
+      }
+      .preview .report-demo {
+        margin-top: 10px;
+        background: #2b2d31;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        padding: 12px 14px;
+        font-size: 0.84rem;
+      }
+      .preview .report-demo p {
+        margin: 6px 0;
+      }
+      .preview .report-demo a {
+        color: #00a8fc;
+      }
+      .preview .report-field span {
+        display: block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #b5bac1;
+        margin: 8px 0 4px;
+      }
+      .preview .report-field div {
+        background: #1e1f22;
+        border-radius: 4px;
+        padding: 8px 10px;
+        color: #80848e;
+      }
+
       /* the name match card, as a follow-up message under the hadith */
       .preview .game-msg {
         margin-left: 52px;
@@ -730,9 +779,13 @@
       .preview .game-embed b {
         color: #fff;
       }
+      .preview .game-played {
+        margin-top: 8px;
+      }
       .preview .game-score {
         margin-top: 8px;
         letter-spacing: 0.5px;
+        line-height: 1.35;
       }
       .preview .ment {
         background: rgba(88, 101, 242, 0.3);
@@ -2418,8 +2471,8 @@
               >
                 بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
               </div>
-              <div class="msg" aria-hidden="true">
-                <div class="avatar">☾</div>
+              <div class="msg">
+                <div class="avatar" aria-hidden="true">☾</div>
                 <div>
                   <div>
                     <span class="uname">HadithBot</span
@@ -2449,9 +2502,34 @@
                     <div>
                       "Keep your tongue wet with the remembrance of Allah."
                     </div>
-                    <span class="srcbtn">🔎 Sunnah.com</span
-                    ><span class="srcbtn">💬 Ask ChatGPT</span
-                    ><span class="srcbtn">🚩 Report</span>
+                    <!-- The same links the bot puts under this hadith (hadith
+                         41824), built with utils.sunnah_url and
+                         utils.chatgpt_explain_url. Report can't send anything
+                         from a static site, so it shows the Discord form and
+                         says so. -->
+                    <a class="srcbtn" href="https://sunnah.com/search?q=One%20of%20the%20Companions%20said%20O%20Messenger%20of%20Allah%20There%20are%20many%20injunctions%20of%20Islam%20for%20me%20So%20tell%20me%20something%20to%20which%20I%20may" target="_blank" rel="noopener"
+                      >🔎 Sunnah.com</a
+                    ><a class="srcbtn" href="https://chatgpt.com/?q=Please+explain+this+hadith+from+Riyad+as-Salihin%2C+chapter+%22The+Book+of+the+Remembrance+of+Allah%22.+What+does+it+mean%2C+and+what+lessons+do+scholars+take+from+it%3F%0A%0A%27Abdullah+bin+Busr+%28May+Allah+be+pleased+with+him%29+reported%3A+One+of+the+Companions+said%2C+%22O+Messenger+of+Allah.+There+are+many+injunctions+of+Islam+for+me.+So+tell+me+something+to+which+I+may+hold+fast.%22+He+said%2C+%22Keep+your+tongue+wet+with+the+remembrance+of+Allah.%22.+%5BAt-Tirmidhi%5D." target="_blank" rel="noopener"
+                      >💬 Ask ChatGPT</a
+                    ><button class="srcbtn" type="button" id="reportBtn" aria-expanded="false" aria-controls="reportDemo"
+                      >🚩 Report</button>
+                    <div class="report-demo" id="reportDemo" hidden>
+                      <b>Flag this hadith</b>
+                      <p>
+                        In Discord, Report opens this form. You tell us what
+                        looks wrong, like text that stops mid-sentence or doesn't
+                        match Sunnah.com, and we check it.
+                      </p>
+                      <div class="report-field" aria-hidden="true">
+                        <span>What looks wrong?</span>
+                        <div>e.g. the text stops mid-sentence</div>
+                      </div>
+                      <p>
+                        Nothing is sent from this page. Spotted a problem with a
+                        hadith? <a href="#contact">Tell us here</a>.
+                      </p>
+                      <button type="button" class="srcbtn" id="reportClose">Close this form</button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2464,9 +2542,18 @@
                     Match today's name, Al-'Azeem, and the 9 names before it to
                     their meanings.
                   </div>
+                  <div class="game-played"><b>Yusuf</b>, <b>Aisha</b> and <b>Bilal</b> played</div>
+                  <div class="game-score" aria-hidden="true">
+                    <b>10/10</b> · 44s · <span class="ment">@Yusuf</span><br />
+                    🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
+                  </div>
                   <div class="game-score" aria-hidden="true">
                     <b>9/10</b> · 52s · <span class="ment">@Aisha</span><br />
                     🟩🟩🟩🟩🟩🟩🟩🟥🟩🟩
+                  </div>
+                  <div class="game-score" aria-hidden="true">
+                    <b>7/10</b> · 1m 18s · <span class="ment">@Bilal</span><br />
+                    🟩🟥🟩🟩🟩🟥🟩🟩🟥🟩
                   </div>
                 </div>
                 <a class="game-btn" href="#matchPlay">Try the name match below ↓</a>
@@ -3754,6 +3841,22 @@
             }, 600);
           });
         });
+      })();
+    </script>
+    <script>
+      // Report in the hero preview: show what the Discord form looks like.
+      (function () {
+        var btn = document.getElementById("reportBtn");
+        var box = document.getElementById("reportDemo");
+        var close = document.getElementById("reportClose");
+        if (!btn || !box) return;
+        function set(open) {
+          box.hidden = !open;
+          btn.setAttribute("aria-expanded", String(open));
+          (open ? close : btn).focus();
+        }
+        btn.addEventListener("click", function () { set(box.hidden); });
+        close.addEventListener("click", function () { set(false); });
       })();
     </script>
   </body>
