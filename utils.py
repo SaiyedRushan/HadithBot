@@ -4,6 +4,7 @@ from datetime import date
 from pathlib import Path
 import json
 import logging
+import os
 from urllib.parse import quote, urlencode
 import re
 
@@ -232,6 +233,61 @@ def compose_flag_reply(hadith: dict, message: str) -> str:
     if len(text) > len(quote):
         quote = quote.rstrip() + "…"
     return f"{head}> {quote}{tail}" if quote else (head + tail).strip()
+
+
+# saiyedrushan. Not the application's owner: the bot belongs to a developer
+# team whose owner is a different account, so "DM the owner" would go to the
+# wrong person. FLAG_ALERT_USER_ID overrides it for a test bot.
+FLAG_ALERT_USER_ID = int(os.environ.get("FLAG_ALERT_USER_ID") or 364012496358735883)
+
+_FLAG_SNIPPET = 300  # enough of the hadith to recognise it without opening it
+
+
+def compose_flag_alert(
+    hadith: Optional[dict],
+    hadith_id: int,
+    reporter_id: str,
+    reason: Optional[str],
+    guild_name: Optional[str],
+    open_count: int,
+    jump_url: Optional[str] = None,
+) -> str:
+    """The DM the maintainer gets the moment a reader reports a hadith.
+
+    Says which hadith, who reported it, where, and why, so most reports can be
+    judged from the DM alone, then names the commands that act on it.
+    """
+    hadith = hadith or {}
+    book = (hadith.get("books_metadata") or {}).get("english_title")
+    chapter = (hadith.get("chapters") or {}).get("english")
+    number = hadith.get("id_in_book")
+    place = ", ".join(
+        p for p in (book, chapter, f"hadith {number}" if number else None) if p
+    )
+
+    lines = [f"🚩 **A hadith was reported** in **{guild_name or 'a DM'}**"]
+    lines.append(f"Reported by <@{reporter_id}>")
+    others = open_count - 1
+    if others > 0:
+        lines.append(
+            f"{others} other {'person has' if others == 1 else 'people have'} "
+            "reported this hadith too."
+        )
+    lines.append(f"\n**Hadith `{hadith_id}`**" + (f": {place}" if place else ""))
+    text = " ".join((hadith.get("english_text") or "").split())
+    if text:
+        snippet = text[:_FLAG_SNIPPET]
+        if len(text) > len(snippet):
+            snippet = snippet.rstrip() + "…"
+        lines.append(f"> {snippet}")
+    lines.append(f"\n**Their note:** {reason}" if reason else "\nThey didn't leave a note.")
+    if jump_url:
+        lines.append(f"[Open the message they reported]({jump_url})")
+    lines.append(
+        f"\n-# Close it with `/bismillah flags resolve:{hadith_id}`. "
+        f"Reply to them with `/bismillah flag-reply hadith:{hadith_id}`."
+    )
+    return "\n".join(lines)[:_DM_LIMIT]
 
 
 @dataclass

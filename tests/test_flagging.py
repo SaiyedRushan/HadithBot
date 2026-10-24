@@ -11,7 +11,7 @@ import re
 import discord
 import pytest
 
-from utils import compose_flag_reply
+from utils import compose_flag_alert, compose_flag_reply
 from views import FlagHadithButton, build_hadith_view
 
 
@@ -118,3 +118,47 @@ def test_reply_survives_a_message_that_fills_the_limit():
 def test_reply_without_hadith_text_still_sends():
     body = compose_flag_reply({}, "We've corrected this.")
     assert "We've corrected this." in body
+
+
+# --- the maintainer's alert --------------------------------------------------
+
+def test_flag_alert_says_which_hadith_who_and_where():
+    body = compose_flag_alert(
+        make_hadith(hadith_id=40991),
+        40991,
+        reporter_id="555",
+        reason="It stops mid-sentence",
+        guild_name="York MSA",
+        open_count=1,
+        jump_url="https://discord.com/channels/1/2/3",
+    )
+    assert "York MSA" in body
+    assert "<@555>" in body
+    assert "Sahih al-Bukhari, Revelation, hadith 1" in body
+    assert "This is the hadith text." in body
+    assert "It stops mid-sentence" in body
+    assert "https://discord.com/channels/1/2/3" in body
+    assert "resolve:40991" in body
+    assert "other" not in body  # first report, so no "others reported" line
+
+
+def test_flag_alert_counts_the_other_reporters():
+    one = compose_flag_alert(make_hadith(), 1, "5", None, "G", open_count=2)
+    many = compose_flag_alert(make_hadith(), 1, "5", None, "G", open_count=4)
+    assert "1 other person has reported" in one
+    assert "3 other people have reported" in many
+
+
+def test_flag_alert_without_note_or_hadith_row():
+    """The hadith lookup can come back empty; the alert still goes out."""
+    body = compose_flag_alert(None, 77, "5", None, None, open_count=1)
+    assert "Hadith `77`" in body
+    assert "didn't leave a note" in body
+
+
+def test_flag_alert_fits_one_message():
+    body = compose_flag_alert(
+        make_hadith(text="word " * 2000), 1, "5", "x" * 500, "G", open_count=1
+    )
+    assert len(body) <= 2000
+    assert "x" * 500 in body

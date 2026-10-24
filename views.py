@@ -12,7 +12,12 @@ from typing import Optional
 
 import discord
 
-from utils import compose_explain_reply, sunnah_url
+from utils import (
+    FLAG_ALERT_USER_ID,
+    compose_explain_reply,
+    compose_flag_alert,
+    sunnah_url,
+)
 
 logger = logging.getLogger("HadithBot")
 
@@ -65,6 +70,36 @@ class FlagReasonModal(discord.ui.Modal, title="Flag this hadith"):
             "JazakAllahu khayran — this hadith has been flagged for review. 🚩",
             ephemeral=True,
         )
+        # After the reader's reply, and in its own try: the flag is already
+        # saved, so a DM that fails must not look like a failed report.
+        try:
+            await self.alert_maintainer(interaction)
+        except Exception:
+            logger.error(
+                f"Saved the flag on hadith {self.hadith_id} but couldn't DM "
+                f"user {FLAG_ALERT_USER_ID} about it",
+                exc_info=True,
+            )
+
+    async def alert_maintainer(self, interaction: discord.Interaction):
+        from db import count_hadith_flags, get_hadith_by_id  # see module docstring
+
+        message = interaction.message
+        guild = interaction.guild
+        body = compose_flag_alert(
+            get_hadith_by_id(self.hadith_id),
+            self.hadith_id,
+            str(interaction.user.id),
+            (self.reason.value or "").strip() or None,
+            guild.name if guild else None,
+            count_hadith_flags(self.hadith_id),
+            jump_url=message.jump_url if message else None,
+        )
+        client = interaction.client
+        user = client.get_user(FLAG_ALERT_USER_ID) or await client.fetch_user(
+            FLAG_ALERT_USER_ID
+        )
+        await user.send(body)
 
 
 class FlagHadithButton(
