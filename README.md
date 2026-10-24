@@ -31,6 +31,7 @@ A Discord bot that sends daily Islamic hadiths and the 99 beautiful names of All
 - `OUTREACH.md` - Copy-paste templates for introducing the bot to new communities
 - `outreach/msa-contacts.md` / `.csv` - Researched MSA contact list, tiered by how reachable they are
 - `APP_DIRECTORY.md` - Discord App Directory listing copy, assets and eligibility notes
+- `REDDIT.md` - Ready-to-post Reddit drafts, screenshot to attach, and answers to the usual comments
 - `assets/appdir/` - Icon and carousel images for the App Directory listing
 - `pyproject.toml` / `uv.lock` - Dependencies and lockfile (managed with uv)
 - `Makefile` - Common dev tasks (`make dev` / `test` / `lint`)
