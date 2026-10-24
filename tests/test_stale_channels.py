@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from check_stale_channels import find_stale, format_report
+from check_stale_channels import find_stale, format_report, split_stale
 
 NOW = datetime(2026, 8, 8, 12, 0, tzinfo=timezone.utc)
 
@@ -97,3 +97,55 @@ def test_report_names_the_channel_and_the_command():
     assert "reminders" in report
     assert "never delivered" in report
     assert "/bismillah diagnose" in report
+
+
+def test_recently_stopped_channel_is_new():
+    stale = find_stale(
+        [row(last_sent_at=(NOW - timedelta(days=2)).isoformat())], now=NOW
+    )
+    new, old = split_stale(stale, now=NOW)
+    assert len(new) == 1 and old == []
+
+
+def test_long_stopped_channel_is_old():
+    """The Ayo Ngaji case: a month without delivery, reported every day since."""
+    stale = find_stale(
+        [row(last_sent_at=(NOW - timedelta(days=30)).isoformat())], now=NOW
+    )
+    new, old = split_stale(stale, now=NOW)
+    assert new == [] and len(old) == 1
+
+
+def test_never_delivered_counts_from_setup():
+    recent = row(
+        channel_id="1",
+        last_sent_at=None,
+        created_at=(NOW - timedelta(days=2)).isoformat(),
+    )
+    long_ago = row(channel_id="2", last_sent_at=None)  # created 30 days ago
+    new, old = split_stale(find_stale([recent, long_ago], now=NOW), now=NOW)
+    assert [r["channel_id"] for r, _ in new] == ["1"]
+    assert [r["channel_id"] for r, _ in old] == ["2"]
+
+
+def test_no_timestamps_at_all_is_new():
+    """Nothing to date it by, so fail rather than hide it."""
+    stale = find_stale([row(last_sent_at=None, created_at=None)], now=NOW)
+    new, old = split_stale(stale, now=NOW)
+    assert len(new) == 1 and old == []
+
+
+def test_report_lists_old_channels_separately():
+    new = find_stale([row(channel_id="1", channel_name="fresh")], now=NOW)
+    old = find_stale([row(channel_id="2", channel_name="ancient")], now=NOW)
+    report = format_report(new, now=NOW, old=old)
+    assert "1 channel(s) missed the daily hadith" in report
+    assert "1 channel(s) still not delivering" in report
+    assert report.index("fresh") < report.index("ancient")
+
+
+def test_report_with_only_old_channels_has_no_missed_header():
+    old = find_stale([row()], now=NOW)
+    report = format_report([], now=NOW, old=old)
+    assert "missed the daily hadith" not in report
+    assert "still not delivering" in report

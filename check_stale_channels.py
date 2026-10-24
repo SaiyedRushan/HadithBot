@@ -8,7 +8,8 @@ a full day without its first hadith.
 This compares last_sent_at against the schedule and reports anything overdue.
 Run it after the daily send (see .github/workflows/stale-channel-check.yml).
 Posts to DISCORD_ALERT_WEBHOOK when set; otherwise prints and exits non-zero,
-which is enough to turn a scheduled CI run red.
+which is enough to turn a scheduled CI run red. Channels that stopped more than
+REPORTED_AFTER_DAYS ago are still listed but don't fail the run.
 
     uv run python check_stale_channels.py [--hours 26]
 """
@@ -31,6 +32,14 @@ from dotenv import load_dotenv
 # allows a little over a full cycle so a late run, or a check that fires
 # slightly early, doesn't read as a failure.
 DEFAULT_STALE_HOURS = 26
+
+# A channel that has been failing this long was already reported on earlier
+# runs, and the bot has DMed the owner about it. It stays in the report but no
+# longer fails the run: a server that revoked our permissions and never fixed
+# them would otherwise keep the check red every day, and a channel that breaks
+# tomorrow would be lost in it. With the check at 12:00 UTC and the send at
+# 22:00 UTC, 4 days means a newly broken channel fails 3 mornings in a row.
+REPORTED_AFTER_DAYS = 4
 
 
 def _parse_ts(value):
@@ -73,19 +82,51 @@ def find_stale(rows, stale_hours=DEFAULT_STALE_HOURS, now=None):
     return stale
 
 
-def format_report(stale, now=None):
+def split_stale(stale, reported_after_days=REPORTED_AFTER_DAYS, now=None):
+    """(new, old): channels that stopped recently, and ones already reported.
+
+    A never-delivered channel counts from when it was set up. One with no
+    usable timestamp at all is treated as new, so it fails rather than hides.
+    """
     now = now or datetime.now(timezone.utc)
-    lines = [f"**{len(stale)} channel(s) missed the daily hadith**"]
+    cutoff = now - timedelta(days=reported_after_days)
+    new, old = [], []
     for row, last_sent in stale:
-        where = f"{row.get('guild_name') or '?'} / #{row.get('channel_name') or row['channel_id']}"
-        if last_sent is None:
-            when = "never delivered"
+        since = last_sent or _parse_ts(row.get("created_at"))
+        if since is not None and since < cutoff:
+            old.append((row, last_sent))
         else:
-            when = f"last sent {int((now - last_sent).total_seconds() // 3600)}h ago"
-        lines.append(f"• {where} — {when} (`{row['channel_id']}`)")
-    lines.append(
-        "\nRun `/bismillah diagnose` in the server to see what's blocking it."
-    )
+            new.append((row, last_sent))
+    return new, old
+
+
+def _report_line(row, last_sent, now):
+    where = f"{row.get('guild_name') or '?'} / #{row.get('channel_name') or row['channel_id']}"
+    if last_sent is None:
+        when = "never delivered"
+    else:
+        when = f"last sent {int((now - last_sent).total_seconds() // 3600)}h ago"
+    return f"• {where}: {when} (`{row['channel_id']}`)"
+
+
+def format_report(stale, now=None, old=()):
+    now = now or datetime.now(timezone.utc)
+    lines = []
+    if stale:
+        lines.append(f"**{len(stale)} channel(s) missed the daily hadith**")
+        lines.extend(_report_line(row, last_sent, now) for row, last_sent in stale)
+        lines.append(
+            "\nRun `/bismillah diagnose` in the server to see what's blocking it."
+        )
+    if old:
+        if lines:
+            lines.append("")
+        lines.append(
+            f"**{len(old)} channel(s) still not delivering**, stopped more than "
+            f"{REPORTED_AFTER_DAYS} days ago and already reported. "
+            "These don't fail the check."
+        )
+        lines.extend(_report_line(row, last_sent, now) for row, last_sent in old)
     return "\n".join(lines)
 
 
@@ -131,8 +172,14 @@ def main():
         )
         return 0
 
-    report = format_report(stale)
+    new, old = split_stale(stale)
+    report = format_report(new, old=old)
     print(report)
+
+    if not new:
+        # Only channels that were reported on earlier runs. Listed above for
+        # the run summary, but not posted again and not a failure.
+        return 0
 
     webhook = os.environ.get("DISCORD_ALERT_WEBHOOK")
     if webhook:
