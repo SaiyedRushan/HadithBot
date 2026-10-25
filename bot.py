@@ -60,6 +60,12 @@ from utils import (
 # ids in one place, with the hadith counts and number ranges alongside them.
 BOOKS_PAGE_HINT = "\n-# The full list, searchable, is at <https://hadithbot.app/books>"
 
+# The production bot's user id (the client_id in the site's invite links).
+# Local development runs a different bot against the same database, and its
+# server list says nothing about where HadithBot is, so only this bot may
+# record a server as removed or back.
+PRODUCTION_BOT_ID = 1285370394282295359
+
 
 class HadithBot(commands.Bot):
     def __init__(self):
@@ -475,12 +481,17 @@ class HadithBot(commands.Bot):
         await self.reconcile_guilds()
         self.logger.info("\nDaily message task is ready to start\n")
 
+    def _is_production(self) -> bool:
+        return self.user is not None and self.user.id == PRODUCTION_BOT_ID
+
     async def on_guild_remove(self, guild: discord.Guild):
         """Kicked, banned, or the server was deleted.
 
         The rows are kept -- see mark_guild_removed -- so re-adding the bot
         resumes the server's reading position rather than starting over.
         """
+        if not self._is_production():
+            return
         try:
             flagged = mark_guild_removed(str(guild.id))
         except Exception:
@@ -498,6 +509,8 @@ class HadithBot(commands.Bot):
 
     async def on_guild_join(self, guild: discord.Guild):
         """Added to a server. If we'd been in it before, pick its channels back up."""
+        if not self._is_production():
+            return
         try:
             restored = mark_guild_present(str(guild.id))
         except Exception:
@@ -521,7 +534,14 @@ class HadithBot(commands.Bot):
         bot had been out of for two weeks was still being counted on the site
         and still logging a failed delivery every evening. This runs once per
         startup and closes that gap in both directions.
+
+        Production only: the dev bot shares the database but is in a handful
+        of test servers, so from its point of view every real server has
+        removed it, and the 6 PM broadcast would skip them all.
         """
+        if not self._is_production():
+            self.logger.info("Skipping guild reconcile: not the production bot")
+            return
         live = {str(g.id) for g in self.guilds}
         # A reconcile against an empty cache would flag every server as removed.
         # That should be impossible after wait_until_ready(), so treat it as a
