@@ -186,7 +186,11 @@ class HadithBot(commands.Bot):
                     # Servers the bot was removed from are already filtered out
                     # by get_channels(), so reaching here means the bot is still
                     # in the server but can't see the channel: deleted, or View
-                    # Channel was revoked.
+                    # Channel was revoked. A deletion while the bot was offline
+                    # never fires on_guild_channel_delete, so check here too.
+                    if await self._channel_was_deleted(channel_id):
+                        self._forget_deleted_channel(channel_row)
+                        continue
                     self.logger.error(
                         f"Channel {channel_id} not found in "
                         f"{channel_row.get('guild_name') or 'unknown server'} -- "
@@ -365,9 +369,36 @@ class HadithBot(commands.Bot):
             await self.alert_delivery_failure(channel.guild, row)
         except discord.NotFound:
             # Deliberately silent: they deleted it, they know.
-            self.logger.info(f"#{channel.name} was deleted; nothing to report")
+            self._forget_deleted_channel(row)
         except discord.HTTPException as e:
             self.logger.error(f"Couldn't tell why #{channel.name} went away: {e}")
+
+    async def _channel_was_deleted(self, channel_id) -> bool:
+        """True only when Discord says the channel is gone (404). A 403 means
+        it exists and we can't see it, which is worth telling someone about."""
+        try:
+            await self.fetch_channel(int(channel_id))
+        except discord.NotFound:
+            return True
+        except discord.HTTPException:
+            pass
+        return False
+
+    def _forget_deleted_channel(self, row) -> None:
+        """Drop a deleted channel's row, as /bismillah stop does.
+
+        Discord never reuses a channel id, so nothing in the row can be used
+        again. Left in place it fails every broadcast, shows on the stale
+        check, and inactive would read as "paused" in /bismillah diagnose.
+        The game history lives in game_days and is kept.
+        """
+        channel_id = str(row["channel_id"])
+        label = f"#{row.get('channel_name') or channel_id}"
+        try:
+            remove_channel_state(channel_id)
+            self.logger.info(f"{label} was deleted; removed it from the daily list")
+        except Exception as e:
+            self.logger.error(f"Couldn't remove deleted channel {label}: {e}")
 
     async def alert_delivery_failure(self, guild, channel_row) -> bool:
         """Tell someone in the server that today's hadith couldn't be posted.

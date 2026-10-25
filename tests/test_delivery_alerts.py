@@ -11,6 +11,7 @@ import logging
 from types import SimpleNamespace
 
 import discord
+import pytest
 
 from bot import HadithBot
 from utils import delivery_failure_message
@@ -278,6 +279,17 @@ class ListenerBot:
         self.alerted.append((guild, channel_row))
         return True
 
+    _channel_was_deleted = HadithBot._channel_was_deleted
+    _forget_deleted_channel = HadithBot._forget_deleted_channel
+
+
+@pytest.fixture
+def removed(monkeypatch):
+    """Channel ids the code under test removed from the database."""
+    ids = []
+    monkeypatch.setattr(bot_module, "remove_channel_state", ids.append)
+    return ids
+
 
 def test_losing_send_messages_warns_immediately():
     b = ListenerBot(row=row())
@@ -323,19 +335,47 @@ def test_made_private_warns():
     assert len(b.alerted) == 1
 
 
-def test_a_deleted_channel_says_nothing():
+def test_a_deleted_channel_says_nothing_and_drops_its_row(removed):
     """404: they deleted it on purpose, so there is nothing to tell them."""
     b = ListenerBot(row=row(), fetch_error=discord_error(discord.NotFound, 404))
 
     asyncio.run(on_delete(b, FakeGuildChannel()))
     assert b.alerted == []
+    assert removed == [row()["channel_id"]]
 
 
-def test_delete_event_we_can_still_fetch_is_ignored():
+def test_made_private_keeps_its_row(removed):
+    b = ListenerBot(row=row(), fetch_error=discord_error(discord.Forbidden, 403))
+
+    asyncio.run(on_delete(b, FakeGuildChannel()))
+    assert removed == []
+
+
+def test_delete_event_we_can_still_fetch_is_ignored(removed):
     b = ListenerBot(row=row())
 
     asyncio.run(on_delete(b, FakeGuildChannel()))
     assert b.alerted == []
+    assert removed == []
+
+
+def test_only_a_404_counts_as_deleted():
+    """The broadcast's check for channels deleted while the bot was offline."""
+    gone = ListenerBot(fetch_error=discord_error(discord.NotFound, 404))
+    hidden = ListenerBot(fetch_error=discord_error(discord.Forbidden, 403))
+    outage = ListenerBot(fetch_error=discord_error(discord.HTTPException, 500))
+    assert asyncio.run(gone._channel_was_deleted("1")) is True
+    assert asyncio.run(hidden._channel_was_deleted("1")) is False
+    assert asyncio.run(outage._channel_was_deleted("1")) is False
+    assert asyncio.run(ListenerBot()._channel_was_deleted("1")) is False
+
+
+def test_a_failed_removal_is_logged_not_raised(monkeypatch):
+    def boom(_cid):
+        raise RuntimeError("supabase down")
+
+    monkeypatch.setattr(bot_module, "remove_channel_state", boom)
+    ListenerBot()._forget_deleted_channel(row())
 
 
 def test_delete_of_an_unconfigured_channel_is_ignored():
