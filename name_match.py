@@ -489,6 +489,41 @@ def card_embed(
     return embed
 
 
+MESSAGE_LIMIT = 2000
+NO_EMBED_NOTE = (
+    "-# This shows as plain text because HadithBot doesn't have the Embed Links "
+    "permission in this channel. To fix it, a server admin can open Edit Channel, "
+    "then Permissions, pick HadithBot's role and turn on Embed Links."
+)
+
+
+def _discord_len(text: str) -> int:
+    # Discord measures in UTF-16 units, so each 🟩 counts as 2.
+    return len(text.encode("utf-16-le")) // 2
+
+
+def card_text(embed: discord.Embed) -> str:
+    """The card as plain message text, for a channel where the bot can't use
+    Embed Links. Discord rejects the embed there outright, so without this the
+    card never posts.
+
+    Same title, board and footer, plus a note telling an admin what to switch
+    on; it goes away by itself once they do, as the next edit sends the embed.
+    Message text is capped at 2000 characters against an embed's 4096, so the
+    board's last paragraphs are dropped until it fits.
+    """
+    head = f"### {embed.title}"
+    footer = [f"-# {line}" for line in (embed.footer.text or "").split("\n") if line]
+    tail = "\n".join(footer + [NO_EMBED_NOTE])
+    parts = (embed.description or "").split("\n\n")
+    while parts:
+        text = "\n\n".join([head, *parts, tail])
+        if _discord_len(text) <= MESSAGE_LIMIT:
+            return text
+        parts.pop()
+    return f"{head}\n\n{tail}"
+
+
 def board_rows(results: Sequence[dict], me: Optional[str] = None) -> list[dict]:
     """The board as the Activity shows it."""
     return [

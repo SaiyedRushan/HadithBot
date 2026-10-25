@@ -39,7 +39,7 @@ from views import (
 import db
 import name_match
 from command_sync import sync_commands
-from game_api import edit_card, name_match_on
+from game_api import card_message, edit_card, name_match_on
 from utils import (
     Name,
     compose_flag_reply,
@@ -543,7 +543,9 @@ class HadithBot(commands.Bot):
             played_keys=db.get_played_day_keys(channel_id),
             others={g: db.get_game_results(channel_id, today, g) for g in name_match.GAME_ORDER[1:]},
         )
-        message = await channel.send(embed=embed, view=build_name_match_view())
+        message = await channel.send(
+            **card_message(channel, embed), view=build_name_match_view()
+        )
         db.set_game_day_message(channel_id, today, str(message.id))
 
     def get_names(self, number: int, count: int = 1) -> Optional[List[Name]]:

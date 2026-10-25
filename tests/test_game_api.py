@@ -365,3 +365,29 @@ def test_the_quranic_word_match_serves_and_scores_todays_theme():
     words = next(g for g in today["games"] if g["key"] == "words")
     assert words["count"] == n and words["detail"] == f"Today's theme: {theme['theme']}"
     assert posted["recorded"] and posted["result"]["score"] == n == posted["result"]["total"]
+
+
+def _channel(embed_links):
+    return SimpleNamespace(
+        guild=SimpleNamespace(me=object()),
+        permissions_for=lambda me: SimpleNamespace(embed_links=embed_links),
+    )
+
+
+def _card():
+    day = {"channel_id": CID, "day_key": "2026-10-22", "items": nm.build_items(NAMES, nm.pick_names(58), [58])}
+    return nm.card_embed(day, [])
+
+
+def test_card_message_sends_the_embed_where_embeds_are_allowed():
+    embed = _card()
+    msg = game_api.card_message(_channel(True), embed)
+    assert msg["embed"] is embed and msg["content"] is None
+
+
+def test_card_message_falls_back_to_text_without_embed_links():
+    embed = _card()
+    msg = game_api.card_message(_channel(False), embed)
+    assert msg["embed"] is None
+    assert msg["content"] == nm.card_text(embed)
+    assert msg["allowed_mentions"].users is False

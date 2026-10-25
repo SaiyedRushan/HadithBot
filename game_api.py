@@ -79,6 +79,27 @@ async def render_card(store, day: dict, *, final: bool) -> discord.Embed:
     return name_match.card_embed(day, results, final=final, played_keys=played, others=others)
 
 
+def card_message(channel, embed: discord.Embed) -> dict:
+    """The send/edit arguments for a card in this channel.
+
+    The embed where the bot has Embed Links, otherwise the same card as text
+    (Discord rejects the embed there with a 403). Each form clears the other,
+    so the first edit after an admin changes the permission swaps the card
+    over instead of showing both. Mentions are off because the board's <@id>
+    would ping as message text, where inside an embed it doesn't.
+    """
+    me = getattr(getattr(channel, "guild", None), "me", None)
+    if me is None or channel.permissions_for(me).embed_links:
+        content, embed_arg = None, embed
+    else:
+        content, embed_arg = name_match.card_text(embed), None
+    return {
+        "content": content,
+        "embed": embed_arg,
+        "allowed_mentions": discord.AllowedMentions.none(),
+    }
+
+
 async def edit_card(bot, store, day: dict, *, final: bool) -> bool:
     """Re-render a day's card in place. False if the message is gone."""
     if not day.get("message_id"):
@@ -89,7 +110,7 @@ async def edit_card(bot, store, day: dict, *, final: bool) -> bool:
     embed = await render_card(store, day, final=final)
     message = channel.get_partial_message(int(day["message_id"]))
     try:
-        await message.edit(embed=embed, view=build_name_match_view(final=final))
+        await message.edit(**card_message(channel, embed), view=build_name_match_view(final=final))
         return True
     except discord.HTTPException as e:
         logger.warning(f"Couldn't edit name match card {day['message_id']}: {e}")

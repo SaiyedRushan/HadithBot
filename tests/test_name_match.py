@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 
+import discord
 import pytest
 
 import activity_token
@@ -218,6 +219,27 @@ def test_no_em_dashes_anywhere_on_the_card():
         embed = nm.card_embed(day_row(), results, final=final, played_keys=["2026-10-22"])
         text = (embed.title or "") + (embed.description or "") + (embed.footer.text or "")
         assert "—" not in text and "–" not in text
+
+
+def test_text_card_keeps_the_card_and_says_how_to_fix_it():
+    results = [run("1", 10, 48000, name="Rushan")]
+    embed = nm.card_embed(day_row(), results, played_keys=["2026-10-22"])
+    text = nm.card_text(embed)
+    assert text.startswith(f"### {embed.title}\n\n")
+    assert embed.description in text
+    assert f"-# {nm.LEGEND}\n" in text
+    assert text.endswith(nm.NO_EMBED_NOTE)
+    assert "—" not in text and "–" not in text
+
+
+def test_text_card_drops_board_paragraphs_to_fit_2000():
+    paragraphs = [f"**{i}.** " + "🟩" * 60 for i in range(30)]  # 122 units each
+    embed = discord.Embed(title="Title", description="\n\n".join(paragraphs))
+    embed.set_footer(text="Footer")
+    text = nm.card_text(embed)
+    assert 1800 < nm._discord_len(text) <= 2000
+    assert paragraphs[0] in text and paragraphs[-1] not in text
+    assert text.endswith("-# Footer\n" + nm.NO_EMBED_NOTE)
 
 
 def test_board_rows_marks_me():
