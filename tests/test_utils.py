@@ -15,6 +15,7 @@ from utils import (
     daily_count,
     load_custom_limits,
     setup_reply,
+    stopped_text,
 )
 
 DISCORD_MAX = 2000
@@ -247,3 +248,21 @@ def test_shipped_custom_limits_file_is_valid():
     for key, entry in json.loads(CUSTOM_LIMITS_FILE.read_text()).items():
         if not key.startswith("_"):
             assert key.isdigit() and int(entry["max_per_day"]) >= 1
+
+
+def test_stopped_text_says_when_and_why():
+    row = {"stopped_at": "2026-10-25T23:30:00+00:00", "stopped_reason": "stopped_by_admin"}
+    # 23:30 UTC is still Oct 25 in Toronto.
+    assert stopped_text(row).startswith("Stopped on Oct 25: someone ran `/bismillah stop`.")
+    assert stopped_text(row | {"stopped_reason": "channel_deleted"}) == (
+        "Stopped on Oct 25: the channel was deleted."
+    )
+
+
+def test_stopped_text_without_a_date_or_known_reason():
+    assert stopped_text({"stopped_reason": "bot_removed"}) == (
+        "Stopped: HadithBot was removed from this server."
+    )
+    assert stopped_text({"stopped_at": "2026-10-25T12:00:00Z", "stopped_reason": "?"}) == (
+        "Stopped on Oct 25: no reason was recorded."
+    )

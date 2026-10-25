@@ -10,7 +10,6 @@ def row(**kw):
         "channel_id": "1",
         "guild_name": "Test Guild",
         "channel_name": "reminders",
-        "active": True,
         "last_sent_at": None,
         "created_at": (NOW - timedelta(days=30)).isoformat(),
     }
@@ -45,32 +44,23 @@ def test_never_delivered_but_just_created_is_not_stale():
     assert find_stale(rows, now=NOW) == []
 
 
-def test_paused_channels_are_ignored():
-    rows = [row(active=False, last_sent_at=(NOW - timedelta(days=10)).isoformat())]
-    assert find_stale(rows, now=NOW) == []
+def test_stopped_channels_are_ignored():
+    """Removed from the server, deleted, or /bismillah stop: all the same here."""
+    for reason in ("bot_removed", "channel_deleted", "stopped_by_admin"):
+        rows = [
+            row(
+                last_sent_at=(NOW - timedelta(days=14)).isoformat(),
+                stopped_at=(NOW - timedelta(days=13)).isoformat(),
+                stopped_reason=reason,
+            )
+        ]
+        assert find_stale(rows, now=NOW) == []
 
 
-def test_removed_guilds_are_ignored():
-    """The bot isn't in the server, so a missed delivery isn't news."""
-    rows = [
-        row(
-            last_sent_at=(NOW - timedelta(days=14)).isoformat(),
-            removed_at=(NOW - timedelta(days=13)).isoformat(),
-        )
-    ]
-    assert find_stale(rows, now=NOW) == []
-
-
-def test_removed_guild_is_reported_again_once_the_bot_is_back():
-    """mark_guild_present clears removed_at, so the channel is watched again."""
-    rows = [row(last_sent_at=(NOW - timedelta(days=14)).isoformat(), removed_at=None)]
+def test_a_channel_started_again_is_watched_again():
+    """mark_guild_present and setup clear stopped_at, so it's checked again."""
+    rows = [row(last_sent_at=(NOW - timedelta(days=14)).isoformat(), stopped_at=None)]
     assert len(find_stale(rows, now=NOW)) == 1
-
-
-def test_missing_active_key_defaults_to_active():
-    r = row(last_sent_at=(NOW - timedelta(hours=40)).isoformat())
-    del r["active"]
-    assert len(find_stale([r], now=NOW)) == 1
 
 
 def test_unparseable_timestamp_treated_as_never_delivered():

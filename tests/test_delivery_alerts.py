@@ -1,20 +1,22 @@
 """The notice a server gets when the bot can't post its daily hadith.
 
 alert_delivery_failure is called as an unbound function against a stub rather
-than a real HadithBot: it only touches _alerted_channels, fetch_user and
+than a real HadithBot: it only touches _record_warned, fetch_user and
 logger, so there's no reason to stand up a discord.py client (or add an async
 test runner) to exercise it.
 """
 
 import asyncio
 import logging
+from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
 import discord
 import pytest
 
+import bot as bot_module
 from bot import HadithBot
-from utils import delivery_failure_message
+from utils import CHANNEL_DELETED, delivery_failure_message, embed_links_message
 
 alert = HadithBot.alert_delivery_failure
 
@@ -66,8 +68,10 @@ class FakeGuild:
 
 
 class FakeBot:
+    _record_warned = HadithBot._record_warned
+    warn_about_embed_links = HadithBot.warn_about_embed_links
+
     def __init__(self, owner=None):
-        self._alerted_channels = set()
         self.logger = logging.getLogger("test")
         self._owner = owner
 
@@ -75,6 +79,14 @@ class FakeBot:
         if self._owner is None:
             raise http_error()
         return self._owner
+
+
+@pytest.fixture(autouse=True)
+def saved_warnings(monkeypatch):
+    """(channel id, field, warned) for every warning time the code saved."""
+    calls = []
+    monkeypatch.setattr(bot_module, "set_warned", lambda *a: calls.append(a))
+    return calls
 
 
 def row(channel_id="1550799445942345878", channel_name="akh", guild_id="99"):
@@ -189,28 +201,49 @@ def test_no_guild_is_not_an_error():
 # --- how often ---------------------------------------------------------------
 
 
-def test_only_warns_once_while_the_channel_stays_broken():
+def test_only_warns_once_while_the_channel_stays_broken(saved_warnings):
     owner = FakeUser()
     bot = FakeBot(owner)
     guild = FakeGuild([FakeChannel(2, "general")])
+    r = row()
 
-    assert asyncio.run(alert(bot, guild, row())) is True
+    assert asyncio.run(alert(bot, guild, r)) is True
+    assert saved_warnings == [(r["channel_id"], "warned_at", True)]
     # Every following evening hits the same failure and must stay silent.
     for _ in range(5):
-        assert asyncio.run(alert(bot, guild, row())) is False
+        assert asyncio.run(alert(bot, guild, r)) is False
     assert len(owner.received) == 1
+
+
+def test_a_restart_does_not_warn_again():
+    """The time is read from the row, not from the bot's memory."""
+    owner = FakeUser()
+    guild = FakeGuild([FakeChannel(2, "general")])
+    yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
+
+    assert asyncio.run(alert(FakeBot(owner), guild, row() | {"warned_at": yesterday})) is False
+    assert owner.received == []
+
+
+def test_warns_again_after_a_week():
+    owner = FakeUser()
+    guild = FakeGuild([FakeChannel(2, "general")])
+    last_week = (datetime.now(timezone.utc) - timedelta(days=8)).isoformat()
+
+    assert asyncio.run(alert(FakeBot(owner), guild, row() | {"warned_at": last_week})) is True
 
 
 def test_a_successful_delivery_re_arms_the_warning():
     owner = FakeUser()
     bot = FakeBot(owner)
     guild = FakeGuild([FakeChannel(2, "general")])
+    r = row()
 
-    asyncio.run(alert(bot, guild, row()))
-    # What run_daily_broadcast does once the channel delivers again.
-    bot._alerted_channels.discard(row()["channel_id"])
+    asyncio.run(alert(bot, guild, r))
+    # What save_channel_state(mark_sent=True) does once the channel delivers again.
+    r["warned_at"] = None
 
-    assert asyncio.run(alert(bot, guild, row())) is True
+    assert asyncio.run(alert(bot, guild, r)) is True
     assert len(owner.received) == 2
 
 
@@ -233,8 +266,6 @@ def test_falls_back_to_a_mention_when_the_name_is_unknown():
 
 
 # --- noticing the moment access is lost ---------------------------------------
-
-import bot as bot_module  # noqa: E402
 
 on_update = HadithBot.on_guild_channel_update
 on_delete = HadithBot.on_guild_channel_delete
@@ -280,15 +311,15 @@ class ListenerBot:
         return True
 
     _channel_was_deleted = HadithBot._channel_was_deleted
-    _forget_deleted_channel = HadithBot._forget_deleted_channel
+    _mark_channel_deleted = HadithBot._mark_channel_deleted
 
 
 @pytest.fixture
-def removed(monkeypatch):
-    """Channel ids the code under test removed from the database."""
-    ids = []
-    monkeypatch.setattr(bot_module, "remove_channel_state", ids.append)
-    return ids
+def stopped(monkeypatch):
+    """(channel id, reason) for each channel the code under test stopped."""
+    calls = []
+    monkeypatch.setattr(bot_module, "stop_channel", lambda cid, reason: calls.append((cid, reason)))
+    return calls
 
 
 def test_losing_send_messages_warns_immediately():
@@ -335,28 +366,28 @@ def test_made_private_warns():
     assert len(b.alerted) == 1
 
 
-def test_a_deleted_channel_says_nothing_and_drops_its_row(removed):
+def test_a_deleted_channel_says_nothing_and_is_stopped(stopped):
     """404: they deleted it on purpose, so there is nothing to tell them."""
     b = ListenerBot(row=row(), fetch_error=discord_error(discord.NotFound, 404))
 
     asyncio.run(on_delete(b, FakeGuildChannel()))
     assert b.alerted == []
-    assert removed == [row()["channel_id"]]
+    assert stopped == [(row()["channel_id"], CHANNEL_DELETED)]
 
 
-def test_made_private_keeps_its_row(removed):
+def test_made_private_is_not_stopped(stopped):
     b = ListenerBot(row=row(), fetch_error=discord_error(discord.Forbidden, 403))
 
     asyncio.run(on_delete(b, FakeGuildChannel()))
-    assert removed == []
+    assert stopped == []
 
 
-def test_delete_event_we_can_still_fetch_is_ignored(removed):
+def test_delete_event_we_can_still_fetch_is_ignored(stopped):
     b = ListenerBot(row=row())
 
     asyncio.run(on_delete(b, FakeGuildChannel()))
     assert b.alerted == []
-    assert removed == []
+    assert stopped == []
 
 
 def test_only_a_404_counts_as_deleted():
@@ -370,12 +401,12 @@ def test_only_a_404_counts_as_deleted():
     assert asyncio.run(ListenerBot()._channel_was_deleted("1")) is False
 
 
-def test_a_failed_removal_is_logged_not_raised(monkeypatch):
-    def boom(_cid):
+def test_a_failed_stop_is_logged_not_raised(monkeypatch):
+    def boom(_cid, _reason):
         raise RuntimeError("supabase down")
 
-    monkeypatch.setattr(bot_module, "remove_channel_state", boom)
-    ListenerBot()._forget_deleted_channel(row())
+    monkeypatch.setattr(bot_module, "stop_channel", boom)
+    ListenerBot()._mark_channel_deleted(row())
 
 
 def test_delete_of_an_unconfigured_channel_is_ignored():
@@ -393,13 +424,14 @@ class RowBot:
         self.logger = logging.getLogger("test")
 
 
-def test_paused_channels_are_not_watched(monkeypatch):
-    monkeypatch.setattr(bot_module, "get_channel_state", lambda _c: row() | {"active": False})
+def test_stopped_channels_are_not_watched(monkeypatch):
+    stopped_row = row() | {"stopped_at": "2026-10-25T12:00:00Z", "stopped_reason": "stopped_by_admin"}
+    monkeypatch.setattr(bot_module, "get_channel_state", lambda _c: stopped_row)
     assert configured_row(RowBot(), "1") is None
 
 
-def test_active_channels_are_watched(monkeypatch):
-    monkeypatch.setattr(bot_module, "get_channel_state", lambda _c: row() | {"active": True})
+def test_channels_getting_messages_are_watched(monkeypatch):
+    monkeypatch.setattr(bot_module, "get_channel_state", lambda _c: row() | {"stopped_at": None})
     assert configured_row(RowBot(), "1") is not None
 
 
@@ -417,6 +449,40 @@ def test_servers_the_bot_was_removed_from_are_left_alone(monkeypatch):
     monkeypatch.setattr(
         bot_module,
         "get_channel_state",
-        lambda _c: row() | {"active": True, "removed_at": "2026-09-19T00:00:00Z"},
+        lambda _c: row() | {"stopped_at": "2026-09-19T00:00:00Z", "stopped_reason": "bot_removed"},
     )
     assert configured_row(RowBot(), "1") is None
+
+
+# --- the game card without Embed Links -----------------------------------------
+
+
+def card_channel(guild):
+    return SimpleNamespace(name="daily-hadith", guild=guild)
+
+
+def test_embed_links_dm_goes_to_the_owner_once(saved_warnings):
+    owner = FakeUser()
+    bot = FakeBot(owner)
+    channel = card_channel(FakeGuild([]))
+    r = row()
+
+    assert asyncio.run(bot.warn_about_embed_links(channel, r)) is True
+    assert asyncio.run(bot.warn_about_embed_links(channel, r)) is False
+    assert owner.received == [embed_links_message("#daily-hadith", "FAMILY GAMERS")]
+    assert saved_warnings == [(r["channel_id"], "embed_warned_at", True)]
+
+
+def test_embed_links_dm_never_posts_in_a_channel(saved_warnings):
+    """Closed DMs: the card in the channel already carries the note."""
+    general = FakeChannel(2, "general")
+    bot = FakeBot(None)
+
+    assert asyncio.run(bot.warn_about_embed_links(card_channel(FakeGuild([general])), row())) is False
+    assert general.received == []
+    assert saved_warnings == []
+
+
+def test_embed_links_message_has_no_em_dashes():
+    text = embed_links_message("#daily-hadith", "Server")
+    assert "—" not in text and "Embed Links" in text

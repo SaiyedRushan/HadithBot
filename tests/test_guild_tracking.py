@@ -1,7 +1,7 @@
 """Only the production bot records servers as removed or back.
 
 The dev bot runs against the same database, so its view of which servers it
-is in must never reach removed_at.
+is in must never stop or restart a channel.
 """
 
 import asyncio

@@ -6,6 +6,8 @@ from typing import Optional, cast
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
+from utils import BOT_REMOVED
+
 load_dotenv()
 
 logger = logging.getLogger(__name__)
@@ -26,7 +28,7 @@ def save_channel_state(
     last_name_no: int,
     last_book_no: int,
     last_chapter_no: int,
-    active: Optional[bool] = None,
+    clear_stopped: bool = False,
     hadiths_per_day: Optional[int] = None,
     names_per_day: Optional[int] = None,
     channel_name: Optional[str] = None,
@@ -45,8 +47,10 @@ def save_channel_state(
     }
     # Only touch these when explicitly given. The daily progress-save omits some
     # so the upsert preserves the existing values; setup passes them in.
-    if active is not None:
-        record["active"] = active
+    # Setup on a stopped channel starts it again, at the position it kept.
+    if clear_stopped:
+        record["stopped_at"] = None
+        record["stopped_reason"] = None
     if hadiths_per_day is not None:
         record["hadiths_per_day"] = hadiths_per_day
     if names_per_day is not None:
@@ -73,8 +77,11 @@ def save_channel_state(
     # Opt-in, because setup() saves through here too -- stamping unconditionally
     # would mark a freshly-configured channel as delivered and hide it from the
     # stale check until its first real send.
+    # A delivery also settles any warning about the channel, so the owner is
+    # told again straight away if it breaks later.
     if mark_sent:
         record["last_sent_at"] = datetime.now(timezone.utc).isoformat()
+        record["warned_at"] = None
     supabase.table("discord_channel_state").upsert(
         record,
         on_conflict="channel_id",
@@ -86,15 +93,14 @@ def get_channels() -> list[dict]:
     .data as the broad List[JSON]; in practice a select returns row dicts (empty
     if none), so we cast -- callers then get list[dict], not possibly-None rows.
 
-    Excludes servers the bot has been removed from. Those rows are kept, but
-    sending to them is impossible, so counting them would overstate reach on
-    the site and leaving them in would log a daily error for nothing."""
+    Excludes stopped channels (stopped_at set, for any reason). Those rows are
+    kept, but nothing is sent to them, so counting them would overstate reach
+    on the site and trying them would log a daily error for nothing."""
     return cast(
         list[dict],
         supabase.table("discord_channel_state")
         .select("*")
-        .eq("active", True)
-        .is_("removed_at", "null")
+        .is_("stopped_at", "null")
         .execute()
         .data,
     )
@@ -121,30 +127,37 @@ def get_known_guild_ids() -> set[str]:
 
 
 def mark_guild_removed(guild_id: str) -> int:
-    """Flag every channel in a server the bot is no longer in.
+    """Stop every channel in a server the bot is no longer in.
 
-    The rows survive untouched -- reading position, per-day counts, pause
-    state -- so a server that re-adds the bot carries on from where it left
-    off instead of restarting at hadith 1. Already-flagged rows are left
-    alone so the timestamp records the *first* time we noticed.
+    The rows survive untouched -- reading position, per-day counts -- so a
+    server that re-adds the bot carries on from where it left off instead of
+    restarting at hadith 1. Only channels still getting messages are touched:
+    one that was deleted or stopped keeps that reason and its date.
     """
     res = (
         supabase.table("discord_channel_state")
-        .update({"removed_at": datetime.now(timezone.utc).isoformat()})
+        .update(
+            {
+                "stopped_at": datetime.now(timezone.utc).isoformat(),
+                "stopped_reason": BOT_REMOVED,
+            }
+        )
         .eq("guild_id", guild_id)
-        .is_("removed_at", "null")
+        .is_("stopped_at", "null")
         .execute()
     )
     return len(res.data or [])
 
 
 def mark_guild_present(guild_id: str) -> int:
-    """Clear the removed flag for a server the bot is in again."""
+    """Start a server's channels again once the bot is back in it. Only the
+    ones stopped because the bot was removed: a deleted or stopped channel
+    stays as it was."""
     res = (
         supabase.table("discord_channel_state")
-        .update({"removed_at": None})
+        .update({"stopped_at": None, "stopped_reason": None})
         .eq("guild_id", guild_id)
-        .not_.is_("removed_at", "null")
+        .eq("stopped_reason", BOT_REMOVED)
         .execute()
     )
     return len(res.data or [])
@@ -162,10 +175,32 @@ def get_channel_state(channel_id: str):
     return res.data[0] if res.data else None
 
 
-def remove_channel_state(channel_id: str):
-    supabase.table("discord_channel_state").delete().eq(
+def set_warned(channel_id: str, field: str, warned: bool) -> None:
+    """Record, or clear, when the owner was last told about a problem with
+    this channel. field is warned_at (the hadith couldn't be posted) or
+    embed_warned_at (the game card went out as plain text)."""
+    value = datetime.now(timezone.utc).isoformat() if warned else None
+    supabase.table("discord_channel_state").update({field: value}).eq(
         "channel_id", channel_id
     ).execute()
+
+
+def stop_channel(channel_id: str, reason: str) -> int:
+    """Stop the daily message in one channel, keeping its row. A channel that
+    is already stopped keeps its first reason and date."""
+    res = (
+        supabase.table("discord_channel_state")
+        .update(
+            {
+                "stopped_at": datetime.now(timezone.utc).isoformat(),
+                "stopped_reason": reason,
+            }
+        )
+        .eq("channel_id", channel_id)
+        .is_("stopped_at", "null")
+        .execute()
+    )
+    return len(res.data or [])
 
 
 def save_hadith_flag(

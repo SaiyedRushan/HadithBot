@@ -117,11 +117,13 @@ CREATE TABLE discord_channel_state (
     last_name_no INTEGER NOT NULL DEFAULT 1,
     last_book_id INTEGER NOT NULL DEFAULT 1,
     last_chapter_id INTEGER NOT NULL DEFAULT 1,
-    active BOOLEAN NOT NULL DEFAULT TRUE,
     hadiths_per_day INTEGER NOT NULL DEFAULT 3,
     names_per_day INTEGER NOT NULL DEFAULT 3,
     last_sent_at TIMESTAMP WITH TIME ZONE,
-    removed_at TIMESTAMP WITH TIME ZONE,
+    stopped_at TIMESTAMP WITH TIME ZONE,
+    stopped_reason TEXT,
+    warned_at TIMESTAMP WITH TIME ZONE,
+    embed_warned_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -143,23 +145,39 @@ ALTER TABLE discord_channel_state ADD COLUMN guild_member_count INTEGER;
 then run `python backfill_channel_names.py` once to fill it in for servers the
 bot is already in.
 
-`removed_at` is when the bot was found to be out of that server, and `NULL`
-means it's still there. Rows are never deleted when the bot is kicked: the
-reading position is worth keeping, so a server that re-adds the bot carries on
-from the hadith it left off at instead of restarting at the beginning. While
-it's set, the channel gets no delivery attempt, isn't counted on the site, and
-isn't reported by the stale-channel check.
+`stopped_at` is when the channel stopped getting the daily message, and `NULL`
+means it still gets it. It is the only thing the broadcast, the site counts and
+the stale-channel check look at. `stopped_reason` says why, and is always set
+or cleared with it:
 
-Two things keep it accurate. `on_guild_remove` and `on_guild_join` handle it
-live, and a reconcile on every startup compares the stored servers against the
-ones Discord hands the bot on connect, which covers a kick that happened while
-the bot was down. Adding the column to an existing database:
+| `stopped_reason` | What happened | Starts again when |
+| --- | --- | --- |
+| `bot_removed` | The bot was kicked or banned, or the server was deleted | The bot is added back to the server |
+| `channel_deleted` | Discord says the channel no longer exists | Never (Discord doesn't reuse channel ids) |
+| `stopped_by_admin` | Someone ran `/bismillah stop` | Someone runs `/bismillah setup` in that channel |
 
-```sql
-ALTER TABLE discord_channel_state ADD COLUMN removed_at TIMESTAMP WITH TIME ZONE;
-```
+Rows are never deleted. The reading position is worth keeping, so a channel
+that starts again carries on from the hadith it stopped at instead of
+restarting at the beginning. A channel that is already stopped keeps its first
+reason and date: a deleted channel in a server that later kicks and re-adds the
+bot stays deleted.
 
-Nothing else is needed: the first startup after the column exists fills it in.
+`bot_removed` is kept accurate in two ways, both run only by the production
+bot (the dev bot shares the database). `on_guild_remove` and `on_guild_join`
+handle it live, and a reconcile on every startup compares the stored servers
+against the ones Discord hands the bot on connect, which covers a kick that
+happened while the bot was down. `channel_deleted` is set when Discord reports
+the deletion, or at the next broadcast if the bot was offline at the time.
+
+`warned_at` is when the server's owner was last told that the hadith couldn't
+be posted in this channel, and `embed_warned_at` when they were last told the
+game card went out as plain text because the bot has no Embed Links there.
+Either is sent at most once a week while the problem lasts, and cleared once
+it's fixed. They're kept on the row so a restart doesn't send them again.
+
+These columns came in with `sql/2026-10-25-stops-and-warnings.sql`, which also
+filled in `stopped_at` and `stopped_reason` from the `active` and `removed_at`
+columns they replace.
 
 #### `hadiths` table:
 

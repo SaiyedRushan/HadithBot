@@ -1,6 +1,7 @@
 from typing import Dict, Optional
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 from pathlib import Path
 import json
 import logging
@@ -393,6 +394,72 @@ def resolve_start_position(
     else:
         hadith = keep(None, "last_hadith_no", 1)
     return book, chapter, hadith
+
+
+# Why a channel no longer gets the daily message (stopped_reason). stopped_at is
+# what decides it; the reason is only ever set alongside it. Rows are kept in
+# every case, so a channel that starts again carries on from where it left off.
+BOT_REMOVED = "bot_removed"
+CHANNEL_DELETED = "channel_deleted"
+STOPPED_BY_ADMIN = "stopped_by_admin"
+
+_STOPPED_BECAUSE = {
+    BOT_REMOVED: "HadithBot was removed from this server.",
+    CHANNEL_DELETED: "the channel was deleted.",
+    STOPPED_BY_ADMIN: (
+        "someone ran `/bismillah stop`. Run `/bismillah setup` in that channel "
+        "to start again from where it left off."
+    ),
+}
+
+
+def _parse_ts(value) -> Optional[datetime]:
+    """A Postgres timestamptz as an aware datetime, or None."""
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def stopped_text(row: dict) -> str:
+    """What /bismillah status and diagnose say about a stopped channel."""
+    because = _STOPPED_BECAUSE.get(row.get("stopped_reason") or "", "no reason was recorded.")
+    when = _parse_ts(row.get("stopped_at"))
+    if when is None:
+        return f"Stopped: {because}"
+    day = when.astimezone(ZoneInfo("America/Toronto"))
+    return f"Stopped on {day:%b} {day.day}: {because}"
+
+
+# A server owner is told about a broken channel at most this often while it
+# stays broken. The time is kept on the row (warned_at, embed_warned_at), so a
+# restart doesn't make the bot tell them again the same evening.
+WARN_AGAIN_AFTER = timedelta(days=7)
+
+
+def warned_recently(value, now: Optional[datetime] = None) -> bool:
+    when = _parse_ts(value)
+    if when is None:
+        return False
+    return (now or datetime.now(timezone.utc)) - when < WARN_AGAIN_AFTER
+
+
+def embed_links_message(channel_label: str, guild_name: str) -> str:
+    """The DM an owner gets when the game card has to go out as plain text."""
+    return (
+        f"Assalamu alaikum. HadithBot posts a daily name match game after the hadith in "
+        f"**{channel_label}** in **{guild_name}**, but it hasn't been showing up properly "
+        "there. HadithBot doesn't have the Embed Links permission in that channel. "
+        "Your daily hadiths aren't affected.\n\n"
+        "To fix it:\n"
+        "1. Right-click the channel, then **Edit Channel**, then **Permissions**\n"
+        "2. Under **Roles/Members**, pick HadithBot's role (press **+** to add it if it isn't listed)\n"
+        "3. Turn on **Embed Links** and save\n\n"
+        "The next game card will then show normally. If you'd rather not have the game in "
+        "that channel, run `/bismillah setup name_match:False` there."
+    )
 
 
 def delivery_failure_message(

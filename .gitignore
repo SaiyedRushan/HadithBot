@@ -39,3 +39,5 @@ htmlcov/
 Thumbs.db
 
 .ssh
+# Supabase CLI link state (supabase link)
+supabase/.temp/

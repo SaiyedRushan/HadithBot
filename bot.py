@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import datetime, time, timezone
 import aiofiles
 import discord
 from discord import app_commands
@@ -25,9 +25,10 @@ from db import (
     get_random_hadith,
     mark_guild_present,
     mark_guild_removed,
-    remove_channel_state,
     resolve_hadith_flags,
     save_channel_state,
+    set_warned,
+    stop_channel,
 )
 from views import (
     ExplainHadithButton,
@@ -41,18 +42,23 @@ import name_match
 from command_sync import sync_commands
 from game_api import card_message, edit_card, name_match_on
 from utils import (
+    CHANNEL_DELETED,
+    STOPPED_BY_ADMIN,
     Name,
     compose_flag_reply,
     ABSOLUTE_MAX_PER_DAY,
     channel_max,
     daily_count,
     delivery_failure_message,
+    embed_links_message,
     getHadithFormattedMessage,
     getNameFormattedMessage,
     load_custom_limits,
     resolve_start_position,
     setup_reply,
+    stopped_text,
     update_for,
+    warned_recently,
 )
 
 # Tail of the /bismillah books and /bismillah chapters replies. Both lists run
@@ -74,11 +80,6 @@ class HadithBot(commands.Bot):
 
         self.names: List[Name] = []
         self.logger = logging.getLogger("HadithBot")
-        # Channels we've already warned a server about, so a channel that stays
-        # broken doesn't produce a message every single evening. Cleared as soon
-        # as delivery works again, and on restart -- a redeploy is rare enough
-        # that one repeat notice is a reminder rather than a nuisance.
-        self._alerted_channels: set[str] = set()
 
         # Setup error handling
         self.setup_error_handlers()
@@ -195,7 +196,7 @@ class HadithBot(commands.Bot):
                     # Channel was revoked. A deletion while the bot was offline
                     # never fires on_guild_channel_delete, so check here too.
                     if await self._channel_was_deleted(channel_id):
-                        self._forget_deleted_channel(channel_row)
+                        self._mark_channel_deleted(channel_row)
                         continue
                     self.logger.error(
                         f"Channel {channel_id} not found in "
@@ -280,13 +281,12 @@ class HadithBot(commands.Bot):
                     )
 
                     delivered += 1
-                    self._alerted_channels.discard(str(channel_id))
 
                     if name_match_on(channel_row) and names:
                         # Its own try: the hadith is already out and saved, so a
                         # failed card must not count as a failed delivery.
                         try:
-                            await self.post_name_match(channel, names)
+                            await self.post_name_match(channel, names, channel_row)
                         except Exception:
                             self.logger.error(
                                 f"Failed to post the name match in {channel_id}",
@@ -315,7 +315,7 @@ class HadithBot(commands.Bot):
         return delivered
 
     def _configured_row(self, channel_id):
-        """The stored row for a channel, but only if it's still switched on.
+        """The stored row for a channel, but only if it still gets messages.
 
         Returns None for channels nobody asked us to post in, so a permission
         change in an unrelated channel costs one lookup and nothing else.
@@ -325,11 +325,10 @@ class HadithBot(commands.Bot):
         except Exception as e:
             self.logger.error(f"Couldn't look up channel {channel_id}: {e}")
             return None
-        if row is None or not row.get("active", True):
-            return None
-        # A server the bot was removed from keeps its row (see mark_guild_removed)
-        # but there is nobody to tell and nothing to fix, so leave it alone.
-        if row.get("removed_at"):
+        # A stopped channel keeps its row, but whatever the reason (removed
+        # from the server, deleted, stopped by an admin) there is nothing to
+        # warn anyone about.
+        if row is None or row.get("stopped_at"):
             return None
         return row
 
@@ -375,7 +374,7 @@ class HadithBot(commands.Bot):
             await self.alert_delivery_failure(channel.guild, row)
         except discord.NotFound:
             # Deliberately silent: they deleted it, they know.
-            self._forget_deleted_channel(row)
+            self._mark_channel_deleted(row)
         except discord.HTTPException as e:
             self.logger.error(f"Couldn't tell why #{channel.name} went away: {e}")
 
@@ -390,21 +389,50 @@ class HadithBot(commands.Bot):
             pass
         return False
 
-    def _forget_deleted_channel(self, row) -> None:
-        """Drop a deleted channel's row, as /bismillah stop does.
+    def _mark_channel_deleted(self, row) -> None:
+        """Stop a deleted channel, keeping its row.
 
-        Discord never reuses a channel id, so nothing in the row can be used
-        again. Left in place it fails every broadcast, shows on the stale
-        check, and inactive would read as "paused" in /bismillah diagnose.
-        The game history lives in game_days and is kept.
+        Left getting messages it fails every broadcast and shows on the stale
+        check.
         """
         channel_id = str(row["channel_id"])
         label = f"#{row.get('channel_name') or channel_id}"
         try:
-            remove_channel_state(channel_id)
-            self.logger.info(f"{label} was deleted; removed it from the daily list")
+            stop_channel(channel_id, CHANNEL_DELETED)
+            self.logger.info(f"{label} was deleted; stopped its daily message")
         except Exception as e:
-            self.logger.error(f"Couldn't remove deleted channel {label}: {e}")
+            self.logger.error(f"Couldn't mark deleted channel {label} as stopped: {e}")
+
+    def _record_warned(self, channel_row, field: str) -> None:
+        """Save when the owner was told, so a restart doesn't tell them again.
+        Also set on the row itself, for a caller that reuses it."""
+        try:
+            set_warned(str(channel_row["channel_id"]), field, True)
+        except Exception as e:
+            self.logger.error(f"Couldn't save {field} for {channel_row['channel_id']}: {e}")
+        channel_row[field] = datetime.now(timezone.utc).isoformat()
+
+    async def warn_about_embed_links(self, channel, channel_row) -> bool:
+        """DM the owner, once a week, while the game card has to go out as text.
+
+        The card carries the same note, but the person who can fix it may not
+        read that channel. No fallback to posting in a channel, as the alert
+        above does: the card is already posted in one.
+        """
+        if warned_recently(channel_row.get("embed_warned_at")):
+            return False
+        guild = getattr(channel, "guild", None)
+        if guild is None or not guild.owner_id:
+            return False
+        try:
+            owner = await self.fetch_user(guild.owner_id)
+            await owner.send(embed_links_message(f"#{channel.name}", guild.name))
+        except discord.HTTPException as e:
+            self.logger.info(f"Couldn't DM {guild.name}'s owner about Embed Links: {e}")
+            return False
+        self._record_warned(channel_row, "embed_warned_at")
+        self.logger.info(f"Told {guild.name}'s owner about Embed Links in #{channel.name}")
+        return True
 
     async def alert_delivery_failure(self, guild, channel_row) -> bool:
         """Tell someone in the server that today's hadith couldn't be posted.
@@ -415,14 +443,14 @@ class HadithBot(commands.Bot):
         restore the permission and a DM doesn't put the problem in front of
         the whole server -- then fall back to any channel we can still post in.
 
-        Sends at most once per channel until delivery succeeds again. Returns
-        True if the notice reached anyone.
+        Sends at most once a week per channel (warned_at), until delivery
+        succeeds again. Returns True if the notice reached anyone.
         """
         if guild is None:
             return False
 
         channel_id = str(channel_row["channel_id"])
-        if channel_id in self._alerted_channels:
+        if warned_recently(channel_row.get("warned_at")):
             return False
 
         name = channel_row.get("channel_name")
@@ -434,7 +462,7 @@ class HadithBot(commands.Bot):
             try:
                 owner = await self.fetch_user(guild.owner_id)
                 await owner.send(delivery_failure_message(label, guild.name))
-                self._alerted_channels.add(channel_id)
+                self._record_warned(channel_row, "warned_at")
                 self.logger.info(f"Told {guild.name}'s owner about {label}")
                 return True
             except discord.HTTPException:
@@ -462,7 +490,7 @@ class HadithBot(commands.Bot):
                 continue
             try:
                 await target.send(delivery_failure_message(label))
-                self._alerted_channels.add(channel_id)
+                self._record_warned(channel_row, "warned_at")
                 self.logger.info(f"Posted the {label} failure notice in #{target.name}")
                 return True
             except discord.HTTPException:
@@ -570,7 +598,9 @@ class HadithBot(commands.Bot):
         except Exception:
             self.logger.error("Guild reconcile failed", exc_info=True)
 
-    async def post_name_match(self, channel: discord.TextChannel, names: List[Name]):
+    async def post_name_match(
+        self, channel: discord.TextChannel, names: List[Name], channel_row: dict
+    ):
         """Close the channel's earlier match cards, then post today's.
 
         Closing happens here rather than on a timer: every channel's day ends
@@ -594,10 +624,13 @@ class HadithBot(commands.Bot):
             played_keys=db.get_played_day_keys(channel_id),
             others={g: db.get_game_results(channel_id, today, g) for g in name_match.GAME_ORDER[1:]},
         )
-        message = await channel.send(
-            **card_message(channel, embed), view=build_name_match_view()
-        )
+        card = card_message(channel, embed)
+        message = await channel.send(**card, view=build_name_match_view())
         db.set_game_day_message(channel_id, today, str(message.id))
+        if card["embed"] is None:
+            await self.warn_about_embed_links(channel, channel_row)
+        elif channel_row.get("embed_warned_at"):
+            set_warned(channel_id, "embed_warned_at", False)
 
     def get_names(self, number: int, count: int = 1) -> Optional[List[Name]]:
         """Get name by number with validation"""
@@ -854,7 +887,7 @@ class HadithCommands(app_commands.Group):
             pick(start_name, "last_name_no", 1),
             last_book,
             last_chapter,
-            active=True,
+            clear_stopped=True,
             hadiths_per_day=hpd,
             names_per_day=npd,
             channel_name=target.name,
@@ -890,9 +923,10 @@ class HadithCommands(app_commands.Group):
                 ephemeral=True,
             )
             return
-        remove_channel_state(str(target.id))
+        stop_channel(str(target.id), STOPPED_BY_ADMIN)
         await interaction.followup.send(
-            f"Daily messages will no longer be sent to {target.mention}.",
+            f"Daily messages will no longer be sent to {target.mention}. "
+            "To start them again from where they left off, run `/bismillah setup` there.",
             ephemeral=True,
         )
 
@@ -920,9 +954,11 @@ class HadithCommands(app_commands.Group):
             channel = guild.get_channel(int(row["channel_id"])) if guild else None
             if channel is None:
                 continue
-            state = "🟢 active" if row.get("active", True) else "⏸️ paused"
+            if row.get("stopped_at"):
+                lines.append(f"{channel.mention} · ⏹️ {stopped_text(row)}")
+                continue
             lines.append(
-                f"{channel.mention} — {state} — "
+                f"{channel.mention} · 🟢 sending · "
                 f"{daily_count(row.get('hadiths_per_day'), channel_max(row['channel_id'], limits))} hadith/"
                 f"{daily_count(row.get('names_per_day'), channel_max(row['channel_id'], limits))} name(s) per day "
                 f"(next: book {row['last_book_id']}, chapter {row['last_chapter_id']}, "
@@ -939,8 +975,8 @@ class HadithCommands(app_commands.Group):
 
         await self._send_reference(
             interaction,
-            f"**Daily message channels here** ({len(lines)} configured) — "
-            "sent daily at 6:00 PM Toronto time:",
+            f"**Daily message channels here** ({len(lines)} set up). "
+            "Messages go out daily at 6:00 PM Toronto time:",
             lines,
         )
 
@@ -990,8 +1026,8 @@ class HadithCommands(app_commands.Group):
         for row in mine:
             channel_id = row["channel_id"]
             label = row.get("channel_name") or channel_id
-            if not row.get("active", True):
-                lines.append(f"⏸️ **{label}** — paused, no daily message by design.")
+            if row.get("stopped_at"):
+                lines.append(f"⏹️ **{label}**: {stopped_text(row)}")
                 continue
 
             channel = self.bot.get_channel(int(channel_id))
@@ -1082,8 +1118,8 @@ class HadithCommands(app_commands.Group):
             )
         else:
             await interaction.followup.send(
-                f"Nothing was sent to {target.mention}. It may be paused — run "
-                "`/bismillah diagnose` to see what's blocking it.",
+                f"Nothing was sent to {target.mention}. It may not be set up, or it "
+                "was stopped. Run `/bismillah diagnose` to see what's blocking it.",
                 ephemeral=True,
             )
 
