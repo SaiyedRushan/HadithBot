@@ -177,7 +177,8 @@ it's fixed. They're kept on the row so a restart doesn't send them again.
 
 These columns came in with `sql/2026-10-25-stops-and-warnings.sql`, which also
 filled in `stopped_at` and `stopped_reason` from the `active` and `removed_at`
-columns they replace.
+columns they replace. Those two were dropped the next day by
+`sql/2026-10-26-drop-active-removed-at.sql`.
 
 #### `hadiths` table:
 
