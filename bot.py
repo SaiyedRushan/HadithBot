@@ -826,7 +826,7 @@ class HadithCommands(app_commands.Group):
         start_hadith_id="Hadith id to start from (blank uses the chapter's first hadith, or keeps current)",
         start_name="Name number to start from (blank keeps current)",
         name_match="Post a daily game after the hadith: match 10 names of Allah to their meanings. Blank keeps the current setting.",
-        quran_verse="Also post a verse of the Quran each day, with a link to its tafsir. Blank keeps the current setting.",
+        quran_verse="Start each day's message with a verse of the Quran. On by default. Blank keeps the current setting.",
     )
     async def setup(
         self,
@@ -935,6 +935,13 @@ class HadithCommands(app_commands.Group):
             reply += (
                 f"\nA daily verse of the Quran is now **{'on' if quran_verse else 'off'}** "
                 f"in {target.mention}."
+            )
+        elif existing is None:
+            # New channels get the verse without asking for it, so say so
+            # while the admin is here, along with how to leave it out.
+            reply += (
+                "\nEach day's message also starts with a verse of the Quran. To leave "
+                "it out, run `/bismillah setup quran_verse:False` in that channel."
             )
         await interaction.followup.send(reply, ephemeral=True)
 

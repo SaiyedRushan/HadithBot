@@ -2705,7 +2705,7 @@
                     beautiful names
                   </div>
                   <!-- The verse of the day, with the links quran.py builds for
-                       13:28. The bot posts it only where a server turned on
+                       13:28. It is on in every channel unless a server turns off
                        quran_verse. -->
                   <div class="block">
                     <b>Quran 13:28 - Surah Ar-Ra'd (The Thunder)</b>
@@ -2999,11 +2999,11 @@
             </div>
             <div class="card">
               <div class="ico">📗</div>
-              <h3>A verse of the Quran, if you want one</h3>
+              <h3>A verse of the Quran</h3>
               <p>
-                Turn it on and each day's message starts with a verse in Arabic
-                and English, with buttons to read its tafsir, listen to it, or
-                ask ChatGPT about it.
+                Each day's message starts with a verse in Arabic and English,
+                with buttons to read its tafsir, listen to it, or ask ChatGPT
+                about it. You can turn it off in any channel.
               </p>
             </div>
             <div class="card">
@@ -3311,7 +3311,7 @@
                 </li>
                 <li>
                   <b>quran_verse</b>: add a verse of the Quran to each day's
-                  message, off by default
+                  message, on by default
                 </li>
               </ul>
             </div>
@@ -3326,10 +3326,10 @@
                 >
               </div>
 
-              <p>Add a verse of the Quran to each day's message:</p>
+              <p>Leave the verse of the Quran out of each day's message:</p>
               <div class="snippet">
                 <button class="copy">Copy</button
-                ><span class="code-text">/bismillah setup quran_verse:True</span>
+                ><span class="code-text">/bismillah setup quran_verse:False</span>
               </div>
 
               <p>Change just the count. The channel keeps its place:</p>

@@ -219,5 +219,5 @@ def greeting(with_ayah: bool) -> str:
 
 
 def ayah_on(channel_row: dict) -> bool:
-    """Off unless the channel turned it on with /bismillah setup."""
-    return channel_row.get("ayah_enabled") is True
+    """On unless the channel turned it off with /bismillah setup quran_verse:False."""
+    return channel_row.get("ayah_enabled") is not False

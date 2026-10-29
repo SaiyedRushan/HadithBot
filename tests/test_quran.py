@@ -189,7 +189,7 @@ def test_greeting_mentions_the_verse_only_when_there_is_one():
     assert "verse" not in greeting(False)
 
 
-def test_off_unless_turned_on():
-    assert not ayah_on({"channel_id": "1"})
-    assert not ayah_on({"channel_id": "1", "ayah_enabled": False})
+def test_on_unless_turned_off():
+    assert ayah_on({"channel_id": "1"})
     assert ayah_on({"channel_id": "1", "ayah_enabled": True})
+    assert not ayah_on({"channel_id": "1", "ayah_enabled": False})

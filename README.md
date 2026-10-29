@@ -295,12 +295,12 @@ current value, so re-running it to change the counts won't reset the reading
 position. It refuses (and saves nothing) if the bot can't post in the channel.
 
 ```
-/bismillah setup quran_verse:True
+/bismillah setup quran_verse:False
 ```
 
-Adds a verse of the Quran to the channel's daily message, with buttons for Ibn
-Kathir's tafsir, the verse on Quran.com and a ChatGPT question about it. Off until
-someone turns it on. Every channel gets the same verse each day: `quran.py` picks it
+Every channel's daily message starts with a verse of the Quran, with buttons for
+Ibn Kathir's tafsir, the verse on Quran.com and a ChatGPT question about it. This
+turns it off (and `quran_verse:True` turns it back on). Every channel gets the same verse each day: `quran.py` picks it
 from the date and fetches it once from alquran.cloud (Arabic plus Saheeh
 International), so there is no Quran table in the database.
 
