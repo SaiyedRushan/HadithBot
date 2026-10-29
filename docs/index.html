@@ -2960,6 +2960,15 @@
               </p>
             </div>
             <div class="card">
+              <div class="ico">📗</div>
+              <h3>A verse of the Quran, if you want one</h3>
+              <p>
+                Turn it on and each day's message starts with a verse in Arabic
+                and English, with buttons to read its tafsir, listen to it, or
+                ask ChatGPT about it.
+              </p>
+            </div>
+            <div class="card">
               <div class="ico">🔎</div>
               <h3>Straight to the source</h3>
               <p>
@@ -3262,6 +3271,10 @@
                   <b>name_match</b>: the daily game after the hadith, on by
                   default (<a href="#name-match">what it is</a>)
                 </li>
+                <li>
+                  <b>quran_verse</b>: add a verse of the Quran to each day's
+                  message, off by default
+                </li>
               </ul>
             </div>
 
@@ -3273,6 +3286,12 @@
                 ><span class="code-text"
                   >/bismillah setup hadiths_per_day:2 names_per_day:1</span
                 >
+              </div>
+
+              <p>Add a verse of the Quran to each day's message:</p>
+              <div class="snippet">
+                <button class="copy">Copy</button
+                ><span class="code-text">/bismillah setup quran_verse:True</span>
               </div>
 
               <p>Change just the count. The channel keeps its place:</p>
@@ -3329,7 +3348,8 @@
                   <td><code>/bismillah setup</code></td>
                   <td>
                     Turn on daily messages in a channel and set the per-day
-                    counts and starting point.
+                    counts, the starting point, and whether to add a verse of
+                    the Quran.
                   </td>
                   <td><span class="pill pill-mod">Manage Channels</span></td>
                 </tr>
