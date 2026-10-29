@@ -651,6 +651,9 @@
       .preview .msg > div > div:nth-child(4) {
         animation-delay: 1.02s;
       }
+      .preview .msg > div > div:nth-child(5) {
+        animation-delay: 1.14s;
+      }
       .preview .avatar {
         width: 40px;
         height: 40px;
@@ -698,6 +701,18 @@
       }
       .preview .dua {
         margin-top: 8px;
+      }
+      .preview .verse-ar {
+        font-size: 1.15rem;
+        line-height: 1.9;
+        margin: 4px 0 2px;
+        color: #fff;
+      }
+      /* Discord's -# subtext */
+      .preview .subtext {
+        color: #a3a6aa;
+        font-size: 0.72rem;
+        margin-top: 4px;
       }
       .preview .dua b {
         color: #fff;
@@ -767,7 +782,7 @@
       /* the name match card, as a follow-up message under the hadith */
       .preview .game-msg {
         margin-left: 52px;
-        animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 1.14s backwards;
+        animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 1.26s backwards;
       }
       .preview .game-embed {
         background: #2f3136;
@@ -2686,7 +2701,30 @@
                   </div>
                   <div class="greeting">
                     Assalamu Alaikum Warahmatullahi Wabarakatuh, here is today's
-                    hadith and one of Allah's beautiful name
+                    verse of the Quran, today's hadith and one of Allah's
+                    beautiful names
+                  </div>
+                  <!-- The verse of the day, with the links quran.py builds for
+                       13:28. The bot posts it only where a server turned on
+                       quran_verse. -->
+                  <div class="block">
+                    <b>Quran 13:28 - Surah Ar-Ra'd (The Thunder)</b>
+                    <div class="arabic verse-ar" lang="ar">
+                      ٱلَّذِينَ ءَامَنُوا۟ وَتَطْمَئِنُّ قُلُوبُهُم بِذِكْرِ ٱللَّهِ ۗ أَلَا بِذِكْرِ ٱللَّهِ تَطْمَئِنُّ ٱلْقُلُوبُ
+                    </div>
+                    <div>
+                      Those who have believed and whose hearts are assured by
+                      the remembrance of Allah. Unquestionably, by the
+                      remembrance of Allah hearts are assured.
+                    </div>
+                    <div class="subtext">Translation: Saheeh International</div>
+                    <a class="srcbtn" href="https://quran.com/13/28/tafsirs/en-tafisr-ibn-kathir" target="_blank" rel="noopener"
+                      >📖 Read tafsir</a
+                    ><a class="srcbtn" href="https://quran.com/13/28" target="_blank" rel="noopener"
+                      >🔊 Listen</a
+                    ><a class="srcbtn" href="https://chatgpt.com/?q=Please+explain+verse+13%3A28+of+the+Quran+%28Surah+Ar-Ra%27d%29.+What+does+it+mean%2C+and+what+do+classical+tafsirs+such+as+Ibn+Kathir+say+about+it%3F%0A%0ASaheeh+International%3A+%22Those+who+have+believed+and+whose+hearts+are+assured+by+the+remembrance+of+Allah.+Unquestionably%2C+by+the+remembrance+of+Allah+hearts+are+assured.%22" target="_blank" rel="noopener"
+                      >💬 Ask ChatGPT</a
+                    >
                   </div>
                   <div class="block">
                     <b>(33) - الْعَظِيمُ - Al-'Azeem</b>
