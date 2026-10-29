@@ -37,6 +37,7 @@ def save_channel_state(
     guild_member_count: Optional[int] = None,
     mark_sent: bool = False,
     name_match_enabled: Optional[bool] = None,
+    ayah_enabled: Optional[bool] = None,
 ):
     record = {
         "channel_id": channel_id,
@@ -57,6 +58,8 @@ def save_channel_state(
         record["names_per_day"] = names_per_day
     if name_match_enabled is not None:
         record["name_match_enabled"] = name_match_enabled
+    if ayah_enabled is not None:
+        record["ayah_enabled"] = ayah_enabled
     # Human-readable labels so rows are identifiable at a glance. Refreshed on
     # every save (server/channel renames happen), hence not gated behind "new only".
     if channel_name is not None:

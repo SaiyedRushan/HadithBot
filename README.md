@@ -6,6 +6,7 @@ A Discord bot that sends daily Islamic hadiths and the 99 beautiful names of All
 
 - **Daily Automated Messages**: Sends hadiths and Allah's names daily at 6:00 PM Toronto time
 - **Supabase Database**: Stores hadith data and tracks channel states using Supabase
+- **Verse of the Day**: An optional Quran verse each day, with links to its tafsir
 - **Slash Commands**: Interactive commands for retrieving specific or random hadiths and names
 - **Multi-Channel Support**: Can be configured to send messages to multiple Discord channels
 - **State Persistence**: Tracks progress through hadiths and names for each channel
@@ -292,6 +293,16 @@ Once the bot is running and added to your Discord server, you can test it using 
 Sets up daily messages for a channel. Every option is optional — blank keeps the
 current value, so re-running it to change the counts won't reset the reading
 position. It refuses (and saves nothing) if the bot can't post in the channel.
+
+```
+/bismillah setup quran_verse:True
+```
+
+Adds a verse of the Quran to the channel's daily message, with buttons for Ibn
+Kathir's tafsir, the verse on Quran.com and a ChatGPT question about it. Off until
+someone turns it on. Every channel gets the same verse each day: `quran.py` picks it
+from the date and fetches it once from alquran.cloud (Arabic plus Saheeh
+International), so there is no Quran table in the database.
 
 ```
 /bismillah diagnose

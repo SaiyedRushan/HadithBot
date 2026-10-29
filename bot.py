@@ -34,11 +34,13 @@ from views import (
     ExplainHadithButton,
     FlagHadithButton,
     PlayNameMatchButton,
+    build_ayah_view,
     build_hadith_view,
     build_name_match_view,
 )
 import db
 import name_match
+from quran import Ayah, DailyAyah, ayah_on, format_ayah_messages, greeting
 from command_sync import sync_commands
 from game_api import card_message, edit_card, name_match_on
 from utils import (
@@ -79,6 +81,8 @@ class HadithBot(commands.Bot):
         super().__init__(command_prefix="!", intents=intents)
 
         self.names: List[Name] = []
+        # Today's verse of the Quran, fetched once and shared by every channel.
+        self.daily_ayah = DailyAyah()
         self.logger = logging.getLogger("HadithBot")
 
         # Setup error handling
@@ -169,8 +173,9 @@ class HadithBot(commands.Bot):
 
         delivered = 0
         custom_limits = load_custom_limits()
+        today = datetime.now(ZoneInfo("America/Toronto")).date()
         # Today's update message (updates/<date>.md), if any, goes first.
-        update = update_for(datetime.now(ZoneInfo("America/Toronto")).date())
+        update = update_for(today)
         for channel_row in channels:
             channel_id = channel_row["channel_id"]
             # Isolate each channel so one failure (e.g. missing permissions)
@@ -222,14 +227,25 @@ class HadithBot(commands.Bot):
                     )
                 )
 
+                # Fetched before the greeting, which only mentions the verse
+                # when there is one to send.
+                ayah = await self.daily_ayah.for_day(today) if ayah_on(channel_row) else None
+
                 if update:
                     await channel.send(
                         update, allowed_mentions=discord.AllowedMentions.none()
                     )
-                # send greeting
-                await channel.send(
-                    "# Assalamu Alaikum Warahmatullahi Wabarakatuh, here is today's hadith and one of Allah's beautiful name\n"
-                )
+                await channel.send(greeting(ayah is not None))
+                if ayah is not None:
+                    # Its own try, like the name match: a verse that fails to
+                    # post must not stop the hadith.
+                    try:
+                        await self.send_ayah(channel, ayah)
+                    except Exception:
+                        self.logger.error(
+                            f"Failed to post verse {ayah.key} in {channel_id}",
+                            exc_info=True,
+                        )
                 # get name and send message
                 names = self.get_names(last_name_no, names_per_day)
                 current_name_index = self.get_next_index(
@@ -673,6 +689,15 @@ class HadithBot(commands.Bot):
             else:
                 await channel.send(message)
 
+    async def send_ayah(self, channel: discord.TextChannel, ayah: Ayah):
+        """Send the verse of the day, with its tafsir and Quran.com links under it."""
+        messages = format_ayah_messages(ayah)
+        for i, message in enumerate(messages):
+            if i == len(messages) - 1:
+                await channel.send(message, view=build_ayah_view(ayah))
+            else:
+                await channel.send(message)
+
     async def send_formatted_name(
         self, channel: discord.TextChannel, names: List[Name]
     ):
@@ -801,6 +826,7 @@ class HadithCommands(app_commands.Group):
         start_hadith_id="Hadith id to start from (blank uses the chapter's first hadith, or keeps current)",
         start_name="Name number to start from (blank keeps current)",
         name_match="Post a daily game after the hadith: match 10 names of Allah to their meanings. Blank keeps the current setting.",
+        quran_verse="Also post a verse of the Quran each day, with a link to its tafsir. Blank keeps the current setting.",
     )
     async def setup(
         self,
@@ -813,6 +839,7 @@ class HadithCommands(app_commands.Group):
         start_hadith_id: Optional[int] = None,
         start_name: Optional[int] = None,
         name_match: Optional[bool] = None,
+        quran_verse: Optional[bool] = None,
     ):
         await interaction.response.defer(ephemeral=True)
         target = channel or interaction.channel
@@ -895,12 +922,18 @@ class HadithCommands(app_commands.Group):
             guild_name=target.guild.name,
             guild_member_count=target.guild.member_count,
             name_match_enabled=name_match,
+            ayah_enabled=quran_verse,
         )
         verb = "updated for" if existing else "set up for"
         reply = setup_reply(target.mention, verb, hpd, npd)
         if name_match is not None:
             reply += (
                 f"\nThe daily name match game is now **{'on' if name_match else 'off'}** "
+                f"in {target.mention}."
+            )
+        if quran_verse is not None:
+            reply += (
+                f"\nA daily verse of the Quran is now **{'on' if quran_verse else 'off'}** "
                 f"in {target.mention}."
             )
         await interaction.followup.send(reply, ephemeral=True)
@@ -963,6 +996,7 @@ class HadithCommands(app_commands.Group):
                 f"{daily_count(row.get('names_per_day'), channel_max(row['channel_id'], limits))} name(s) per day "
                 f"(next: book {row['last_book_id']}, chapter {row['last_chapter_id']}, "
                 f"hadith {row['last_hadith_no']}, name #{row['last_name_no']})"
+                + (" · plus a verse of the Quran" if ayah_on(row) else "")
             )
 
         if not lines:

@@ -1,4 +1,4 @@
-"""Discord message components: the hadith buttons (lookup, explain, flag) and the name match Play button.
+"""Discord message components: the hadith buttons (lookup, explain, flag), the verse of the day's links and the name match Play button.
 
 Kept out of bot.py so the pieces worth testing can be imported without a database.
 ``db`` raises at import time when SUPABASE_URL is unset, and bot.py imports it at
@@ -12,6 +12,7 @@ from typing import Optional
 
 import discord
 
+from quran import Ayah, chatgpt_url, quran_com_url, tafsir_url
 from utils import (
     FLAG_ALERT_USER_ID,
     compose_explain_reply,
@@ -209,6 +210,39 @@ def build_hadith_view(hadith: dict) -> Optional[discord.ui.View]:
     if hadith_id is not None:
         view.add_item(ExplainHadithButton(int(hadith_id)))
         view.add_item(FlagHadithButton(int(hadith_id)))
+    return view
+
+
+def build_ayah_view(ayah: Ayah) -> discord.ui.View:
+    """The buttons under the verse of the day: its tafsir, the verse on Quran.com, ChatGPT.
+
+    All links, so a click never reaches the bot and old messages need no handling.
+    """
+    view = discord.ui.View(timeout=None)
+    view.add_item(
+        discord.ui.Button(
+            label="Read tafsir",
+            emoji="📖",
+            style=discord.ButtonStyle.link,
+            url=tafsir_url(ayah),
+        )
+    )
+    view.add_item(
+        discord.ui.Button(
+            label="Listen",
+            emoji="🔊",
+            style=discord.ButtonStyle.link,
+            url=quran_com_url(ayah),
+        )
+    )
+    view.add_item(
+        discord.ui.Button(
+            label="Ask ChatGPT",
+            emoji="💬",
+            style=discord.ButtonStyle.link,
+            url=chatgpt_url(ayah),
+        )
+    )
     return view
 
 
