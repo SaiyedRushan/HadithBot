@@ -301,6 +301,21 @@ class Name:
     fr: Dict[str, str]
 
 
+# Discord message text has no horizontal rule, so this is a row of box-drawing
+# characters, short enough to stay on one line on a phone.
+DIVIDER = "━" * 20
+
+
+def with_divider(message: str) -> str:
+    """Put the divider line on top of a message.
+
+    It goes above the next item rather than under the last one because a hadith's
+    buttons sit below its text, so a line added to that text would end up above
+    them. It also adds no messages, which keeps the broadcast from taking longer.
+    """
+    return f"{DIVIDER}\n{message}"
+
+
 def getHadithFormattedMessage(hadith) -> list[str]:
     # A heading, not a blockquote: Discord indents quoted text behind a vertical
     # bar, which on a phone eats a chunk of every line's width and wraps the

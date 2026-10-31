@@ -61,6 +61,7 @@ from utils import (
     stopped_text,
     update_for,
     warned_recently,
+    with_divider,
 )
 
 # Tail of the /bismillah books and /bismillah chapters replies. Both lists run
@@ -251,7 +252,9 @@ class HadithBot(commands.Bot):
                 current_name_index = self.get_next_index(
                     last_name_no, len(self.names), names_per_day
                 )
-                await self.send_formatted_name(channel, names)
+                await self.send_formatted_name(
+                    channel, names, after_verse=ayah is not None
+                )
 
                 # get today's batch starting at the current position; this crosses
                 # chapter/book boundaries so the full daily count is sent even when
@@ -264,15 +267,22 @@ class HadithBot(commands.Bot):
                     for h in hadith:
                         # Announce whenever a hadith opens a book/chapter different
                         # from the previous one sent (a new book implies a new
-                        # chapter, so only send one banner).
+                        # chapter, so only send one banner). A banner carries the
+                        # divider itself, so the line sits above it and not
+                        # between it and the hadith it introduces.
+                        announced = True
                         if h["book_id"] != prev_book_no:
                             await self.send_new_book_message(channel, h)
                         elif h["chapter_id"] != prev_chapter_no:
                             await self.send_new_chapter_message(channel, h)
+                        else:
+                            announced = False
                         prev_book_no = h["book_id"]
                         prev_chapter_no = h["chapter_id"]
 
-                        await self.send_formatted_hadith(channel, h)
+                        await self.send_formatted_hadith(
+                            channel, h, divider=not announced
+                        )
 
                     # The last hadith sent may be in a later chapter/book than we
                     # started; advance the saved position past it so tomorrow
@@ -666,20 +676,26 @@ class HadithBot(commands.Bot):
         message = f"# 📖 We are now starting a new book: {book}\n"
         if chapter:
             message += f"### Beginning with Chapter: {chapter}\n"
-        await channel.send(message)
+        await channel.send(with_divider(message))
 
     async def send_new_chapter_message(
         self, channel: discord.TextChannel, hadith: dict
     ):
         """Announce that the daily readings have moved into a new chapter."""
         chapter = (hadith.get("chapters") or {}).get("english") or "a new chapter"
-        await channel.send(f"# 📖 We are now starting a new chapter: {chapter}\n")
+        await channel.send(
+            with_divider(f"# 📖 We are now starting a new chapter: {chapter}\n")
+        )
 
-    async def send_formatted_hadith(self, channel: discord.TextChannel, hadith: dict):
-        """Send formatted hadith message"""
+    async def send_formatted_hadith(
+        self, channel: discord.TextChannel, hadith: dict, divider: bool = False
+    ):
+        """Send formatted hadith message, with the divider above it if asked."""
         if not hadith:
             return
         formatted_messages = getHadithFormattedMessage(hadith)
+        if divider:
+            formatted_messages[0] = with_divider(formatted_messages[0])
         # Attach the link button to the last chunk so it sits under the full hadith.
         view = build_hadith_view(hadith)
         last_index = len(formatted_messages) - 1
@@ -699,14 +715,22 @@ class HadithBot(commands.Bot):
                 await channel.send(message)
 
     async def send_formatted_name(
-        self, channel: discord.TextChannel, names: List[Name]
+        self,
+        channel: discord.TextChannel,
+        names: List[Name],
+        after_verse: bool = False,
     ):
-        """Send formatted name messages for multiple names"""
+        """Send formatted name messages, with a divider between each name.
+
+        The first name only gets one when the verse came before it.
+        """
         if not names:
             return
-        for name in names:
+        for i, name in enumerate(names):
             formatted_message = getNameFormattedMessage(name)
-            await channel.send(formatted_message)
+            await channel.send(
+                with_divider(formatted_message) if i or after_verse else formatted_message
+            )
 
     async def reply_formatted_hadith(
         self, interaction: discord.Interaction, hadith: dict
@@ -736,9 +760,10 @@ class HadithBot(commands.Bot):
         """
         if not names:
             return
-        for name in names:
+        for i, name in enumerate(names):
+            message = getNameFormattedMessage(name)
             await interaction.followup.send(
-                getNameFormattedMessage(name), ephemeral=True
+                with_divider(message) if i else message, ephemeral=True
             )
 
 
