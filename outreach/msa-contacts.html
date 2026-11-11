@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>MSA contacts</title>
+<style>
+  :root {
+    --page: #f5f1e1;
+    --top: #232419;
+    --top-text: #f5f1e1;
+    --top-soft: #cfc8ae;
+    --amber: #ddbb74;
+    --track: #4a4a38;
+    --ink: #26231a;
+    --soft: #6b6450;
+    --line: #e4dcc4;
+    --link: #7a4e12;
+    --tick: #5e4a2a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page: #14140e;
+      --top: #232419;
+      --ink: #ece7d3;
+      --soft: #a9a388;
+      --line: #33342a;
+      --link: #ddbb74;
+      --tick: #ddbb74;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font: 1rem/1.5 "Avenir Next", Avenir, "Segoe UI", system-ui, sans-serif;
+  }
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--top);
+    color: var(--top-text);
+    padding: 1rem max(1rem, env(safe-area-inset-right)) 0 max(1rem, env(safe-area-inset-left));
+  }
+  .top {
+    max-width: 48rem;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem 1.5rem;
+    padding-bottom: 0.9rem;
+  }
+  h1 {
+    margin: 0;
+    font-size: 1.6rem;
+    line-height: 1.2;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    text-wrap: balance;
+  }
+  .help { margin: 0.15rem 0 0; color: var(--top-soft); font-size: 0.9rem; }
+  button {
+    font: inherit;
+    font-size: 0.9rem;
+    min-height: 2.75rem;
+    padding: 0 0.9rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--top-soft);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font-variant-numeric: tabular-nums;
+  }
+  button:hover { background: rgb(255 255 255 / 0.1); }
+  .bar { height: 5px; background: var(--track); margin: 0 calc(-1 * max(1rem, env(safe-area-inset-left))); }
+  .bar div { height: 100%; background: var(--amber); transition: width 200ms ease-out; }
+  ul { list-style: none; margin: 0 auto; padding: 0 1rem 6rem; max-width: 50rem; }
+  li {
+    display: grid;
+    grid-template-columns: 7.25rem minmax(0, 1fr);
+    gap: 0.5rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  li[hidden] { display: none; }
+  .tick {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    align-self: start;
+    min-height: 2.75rem;
+    margin-top: -0.55rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--soft);
+  }
+  .tick input { width: 1.3rem; height: 1.3rem; margin: 0; accent-color: var(--tick); cursor: pointer; scroll-margin-top: 9rem; }
+  h2 { margin: 0; font-size: 1.1rem; line-height: 1.3; font-weight: 600; }
+  p { margin: 0; }
+  .where { color: var(--soft); font-size: 0.9rem; }
+  .links { display: flex; flex-wrap: wrap; gap: 0 1rem; margin-top: 0.15rem; }
+  .links a { display: inline-block; padding: 0.3rem 0; overflow-wrap: anywhere; }
+  a { color: var(--link); }
+  .notes { font-size: 0.9rem; margin-top: 0.2rem; max-width: 65ch; text-wrap: pretty; overflow-wrap: anywhere; }
+  li.done h2 { text-decoration: line-through; color: var(--soft); }
+  .empty { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+  #toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(1rem + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: calc(100vw - 2rem);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.4rem 0.5rem 0.4rem 1rem;
+    border-radius: 0.6rem;
+    background: var(--top);
+    color: var(--top-text);
+    box-shadow: 0 6px 20px rgb(35 36 25 / 0.35);
+  }
+  #toast[hidden] { display: none; }
+  :focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+  main :focus-visible { outline-color: var(--link); }
+  @media (max-width: 34rem) {
+    li { grid-template-columns: minmax(0, 1fr); gap: 0.35rem; }
+    .tick { margin-top: 0; order: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bar div { transition: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div>
+      <h1 id="heading"></h1>
+      <p class="help">Tick an MSA once you've contacted it and it disappears from this list.</p>
+    </div>
+    <button type="button" id="show"></button>
+  </div>
+  <div class="bar" aria-hidden="true"><div id="progress"></div></div>
+</header>
+<main>
+  <ul id="list"></ul>
+  <p class="empty" id="empty" hidden>There are no MSAs left to contact.</p>
+</main>
+<div id="toast" role="status" hidden><span id="toast-text"></span><button type="button" id="undo">Undo</button></div>
+<script>
+const CONTACTS = [{"institution": "University of Waterloo", "org": "UW MSA", "country": "Canada", "region": "Ontario", "email": null, "website": "https://uwmsa.com", "instagram": "https://instagram.com/uwmsa", "discord": "https://discord.gg/nQZtrhxJsX", "confidence": "confirmed", "notes": "Public Discord listed on their own Linktree. Also a WhatsApp community. No public email; contact via IG or Discord."}, {"institution": "McGill University", "org": "MSA McGill", "country": "Canada", "region": "Quebec", "email": null, "website": "https://linktr.ee/msamcgill", "instagram": "https://instagram.com/msamcgill", "discord": "https://discord.gg/jEtmHXQf", "confidence": "confirmed", "notes": "Discord + WhatsApp community both on their Linktree."}, {"institution": "University of Alberta", "org": "MSA UAlberta", "country": "Canada", "region": "Alberta", "email": null, "website": "http://msauofa.weebly.com", "instagram": null, "discord": "https://discord.com/invite/QRZmXvy", "confidence": "confirmed", "notes": "Discord ~1.2k members. Website has a contact form only, no listed email."}, {"institution": "Carleton University", "org": "CUMSA", "country": "Canada", "region": "Ontario", "email": null, "website": "https://cumsa.ca", "instagram": null, "discord": "https://discord.com/invite/uVmpsVNauU", "confidence": "confirmed", "notes": "Official CUMSA Discord, ~1.2k members. Site returned 403 to automated fetch; Discord and Facebook (facebook.com/CarletonMSA) are live."}, {"institution": "University of Toronto (St. George)", "org": "UofT MSA", "country": "Canada", "region": "Ontario", "email": null, "website": "https://www.uoftmsa.com", "instagram": "https://instagram.com/uoftmsa", "discord": null, "confidence": "partial", "notes": "Oldest MSA in Canada, 1500+ members. msa@utoronto.ca BOUNCED 2026-09-20: 550 5.4.1 Access denied from Exchange Online, the list only accepts mail from inside utoronto.ca. External email cannot reach it. Use the contact form or per-exec office hours at uoftmsa.com/contact-us.html, or IG @uoftmsa."}, {"institution": "University of Toronto Mississauga", "org": "UTM MSA", "country": "Canada", "region": "Ontario", "email": "msa@utmsu.ca", "website": "http://utmmsa.org", "instagram": "https://instagram.com/utmmsa", "discord": null, "confidence": "confirmed", "notes": null}, {"institution": "University of Guelph", "org": "Guelph MSA", "country": "Canada", "region": "Ontario", "email": "msa@uoguelph.ca", "website": "https://www.uogmsa.com", "instagram": "https://instagram.com/guelphmsa", "discord": null, "confidence": "confirmed", "notes": "Also https://linktr.ee/msauoguelph"}, {"institution": "Seneca Polytechnic", "org": "Seneca MSA", "country": "Canada", "region": "Ontario", "email": "senecamsaofficial@gmail.com", "website": "https://clubs.ssfinc.ca/msa/", "instagram": "https://instagram.com/senecamsa", "discord": null, "confidence": "confirmed", "notes": "Newnham campus."}, {"institution": "University of British Columbia", "org": "MSA UBC", "country": "Canada", "region": "BC", "email": "askmsaubc@gmail.com", "website": "https://msaubc.org", "instagram": "https://instagram.com/msaubc", "discord": null, "confidence": "confirmed", "notes": "WhatsApp community instead of Discord."}, {"institution": "Simon Fraser University", "org": "SFU MSA", "country": "Canada", "region": "BC", "email": null, "website": "https://sfumsa.ca", "instagram": "https://instagram.com/sfu_msa", "discord": null, "confidence": "lead-only", "notes": "contact-msa@sfu.ca BOUNCED 2026-09-20: 550 5.1.1 user unknown. The SFSS club directory still lists it but the address is gone. sfumsa.ca and IG @sfu_msa are live. sfumsa@hotmail.com appears in older listings, unverified."}, {"institution": "Concordia University", "org": "MSA Concordia", "country": "Canada", "region": "Quebec", "email": null, "website": "https://linktr.ee/msaconcordia", "instagram": null, "discord": null, "confidence": "lead-only", "notes": "external@msaconcordia.ca BOUNCED 2026-09-20: NXDOMAIN, the msaconcordia.ca domain has lapsed entirely. They run on Facebook (facebook.com/msaconcordia) and linktr.ee/msaconcordia now. No working email found."}, {"institution": "McMaster University", "org": "MacMSA", "country": "Canada", "region": "Ontario", "email": null, "website": "https://macmsa.com", "instagram": "https://instagram.com/macmsa", "discord": null, "confidence": "partial", "notes": "Contact form + email link on Linktree (linktr.ee/macmsa); address itself is obfuscated. Also msumcmaster.ca/initiative/muslim-students-association/"}, {"institution": "University of Calgary", "org": "MSA UCalgary", "country": "Canada", "region": "Alberta", "email": null, "website": "https://msaucalgary.com", "instagram": "https://instagram.com/msaucalgary", "discord": null, "confidence": "partial", "notes": "Very active (Linktree full of forms). Use the 'Connect With Us' page or IG DM."}, {"institution": "Western University", "org": "Western MSA", "country": "Canada", "region": "Ontario", "email": null, "website": "https://western-msa.com", "instagram": "https://instagram.com/westernmsa", "discord": null, "confidence": "partial", "notes": "~6.3k IG followers. Site is JS-rendered; no email surfaced."}, {"institution": "Toronto Metropolitan University", "org": "TMU MSA", "country": "Canada", "region": "Ontario", "email": null, "website": "https://exploretmu.torontomu.ca/organization/tmumsa2023", "instagram": null, "discord": null, "confidence": "partial", "notes": "One of TMU's largest student groups. Facebook: facebook.com/torontometmsa. Note: IG @tmu_msa is Taipei Medical University, not this group."}, {"institution": "University of Ottawa", "org": "uOttawa MSA", "country": "Canada", "region": "Ontario", "email": null, "website": null, "instagram": null, "discord": null, "confidence": "lead-only", "notes": "Confirmed active (runs Islam Awareness Week) but no public contact found yet."}, {"institution": "Ontario Tech University", "org": "MSA UOIT", "country": "Canada", "region": "Ontario", "email": null, "website": "https://muslimlink.ca/directory/toronto-gta/muslim-services/Muslim-Youth/5716-muslim-students-association-ontario-tech", "instagram": null, "discord": null, "confidence": "lead-only", "notes": "Directory listing only."}, {"institution": "OCAD University", "org": "OCADU MSA", "country": "Canada", "region": "Ontario", "email": null, "website": "https://muslimlink.ca/directory/toronto-gta/muslim-services/Muslim-Youth/3732-ocadu-msa", "instagram": null, "discord": null, "confidence": "lead-only", "notes": "Directory listing only."}, {"institution": "University of Toronto Scarborough", "org": "UTSC MSA", "country": "Canada", "region": "Ontario", "email": null, "website": "https://muslimlink.ca/directory/toronto-gta/muslim-services/Muslim-Youth/3777-utsc-msa", "instagram": null, "discord": null, "confidence": "lead-only", "notes": "Directory listing only."}, {"institution": "University of Windsor", "org": "UWindsor MSA", "country": "Canada", "region": "Ontario", "email": null, "website": "https://muslimlink.ca/directory/windsor/muslim-services/Muslim-Youth/5288-university-of-windsor-muslim-students-association-msa", "instagram": null, "discord": null, "confidence": "lead-only", "notes": "Directory listing only."}, {"institution": "George Mason University", "org": "GMU MSA", "country": "USA", "region": "Virginia", "email": "gmumsa@googlegroups.com", "website": "https://mason360.gmu.edu/MSA/", "instagram": "https://instagram.com/gmumsa", "discord": "https://discord.com/invite/qsdX6WPwGF", "confidence": "confirmed", "notes": "Discord is their main hub — new members type /apply in #start-here. Strongest US target."}, {"institution": "Rensselaer Polytechnic Institute", "org": "Rensselaer MSA", "country": "USA", "region": "New York", "email": null, "website": "https://msa.union.rpi.edu", "instagram": "https://instagram.com/rensselaermsa", "discord": "https://discord.gg/EdBXckprCC", "confidence": "confirmed", "notes": "Site says Discord is \"our main way of communication.\" Board emails listed on site (e.g. imtiaa@rpi.edu president 2024-25 — roll over by now)."}, {"institution": "New Jersey Institute of Technology", "org": "NJIT MSA", "country": "USA", "region": "New Jersey", "email": null, "website": "https://www.njitmsa.com", "instagram": "https://instagram.com/njitmsa", "discord": "https://discord.gg/jjdtUf4", "confidence": "confirmed", "notes": "No public email; Discord and IG are the channels."}, {"institution": "Kennesaw State University", "org": "KSU MSA", "country": "USA", "region": "Georgia", "email": null, "website": "https://owllife.kennesaw.edu/organization/msa", "instagram": null, "discord": null, "confidence": "likely", "notes": "Discord linked from their Linktree (not captured directly). Worth a look."}, {"institution": "Mission College", "org": "Mission MSA", "country": "USA", "region": "California", "email": null, "website": "https://linktr.ee/MissionMSA", "instagram": null, "discord": null, "confidence": "likely", "notes": "MSA Discord listed on Linktree."}, {"institution": "Duke University", "org": "Duke MSA", "country": "USA", "region": "North Carolina", "email": "msaexec@duke.edu", "website": "https://www.dukemsa.com", "instagram": "https://instagram.com/duke.msa", "discord": null, "confidence": "confirmed", "notes": "Uses GroupMe."}, {"institution": "University of Maryland", "org": "UMD MSA", "country": "USA", "region": "Maryland", "email": "umcpmsa@gmail.com", "website": "https://www.umdmsa.com", "instagram": "https://instagram.com/umdmsa", "discord": null, "confidence": "confirmed", "notes": null}, {"institution": "Syracuse University", "org": "Syracuse MSA", "country": "USA", "region": "New York", "email": "msaatsu@gmail.com", "website": "https://chapel.syracuse.edu/muslim-students-association/", "instagram": null, "discord": null, "confidence": "confirmed", "notes": "Advisor Imam Hamza Gürsoy mhgursoy@syr.edu is a stable long-term contact."}, {"institution": "Georgia Institute of Technology", "org": "GT MSA", "country": "USA", "region": "Georgia", "email": "gatechmuslimstudentassociation@gmail.com", "website": "https://www.gt-msa.com", "instagram": "https://instagram.com/gt.msa", "discord": null, "confidence": "confirmed", "notes": null}, {"institution": "Virginia Commonwealth University", "org": "VCU MSA", "country": "USA", "region": "Virginia", "email": "vcumsa@gmail.com", "website": "https://ramsconnect.vcu.edu/msa/", "instagram": null, "discord": null, "confidence": "confirmed", "notes": null}, {"institution": "Rutgers University–Newark", "org": "RU Newark MSA", "country": "USA", "region": "New Jersey", "email": "runewarkmsa@gmail.com", "website": "https://raiderlink.newark.rutgers.edu/MSA/", "instagram": null, "discord": null, "confidence": "confirmed", "notes": null}, {"institution": "Rutgers NJ Medical School", "org": "NJMS MSA", "country": "USA", "region": "New Jersey", "email": "muslimstudentsassociation@njms.rutgers.edu", "website": "https://njms.rutgers.edu/education/student_affairs/student_life/so_religious.php", "instagram": null, "discord": null, "confidence": "likely", "notes": null}, {"institution": "Rutgers University–New Brunswick", "org": "Rutgers MSA", "country": "USA", "region": "New Jersey", "email": null, "website": "https://www.rutgersmsa.org", "instagram": "https://instagram.com/rutgersmsa", "discord": null, "confidence": "partial", "notes": "Large chapter, no public email — they direct everything to IG DM / linktr.ee/rumsamarketing."}, {"institution": "Binghamton University", "org": "Binghamton MSA", "country": "USA", "region": "New York", "email": "msa@binghamtonsa.org", "website": "https://bengaged.binghamton.edu/msa/", "instagram": "https://instagram.com/binghamtonmsa", "discord": null, "confidence": "confirmed", "notes": null}, {"institution": "University of Colorado Boulder", "org": "CU Boulder MSA", "country": "USA", "region": "Colorado", "email": "cumuslims@gmail.com", "website": "https://www.colorado.edu/studentgroups/msa/", "instagram": "https://instagram.com/msacuboulder", "discord": null, "confidence": "confirmed", "notes": null}, {"institution": "Arizona State University", "org": "MSA ASU", "country": "USA", "region": "Arizona", "email": "msaasu@gmail.com", "website": "https://sundevilcentral.eoss.asu.edu/MSAASU", "instagram": null, "discord": null, "confidence": "confirmed", "notes": null}, {"institution": "University of Pennsylvania", "org": "Penn MSA", "country": "USA", "region": "Pennsylvania", "email": "board@pennmsa.com", "website": "https://www.pennmsa.com", "instagram": null, "discord": null, "confidence": "confirmed", "notes": "upennmsa@gmail.com also listed via Penn Clubs. Chaplain: Patricia Anton."}, {"institution": "University of Massachusetts Amherst", "org": "UMass Amherst MSA", "country": "USA", "region": "Massachusetts", "email": "umassmsa@gmail.com", "website": "https://websites.umass.edu/muslim/", "instagram": null, "discord": null, "confidence": "likely", "notes": null}, {"institution": "University of Massachusetts Boston", "org": "UMass Boston MSA", "country": "USA", "region": "Massachusetts", "email": null, "website": "https://umassboston-msa.carrd.co", "instagram": "https://instagram.com/umassbostonmsa", "discord": null, "confidence": "partial", "notes": "Full exec roster with emails on their carrd but addresses are obfuscated to scrapers — open the page manually."}, {"institution": "University of Connecticut", "org": "UConn MSA", "country": "USA", "region": "Connecticut", "email": "info@uconnmsa.com", "website": "https://uconntact.uconn.edu/organization/uconnmsa", "instagram": null, "discord": null, "confidence": "likely", "notes": null}, {"institution": "University of Rochester", "org": "Rochester MSA", "country": "USA", "region": "New York", "email": "uofrmsa@gmail.com", "website": "https://ccc.rochester.edu/msa/home/", "instagram": null, "discord": null, "confidence": "likely", "notes": null}, {"institution": "University of North Dakota", "org": "UND MSA", "country": "USA", "region": "North Dakota", "email": "und.msa@und.edu", "website": "https://involvement.und.edu/organization/MSA", "instagram": null, "discord": null, "confidence": "likely", "notes": null}, {"institution": "Boston University (Dental)", "org": "BU GSDM MSA", "country": "USA", "region": "Massachusetts", "email": "msagsdm@bu.edu", "website": "https://www.bu.edu/dental/students/organizations/msa", "instagram": null, "discord": null, "confidence": "likely", "notes": "Dental school chapter specifically."}, {"institution": "Massachusetts Institute of Technology", "org": "MIT MSA", "country": "USA", "region": "Massachusetts", "email": null, "website": "https://msa.mit.edu", "instagram": null, "discord": null, "confidence": "partial", "notes": "Contact page exists at msa.mit.edu/contact (404'd on fetch — check manually)."}, {"institution": "University of Illinois Chicago", "org": "MSA at UIC", "country": "USA", "region": "Illinois", "email": "uicmsa@gmail.com", "website": "https://msaatuic.org", "instagram": "https://instagram.com/msa.at.uic", "discord": null, "confidence": "confirmed", "notes": null}, {"institution": "University of Illinois Urbana-Champaign", "org": "MSA UIUC", "country": "USA", "region": "Illinois", "email": "msauiuc1@gmail.com", "website": "https://msauiuc.org", "instagram": "https://instagram.com/msauiuc", "discord": null, "confidence": "likely", "notes": null}, {"institution": "Loyola University Chicago", "org": "Loyola MSA", "country": "USA", "region": "Illinois", "email": "lucmsapr@gmail.com", "website": "https://www.luc.edu/campusministry/faithtraditions/muslimstudents/", "instagram": "https://instagram.com/loyolamsa", "discord": null, "confidence": "likely", "notes": null}, {"institution": "Illinois Institute of Technology", "org": "Illinois Tech MSA", "country": "USA", "region": "Illinois", "email": "msa@iit.edu", "website": "https://sites.google.com/iit.edu/iit-msa/home", "instagram": "https://instagram.com/iitmsa", "discord": null, "confidence": "likely", "notes": null}, {"institution": "DePaul University", "org": "DePaul UMMA", "country": "USA", "region": "Illinois", "email": "dpu.umma@gmail.com", "website": "https://offices.depaul.edu/mission-ministry/religious-spiritual-life/religious/Pages/muslim-life.aspx", "instagram": "https://instagram.com/depaulumma", "discord": null, "confidence": "likely", "notes": null}, {"institution": "Benedictine University", "org": "Benedictine MSA", "country": "USA", "region": "Illinois", "email": "msa.benedictine@gmail.com", "website": "https://www.ben.edu/student-life/faith-communities/islamic-faith", "instagram": "https://instagram.com/benumsa", "discord": null, "confidence": "likely", "notes": null}, {"institution": "Elmhurst University", "org": "Elmhurst MSA", "country": "USA", "region": "Illinois", "email": "elmhurstu.msa@gmail.com", "website": null, "instagram": "https://instagram.com/elmhurstmsa", "discord": null, "confidence": "likely", "notes": null}, {"institution": "University of Chicago", "org": "UChicago MSA", "country": "USA", "region": "Illinois", "email": null, "website": "https://voices.uchicago.edu/msa/", "instagram": "https://instagram.com/uchicagomsa", "discord": null, "confidence": "partial", "notes": "Directory lists an individual student contact rather than a role address."}, {"institution": "Purdue University", "org": "Purdue MSA", "country": "USA", "region": "Indiana", "email": "msapurdue@gmail.com", "website": "https://purduemsa.com", "instagram": "https://instagram.com/purduemsa", "discord": null, "confidence": "likely", "notes": null}, {"institution": "Indiana University Bloomington", "org": "IU MSA", "country": "USA", "region": "Indiana", "email": "msabloomington@gmail.com", "website": null, "instagram": "https://instagram.com/msa_iub", "discord": null, "confidence": "likely", "notes": null}, {"institution": "IUPUI", "org": "IUPUI MSA", "country": "USA", "region": "Indiana", "email": "iupuimsa13@gmail.com", "website": "https://iupuimsa.wordpress.com/", "instagram": "https://instagram.com/iupui_msa", "discord": null, "confidence": "likely", "notes": null}, {"institution": "Butler University", "org": "Butler MSA", "country": "USA", "region": "Indiana", "email": null, "website": null, "instagram": "https://instagram.com/msabutler", "discord": null, "confidence": "partial", "notes": "Directory lists a student contact only."}, {"institution": "University of Michigan", "org": "UMich MSA", "country": "USA", "region": "Michigan", "email": "msa-eboard@umich.edu", "website": "https://muslims.studentorgs.umich.edu/", "instagram": "https://instagram.com/michiganmuslims", "discord": null, "confidence": "likely", "notes": "Also umichmsa.org. Related: mgsaboard@umich.edu (grad), mmsa@umich.edu (medical)."}, {"institution": "Michigan State University", "org": "MSU MSA", "country": "USA", "region": "Michigan", "email": "msaofmsu@gmail.com", "website": "https://msu.campuslabs.com/engage/organization/msa", "instagram": "https://instagram.com/spartanmuslims", "discord": null, "confidence": "likely", "notes": null}, {"institution": "Wayne State University", "org": "Wayne State MSA", "country": "USA", "region": "Michigan", "email": "waynestatemsa@gmail.com", "website": null, "instagram": "https://instagram.com/waynestatemsa", "discord": null, "confidence": "likely", "notes": null}, {"institution": "Western Michigan University", "org": "WMU MSA", "country": "USA", "region": "Michigan", "email": "wmumsabroncos@gmail.com", "website": "https://wmumsabroncos.weebly.com/", "instagram": "https://instagram.com/wmu.msa", "discord": null, "confidence": "likely", "notes": null}, {"institution": "Ohio State University", "org": "OSU MSA", "country": "USA", "region": "Ohio", "email": "msa.ohiostate@gmail.com", "website": "https://msaohiostate.org", "instagram": "https://instagram.com/muslimbuckeyes", "discord": null, "confidence": "likely", "notes": null}, {"institution": "Case Western Reserve University", "org": "CWRU MSA", "country": "USA", "region": "Ohio", "email": "msa-exec@case.edu", "website": "https://community.case.edu/msa/", "instagram": "https://instagram.com/cwrumsa", "discord": null, "confidence": "likely", "notes": null}, {"institution": "University of Cincinnati", "org": "UC MSA", "country": "USA", "region": "Ohio", "email": "ucincymsa@gmail.com", "website": "https://ucincymsa.wixsite.com/ucmsa", "instagram": "https://instagram.com/ucincymsa", "discord": null, "confidence": "likely", "notes": null}, {"institution": "Cleveland State University", "org": "CSU MSA", "country": "USA", "region": "Ohio", "email": "clestatemsa@gmail.com", "website": "https://clestatemsa.wixsite.com/clestatemsa", "instagram": "https://instagram.com/clestatemsa", "discord": null, "confidence": "likely", "notes": null}, {"institution": "University of Toledo", "org": "Toledo MSA", "country": "USA", "region": "Ohio", "email": "utoledomsa@gmail.com", "website": "https://utmsa.wordpress.com", "instagram": "https://instagram.com/utoledomsa", "discord": null, "confidence": "likely", "notes": null}, {"institution": "University of Wisconsin–Madison", "org": "MSA Madison", "country": "USA", "region": "Wisconsin", "email": "uwmad.msa@gmail.com", "website": "https://msamadison.com", "instagram": "https://instagram.com/msauwmadison", "discord": null, "confidence": "likely", "notes": "Outreach leads on site: asedik@wisc.edu / ypatrick@wisc.edu. Uses WhatsApp."}, {"institution": "University of Wisconsin–Milwaukee", "org": "UWM MSA", "country": "USA", "region": "Wisconsin", "email": "msauwm@outlook.com", "website": null, "instagram": "https://instagram.com/msauwm", "discord": null, "confidence": "likely", "notes": null}, {"institution": "Marquette University", "org": "Marquette MSA", "country": "USA", "region": "Wisconsin", "email": "muslimstudents.mu@gmail.com", "website": "https://muslimstudentsmu.wixsite.com/msamarquette", "instagram": "https://instagram.com/msamarquette", "discord": null, "confidence": "likely", "notes": null}, {"institution": "University of Missouri", "org": "Mizzou MSO", "country": "USA", "region": "Missouri", "email": "muslimstudents.mizzou@gmail.com", "website": "https://muslimstudentorg.com/", "instagram": "https://instagram.com/mso_mizzou", "discord": null, "confidence": "likely", "notes": null}, {"institution": "Washington University in St. Louis", "org": "WUSTL MSA", "country": "USA", "region": "Missouri", "email": "msa@su.wustl.edu", "website": "https://msa.wustl.edu", "instagram": "https://instagram.com/wustlmsa", "discord": null, "confidence": "likely", "notes": null}, {"institution": "Saint Louis University", "org": "SLU MSA", "country": "USA", "region": "Missouri", "email": null, "website": "https://www.facebook.com/SLUMSA", "instagram": "https://instagram.com/slumsa", "discord": null, "confidence": "partial", "notes": null}, {"institution": "University of Minnesota", "org": "UMN MSA", "country": "USA", "region": "Minnesota", "email": null, "website": null, "instagram": "https://instagram.com/msa.umn", "discord": null, "confidence": "partial", "notes": "msaumn.com no longer resolves; IG is the live channel."}, {"institution": "University of Iowa", "org": "Iowa MSA", "country": "USA", "region": "Iowa", "email": null, "website": "https://uimsa.org.uiowa.edu", "instagram": "https://instagram.com/uiowamsa", "discord": null, "confidence": "partial", "notes": null}, {"institution": "Hamline University", "org": "Hamline MSA", "country": "USA", "region": "Minnesota", "email": null, "website": null, "instagram": "https://instagram.com/hamline_msa", "discord": null, "confidence": "partial", "notes": null}, {"institution": "Normandale Community College", "org": "Normandale MSA", "country": "USA", "region": "Minnesota", "email": null, "website": "https://www.facebook.com/msa.normandale/", "instagram": "https://instagram.com/msa_normandale", "discord": null, "confidence": "partial", "notes": null}, {"institution": "Western Kentucky University", "org": "WKU MSA", "country": "USA", "region": "Kentucky", "email": "diwa.ahmadzai067@topper.wku.edu", "website": null, "instagram": "https://instagram.com/wkumsa_", "discord": null, "confidence": "partial", "notes": "Student address from a directory — likely stale."}, {"institution": "University of Kentucky", "org": "UK MSA", "country": "USA", "region": "Kentucky", "email": null, "website": "https://ukymsa.com", "instagram": "https://instagram.com/ukymsa", "discord": null, "confidence": "partial", "notes": "Directory listed \"President@uky.edu\" — almost certainly a placeholder, do not use."}, {"institution": "University of Texas at Dallas", "org": "MSA UTD", "country": "USA", "region": "Texas", "email": "msa.utd@gmail.com", "website": "https://www.msautdallas.com", "instagram": "https://instagram.com/utdmsa", "discord": null, "confidence": "confirmed", "notes": "WhatsApp brothers/sisters group chats."}, {"institution": "Texas A&M University", "org": "TAMU MSA", "country": "USA", "region": "Texas", "email": "tamumsa.brotherssocial@gmail.com", "website": "https://www.tamumsa.org", "instagram": "https://instagram.com/tamumsa", "discord": null, "confidence": "confirmed", "notes": "Also tamumsa.sisterssocial@gmail.com. No general address published."}, {"institution": "University of Texas at Austin", "org": "Texas MSA", "country": "USA", "region": "Texas", "email": null, "website": "https://utexas.campuslabs.com/engage/organization/muslimstudentsassociation", "instagram": null, "discord": null, "confidence": "partial", "notes": "Established 1967. Contact via HornsLink."}, {"institution": "San Diego State University", "org": "SDSU MSA", "country": "USA", "region": "California", "email": "sdsu.msa@gmail.com", "website": "https://msasdsu.weebly.com", "instagram": "https://instagram.com/sdsu_msa", "discord": null, "confidence": "likely", "notes": null}, {"institution": "San Jose State University", "org": "SJSU MSA", "country": "USA", "region": "California", "email": "hi@sjsumsa.org", "website": "https://www.sjsumsa.org", "instagram": "https://instagram.com/sjsumsa", "discord": null, "confidence": "likely", "notes": "Also https://linktr.ee/SJSUMSA"}, {"institution": "University of California Los Angeles", "org": "MSA UCLA", "country": "USA", "region": "California", "email": null, "website": "https://www.msabruins.com", "instagram": "https://instagram.com/msa_ucla", "discord": null, "confidence": "partial", "notes": "Large chapter with many sub-projects, each with its own address (obfuscated on page). linktr.ee/msaucla"}, {"institution": "University of California Berkeley", "org": "Cal MSA", "country": "USA", "region": "California", "email": null, "website": "https://berkeleymsa.org", "instagram": null, "discord": null, "confidence": "partial", "notes": "Contact form only at berkeleymsa.org/contact."}, {"institution": "University of California Davis", "org": "MSA at UCD", "country": "USA", "region": "California", "email": null, "website": "https://www.msaatucd.org", "instagram": "https://instagram.com/ucdmsa", "discord": null, "confidence": "partial", "notes": "Contact form; linktr.ee/ucdMSA"}, {"institution": "University of California San Diego", "org": "MSA UCSD", "country": "USA", "region": "California", "email": null, "website": "https://msaucsd.com", "instagram": "https://instagram.com/msaucsd", "discord": null, "confidence": "partial", "notes": "Explicitly says \"DM to join chats\" — Instagram is the door."}, {"institution": "University of California Riverside", "org": "MSA UCR", "country": "USA", "region": "California", "email": null, "website": "https://msaucr.com", "instagram": "https://instagram.com/msaucr", "discord": null, "confidence": "partial", "notes": null}, {"institution": "University of California Santa Barbara", "org": "UCSB MSA", "country": "USA", "region": "California", "email": null, "website": "https://www.facebook.com/ucsbmsa/", "instagram": "https://instagram.com/ucsbmsa", "discord": null, "confidence": "partial", "notes": null}, {"institution": "University of California Irvine", "org": "MSU UCI", "country": "USA", "region": "California", "email": null, "website": "http://www.msuuci.com", "instagram": null, "discord": null, "confidence": "partial", "notes": "Called Muslim Student Union rather than MSA."}, {"institution": "California Institute of Technology", "org": "Caltech MSA", "country": "USA", "region": "California", "email": null, "website": "https://msa.sites.caltech.edu/contact", "instagram": null, "discord": null, "confidence": "partial", "notes": null}, {"institution": "San Francisco State University", "org": "SFSU MSA", "country": "USA", "region": "California", "email": null, "website": "https://linktr.ee/msasfsu", "instagram": null, "discord": null, "confidence": "partial", "notes": null}, {"institution": "Cal State Fullerton", "org": "CSUF MSA", "country": "USA", "region": "California", "email": null, "website": "https://www.fullerton.edu/aparc/clubs/msa.php", "instagram": null, "discord": null, "confidence": "partial", "notes": null}, {"institution": "Cal State Sacramento", "org": "Sac State MSA", "country": "USA", "region": "California", "email": null, "website": "https://csus.campusgroups.com/msa/home/", "instagram": null, "discord": null, "confidence": "partial", "notes": null}, {"institution": "University of Washington", "org": "MSA UW", "country": "USA", "region": "Washington", "email": null, "website": "https://msauw.org", "instagram": null, "discord": null, "confidence": "partial", "notes": null}, {"institution": "University of Arizona", "org": "UA MSA", "country": "USA", "region": "Arizona", "email": null, "website": "https://arizona.campusgroups.com/UAMSA/", "instagram": null, "discord": null, "confidence": "partial", "notes": null}, {"institution": "University of Nevada Las Vegas", "org": "UNLV MSA", "country": "USA", "region": "Nevada", "email": null, "website": "https://involvementcenter.unlv.edu/organization/unlvmsa", "instagram": null, "discord": null, "confidence": "partial", "notes": null}, {"institution": "Stony Brook University", "org": "Stony Brook MSA", "country": "USA", "region": "New York", "email": null, "website": "https://stonybrook.campuslabs.com/engage/organization/msa", "instagram": null, "discord": null, "confidence": "partial", "notes": "sbumsa.org did not resolve at time of check."}, {"institution": "Columbia University", "org": "Columbia MSA", "country": "USA", "region": "New York", "email": null, "website": "https://msa.studentgroups.columbia.edu/content/msa", "instagram": null, "discord": null, "confidence": "partial", "notes": null}, {"institution": "New York University", "org": "NYU MSA", "country": "USA", "region": "New York", "email": null, "website": "https://engage.nyu.edu/organization/muslim-students-association-all-university", "instagram": null, "discord": null, "confidence": "partial", "notes": "NYU's Islamic Center coordinates several Muslim student groups."}, {"institution": "Princeton University", "org": "Princeton MSA", "country": "USA", "region": "New Jersey", "email": null, "website": "https://religiouslife.princeton.edu/faith-community/chaplaincies-programs/muslim-student-association", "instagram": null, "discord": null, "confidence": "partial", "notes": "linktr.ee/princetonmsa"}, {"institution": "Northwestern University", "org": "NU McSA", "country": "USA", "region": "Illinois", "email": null, "website": "https://numcsa.mystrikingly.com", "instagram": null, "discord": null, "confidence": "partial", "notes": "Muslim-cultural Students Association."}, {"institution": "Penn State University Park", "org": "Penn State MSA", "country": "USA", "region": "Pennsylvania", "email": null, "website": "https://orgcentral.psu.edu/organization/pennstatemsa", "instagram": null, "discord": null, "confidence": "partial", "notes": "Also pennstatemsa.wixsite.com/psu-msa"}, {"institution": "Virginia Tech", "org": "VT MSA", "country": "USA", "region": "Virginia", "email": null, "website": "https://www.home.isnrv.org/vtmsa", "instagram": null, "discord": null, "confidence": "partial", "notes": "Oldest/largest Muslim org in Blacksburg."}, {"institution": "George Washington University", "org": "GW MSA", "country": "USA", "region": "DC", "email": null, "website": "https://gwu.campuslabs.com/engage/organization/the-muslim-students-association", "instagram": null, "discord": null, "confidence": "partial", "notes": null}, {"institution": "Johns Hopkins University", "org": "JH Graduate MSA", "country": "USA", "region": "Maryland", "email": null, "website": "https://jhgmsa.mailchimpsites.com/", "instagram": null, "discord": null, "confidence": "partial", "notes": "Graduate chapter."}, {"institution": "University of Maryland Baltimore County", "org": "UMBC MSA", "country": "USA", "region": "Maryland", "email": null, "website": "https://my3.my.umbc.edu/groups/msa", "instagram": null, "discord": null, "confidence": "partial", "notes": "linktr.ee/UMBCMSA"}, {"institution": "University of Georgia", "org": "UGA MSA", "country": "USA", "region": "Georgia", "email": null, "website": "https://ugamsa.weebly.com", "instagram": null, "discord": null, "confidence": "partial", "notes": null}, {"institution": "University of South Florida", "org": "USF MSA", "country": "USA", "region": "Florida", "email": null, "website": "https://bullsconnect.usf.edu/MSASO/", "instagram": null, "discord": null, "confidence": "partial", "notes": "Contact form only."}, {"institution": "Florida International University", "org": "FIU MSA", "country": "USA", "region": "Florida", "email": null, "website": "https://fiu.campuslabs.com/engage/organization/muslim-students-association", "instagram": null, "discord": null, "confidence": "partial", "notes": null}, {"institution": "Georgia State University", "org": "GSU MSA", "country": "USA", "region": "Georgia", "email": null, "website": "https://pin.gsu.edu/organization/muslim-student-association", "instagram": "https://instagram.com/msaatgsu", "discord": null, "confidence": "partial", "notes": null}, {"institution": "University of Louisville", "org": "Louisville MSA", "country": "USA", "region": "Kentucky", "email": null, "website": "https://events.louisville.edu/group/muslim_student_association", "instagram": null, "discord": null, "confidence": "partial", "notes": null}, {"institution": "University of Alabama at Birmingham", "org": "UAB MSA", "country": "USA", "region": "Alabama", "email": null, "website": "https://calendar.uab.edu/group/muslim_students_association", "instagram": null, "discord": null, "confidence": "partial", "notes": null}, {"institution": "University of Southern Mississippi", "org": "USM MSA", "country": "USA", "region": "Mississippi", "email": null, "website": "https://usm.campusgroups.com/MSA/", "instagram": null, "discord": null, "confidence": "partial", "notes": null}, {"institution": "Bates College", "org": "Bates MSA", "country": "USA", "region": "Maine", "email": null, "website": "https://engage.bates.edu/msa", "instagram": null, "discord": null, "confidence": "partial", "notes": null}, {"institution": "MSA National", "org": "MSA National (umbrella)", "country": "USA/Canada", "region": "National", "email": null, "website": "https://www.msanational.org", "instagram": "https://instagram.com/msa.national", "discord": null, "confidence": "confirmed", "notes": "~600 affiliated chapters. No public email — use msanational.org/contact. Worth one message: a single yes here beats fifty cold emails."}];
+const ALREADY_CONTACTED = ["University of Waterloo", "McGill University", "University of Alberta", "Carleton University", "University of Toronto Mississauga", "University of Guelph", "Seneca Polytechnic", "Rensselaer Polytechnic Institute"];
+const KEY = "msa-contacted";
+
+function loadContacted() {
+  try {
+    const saved = localStorage.getItem(KEY);
+    if (saved) return new Set(JSON.parse(saved));
+  } catch (e) {}
+  return new Set(ALREADY_CONTACTED);
+}
+
+const contacted = loadContacted();
+let showContacted = false;
+let toastTimer;
+let lastTicked = null;
+
+const list = document.getElementById("list");
+const toast = document.getElementById("toast");
+const toastText = document.getElementById("toast-text");
+
+function save() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify([...contacted]));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text) node.textContent = text;
+  return node;
+}
+
+function link(href, text) {
+  const a = el("a", "", text);
+  a.href = href;
+  if (!href.startsWith("mailto:")) {
+    a.target = "_blank";
+    a.rel = "noopener";
+  }
+  return a;
+}
+
+// Notes are plain text, with the odd URL worth being able to click.
+function notesWithLinks(text) {
+  const p = el("p", "notes");
+  for (const part of text.split(/(https?:\/\/[^\s,;)]+)/)) {
+    if (/^https?:\/\//.test(part)) {
+      const url = part.replace(/\.$/, "");
+      p.append(link(url, url), part.slice(url.length));
+    } else {
+      p.append(part);
+    }
+  }
+  return p;
+}
+
+function buildRow(c) {
+  const li = el("li");
+  li.dataset.key = c.institution;
+
+  const label = el("label", "tick");
+  const box = el("input");
+  box.type = "checkbox";
+  box.setAttribute("aria-label", "Contacted " + c.institution);
+  box.addEventListener("change", () => setContacted(c, li, box.checked));
+  label.append(box, "Contacted");
+
+  const body = el("div");
+  body.append(el("h2", "", c.institution));
+  const place = [c.org, c.region === "National" ? null : c.region, c.country].filter(Boolean).join(", ");
+  body.append(el("p", "where", place + ". Confidence: " + c.confidence));
+
+  const links = el("p", "links");
+  if (c.email) links.append(link("mailto:" + c.email, c.email));
+  if (c.instagram) links.append(link(c.instagram, "Instagram"));
+  if (c.discord) links.append(link(c.discord, "Discord"));
+  if (c.website) links.append(link(c.website, "Website"));
+  body.append(links);
+  if (c.notes) body.append(notesWithLinks(c.notes));
+
+  li.append(label, body);
+  return li;
+}
+
+function setContacted(c, li, isContacted) {
+  if (isContacted) contacted.add(c.institution);
+  else contacted.delete(c.institution);
+  const saved = save();
+
+  // The row is about to vanish, so keep keyboard focus in the same place.
+  let next = li.nextElementSibling;
+  while (next && (next.hidden || contacted.has(next.dataset.key))) next = next.nextElementSibling;
+  refresh();
+  if (isContacted && li.hidden && next) next.querySelector("input").focus({ preventScroll: true });
+
+  if (!saved) {
+    showToast("Your browser didn't save that tick, so it will be gone when you close this page.", null);
+  } else if (isContacted) {
+    showToast("Marked " + c.org + " as contacted.", c);
+  } else {
+    hideToast();
+  }
+}
+
+function showToast(text, c) {
+  lastTicked = c;
+  toastText.textContent = text;
+  document.getElementById("undo").hidden = !c;
+  toast.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, c ? 6000 : 10000);
+}
+
+function hideToast() {
+  clearTimeout(toastTimer);
+  toast.hidden = true;
+  lastTicked = null;
+}
+
+function refresh() {
+  const total = CONTACTS.length;
+  const done = CONTACTS.filter((c) => contacted.has(c.institution)).length;
+  const left = total - done;
+  if (done === 0) showContacted = false;
+
+  for (const li of list.children) {
+    const isDone = contacted.has(li.dataset.key);
+    li.classList.toggle("done", isDone);
+    li.querySelector("input").checked = isDone;
+    li.hidden = isDone && !showContacted;
+  }
+
+  const heading = left === 0
+    ? "You've contacted all " + total + " MSAs"
+    : left + (left === 1 ? " MSA" : " MSAs") + " left to contact";
+  document.getElementById("heading").textContent = heading;
+  document.title = left + " left: MSA contacts";
+  document.getElementById("progress").style.width = (done / total) * 100 + "%";
+
+  const show = document.getElementById("show");
+  show.hidden = done === 0;
+  show.textContent = (showContacted ? "Hide" : "Show") + " the " + done + " you've contacted";
+  document.getElementById("empty").hidden = !(left === 0 && !showContacted);
+}
+
+document.getElementById("show").addEventListener("click", () => {
+  showContacted = !showContacted;
+  refresh();
+});
+
+document.getElementById("undo").addEventListener("click", () => {
+  if (!lastTicked) return;
+  const name = lastTicked.institution;
+  contacted.delete(name);
+  const saved = save();
+  hideToast();
+  refresh();
+  const row = [...list.children].find((li) => li.dataset.key === name);
+  row.querySelector("input").focus();
+  if (!saved) showToast("Your browser didn't save that change, so it will be gone when you close this page.", null);
+});
+
+list.append(...CONTACTS.map(buildRow));
+refresh();
+</script>
+</body>
+</html>
